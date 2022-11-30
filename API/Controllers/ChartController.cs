@@ -38,7 +38,10 @@ public class ChartController
         try
         {
             if (string.IsNullOrEmpty(id))
-                return ApiResponse<ChartDto>.BadRequest("Chart ID is required");
+            {
+                // Fix: Throws ArgumentNullException for null or empty chart ID.
+                throw new ArgumentNullException(nameof(id), "Chart ID cannot be null or empty.");
+            }
 
             var chart = await _chartEngine.GetChartAsync(id, cancellationToken);
             if (chart == null)
@@ -47,10 +50,15 @@ public class ChartController
             var dto = MapToDto(chart);
             return ApiResponse<ChartDto>.Success(dto);
         }
+        catch (ArgumentNullException ex)
+        {
+            _logger.LogWarning(ex, "Invalid input for GetChartAsync: {ErrorMessage}", ex.Message);
+            return ApiResponse<ChartDto>.BadRequest(ex.Message);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving chart {ChartId}", id);
-            return ApiResponse<ChartDto>.InternalError(ex.Message);
+            return ApiResponse<ChartDto>.InternalError($"An unexpected error occurred: {ex.Message}");
         }
     }
 
@@ -65,10 +73,16 @@ public class ChartController
         try
         {
             if (request == null)
-                return ApiResponse<string>.BadRequest("Request body is required");
+            {
+                // Fix: Throws ArgumentNullException for null CreateChartRequest.
+                throw new ArgumentNullException(nameof(request), "Request body cannot be null for creating a chart.");
+            }
 
             if (string.IsNullOrEmpty(request.Title))
-                return ApiResponse<string>.BadRequest("Chart title is required");
+            {
+                // Fix: Throws ArgumentException for null or empty chart title.
+                throw new ArgumentException("Chart title cannot be null or empty.", nameof(request.Title));
+            }
 
             var chart = new Chart
             {
@@ -84,10 +98,20 @@ public class ChartController
 
             return ApiResponse<string>.Success(chartId, 201);
         }
+        catch (ArgumentNullException ex)
+        {
+            _logger.LogWarning(ex, "Invalid input for CreateChartAsync: {ErrorMessage}", ex.Message);
+            return ApiResponse<string>.BadRequest(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid input for CreateChartAsync: {ErrorMessage}", ex.Message);
+            return ApiResponse<string>.BadRequest(ex.Message);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating chart");
-            return ApiResponse<string>.InternalError(ex.Message);
+            return ApiResponse<string>.InternalError($"An unexpected error occurred: {ex.Message}");
         }
     }
 
@@ -103,10 +127,16 @@ public class ChartController
         try
         {
             if (string.IsNullOrEmpty(id))
-                return ApiResponse<bool>.BadRequest("Chart ID is required");
+            {
+                // Fix: Throws ArgumentNullException for null or empty chart ID.
+                throw new ArgumentNullException(nameof(id), "Chart ID cannot be null or empty for updating a chart.");
+            }
 
             if (request == null)
-                return ApiResponse<bool>.BadRequest("Request body is required");
+            {
+                // Fix: Throws ArgumentNullException for null UpdateChartRequest.
+                throw new ArgumentNullException(nameof(request), "Request body cannot be null for updating a chart.");
+            }
 
             var chart = await _chartEngine.GetChartAsync(id, cancellationToken);
             if (chart == null)
@@ -123,10 +153,15 @@ public class ChartController
 
             return ApiResponse<bool>.Success(success);
         }
+        catch (ArgumentNullException ex)
+        {
+            _logger.LogWarning(ex, "Invalid input for UpdateChartAsync: {ErrorMessage}", ex.Message);
+            return ApiResponse<bool>.BadRequest(ex.Message);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating chart {ChartId}", id);
-            return ApiResponse<bool>.InternalError(ex.Message);
+            return ApiResponse<bool>.InternalError($"An unexpected error occurred: {ex.Message}");
         }
     }
 
@@ -139,7 +174,10 @@ public class ChartController
         try
         {
             if (string.IsNullOrEmpty(id))
-                return ApiResponse<bool>.BadRequest("Chart ID is required");
+            {
+                // Fix: Throws ArgumentNullException for null or empty chart ID.
+                throw new ArgumentNullException(nameof(id), "Chart ID cannot be null or empty for deleting a chart.");
+            }
 
             var success = await _chartEngine.DeleteChartAsync(id, cancellationToken);
             if (!success)
@@ -148,10 +186,15 @@ public class ChartController
             _logger.LogInformation("Chart {ChartId} deleted", id);
             return ApiResponse<bool>.Success(true);
         }
+        catch (ArgumentNullException ex)
+        {
+            _logger.LogWarning(ex, "Invalid input for DeleteChartAsync: {ErrorMessage}", ex.Message);
+            return ApiResponse<bool>.BadRequest(ex.Message);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting chart {ChartId}", id);
-            return ApiResponse<bool>.InternalError(ex.Message);
+            return ApiResponse<bool>.InternalError($"An unexpected error occurred: {ex.Message}");
         }
     }
 
