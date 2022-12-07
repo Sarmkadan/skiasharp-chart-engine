@@ -1,0 +1,77 @@
+# =============================================================================
+# Author: Vladyslav Zaiets | https://sarmkadan.com
+# CTO & Software Architect
+# =============================================================================
+
+version: '3.8'
+
+services:
+  chart-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: skiasharp-chart-engine
+    restart: unless-stopped
+
+    # Port mappings
+    ports:
+      - "5000:5000"
+
+    # Environment configuration
+    environment:
+      ASPNETCORE_URLS: http://+:5000
+      ASPNETCORE_ENVIRONMENT: Production
+      DOTNET_RUNNING_IN_CONTAINER: "true"
+
+      # Cache configuration
+      CACHE_ENABLED: "true"
+      CACHE_DURATION: "300"
+
+      # Performance tuning
+      MAX_CONCURRENT_RENDERS: "10"
+      BATCH_SIZE: "5"
+
+      # Logging
+      LOG_LEVEL: Information
+
+    # Volume mounts
+    volumes:
+      - ./output:/app/output
+      - ./config:/app/config
+      - chart-cache:/app/cache
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '1'
+          memory: 512M
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# Named volumes
+volumes:
+  chart-cache:
+    driver: local
+
+# Networks
+networks:
+  default:
+    name: skiasharp-network
+    driver: bridge
