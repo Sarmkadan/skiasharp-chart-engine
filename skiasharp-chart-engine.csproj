@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <RootNamespace>SkiaSharpChartEngine</RootNamespace>
+    <AssemblyName>SkiaSharpChartEngine</AssemblyName>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Version>1.0.0</Version>
+    <Title>SkiaSharp Chart Engine</Title>
+    <Description>High-performance chart rendering with SkiaSharp - line, bar, pie, heatmap, export to PNG/SVG</Description>
+    <Authors>Vladyslav Zaiets</Authors>
+    <License>MIT</License>
+    <PackageProjectUrl>https://github.com/vladyslav-zaiets/skiasharp-chart-engine</PackageProjectUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" Version="2.88.8" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
+    <PackageReference Include="System.ComponentModel.DataAnnotations" Version="4.7.0" />
+  </ItemGroup>
+
+</Project>

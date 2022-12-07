@@ -1,0 +1,59 @@
+## Rider
+.idea/
+*.sln.iml
+
+## VS Code
+.vscode/
+*.code-workspace
+
+## Visual Studio
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.sln.DotSettings.user
+*.rsuser
+*.vcxproj.filters
+*.vcxproj.user
+
+## Build Results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+
+## NuGet
+*.nupkg
+*.snupkg
+*.nuget.props
+*.nuget.targets
+packages/
+
+## Local environment
+.env
+.env.local
+appsettings.Development.json
+local.db
+*.db
+
+## Logs
+logs/
+*.log
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Test Coverage
+coverage/
+*.opencover.xml
+
+## Distribution
+dist/
+publish/
