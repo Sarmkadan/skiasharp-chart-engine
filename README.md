@@ -28,7 +28,7 @@ A **high-performance, production-ready chart rendering library** for .NET applic
 
 ## Features
 
-### 📊 Multiple Chart Types
+### Multiple Chart Types
 - **LineChart** - Trend analysis with smooth line rendering
 - **BarChart** - Horizontal bar charts for categorical comparisons
 - **ColumnChart** - Vertical bar charts with automatic scaling
@@ -37,7 +37,7 @@ A **high-performance, production-ready chart rendering library** for .NET applic
 - **AreaChart** - Line charts with filled areas
 - **ScatterChart** - Correlation analysis with point rendering
 
-### 🚀 Performance & Scalability
+### Performance & Scalability
 - **Optimized Rendering Pipeline** - Efficient SkiaSharp-based rendering
 - **Automatic Caching** - Smart in-memory caching with cache invalidation
 - **Async Support** - Full async/await support for all operations
@@ -45,7 +45,7 @@ A **high-performance, production-ready chart rendering library** for .NET applic
 - **Batch Processing** - Render multiple charts simultaneously
 - **Memory Efficient** - Minimal heap allocations with object pooling
 
-### 🎨 Rich Customization
+### Rich Customization
 - **Color Palettes** - 50+ built-in color schemes
 - **Custom Styling** - Line width, opacity, padding, margins
 - **Theme System** - Light/dark themes with custom CSS-like styling
@@ -53,14 +53,14 @@ A **high-performance, production-ready chart rendering library** for .NET applic
 - **Animation Support** - Smooth transitions and animations
 - **Templates** - Pre-configured templates for quick setup
 
-### 📤 Multiple Export Formats
+### Multiple Export Formats
 - **PNG** - Lossless raster format (default)
 - **JPEG** - Compressed raster format
 - **WebP** - Modern web format with superior compression
 - **SVG** - Scalable vector graphics
 - **PDF** - Document format for reporting
 
-### 🔧 Enterprise Features
+### Enterprise Features
 - **Data Validation** - Comprehensive input validation
 - **Error Handling** - Detailed error messages and logging
 - **Metrics Collection** - Rendering time, memory usage, cache hit rates
@@ -69,7 +69,7 @@ A **high-performance, production-ready chart rendering library** for .NET applic
 - **Request Validation** - Automatic input sanitization
 - **Repository Pattern** - In-memory chart storage with CRUD operations
 
-### 🌐 Integration Ready
+### Integration Ready
 - **REST API** - Full HTTP API with controllers
 - **Dependency Injection** - Microsoft.Extensions.DependencyInjection
 - **Configuration** - Microsoft.Extensions.Configuration support
