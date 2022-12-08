@@ -139,14 +139,14 @@ public class RenderResultCache
     }
 
     // Get cache statistics
-    public CacheStatistics GetStatistics()
+    public RenderCacheStatistics GetStatistics()
     {
         lock (_lockObject)
         {
             var totalHits = _cache.Values.Sum(c => c.AccessCount);
             var totalMisses = _cache.Values.Count(c => c.AccessCount == 0);
 
-            return new CacheStatistics
+            return new RenderCacheStatistics
             {
                 TotalEntries = _cache.Count,
                 TotalSize = _currentSizeBytes,
@@ -229,7 +229,7 @@ public class CachedRenderResult
     public long AccessCount { get; set; }
 }
 
-public class CacheStatistics
+public class RenderCacheStatistics
 {
     public int TotalEntries { get; set; }
     public long TotalSize { get; set; }

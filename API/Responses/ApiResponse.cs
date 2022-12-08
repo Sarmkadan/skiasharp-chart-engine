@@ -51,7 +51,7 @@ public class ApiResponse<T>
     /// <summary>
     /// Creates a successful response with data
     /// </summary>
-    public static ApiResponse<T> Success(T data, int statusCode = 200)
+    public static ApiResponse<T> Ok(T data, int statusCode = 200)
     {
         return new ApiResponse<T>
         {
@@ -206,7 +206,7 @@ public class PaginatedResponse<T>
     /// <summary>
     /// Creates a successful paginated response
     /// </summary>
-    public static PaginatedResponse<T> Success(List<T> data, int pageNumber, int pageSize, int totalItems)
+    public static PaginatedResponse<T> Ok(List<T> data, int pageNumber, int pageSize, int totalItems)
     {
         var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
         return new PaginatedResponse<T>

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SkiaSharpChartEngine.Models;
 using SkiaSharpChartEngine.Constants;
+using SkiaSharpChartEngine.Exceptions;
 
 namespace SkiaSharpChartEngine.Services;
 

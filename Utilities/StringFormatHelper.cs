@@ -23,12 +23,13 @@ public static class StringFormatHelper
     {
         var absValue = Math.Abs(value);
 
+        var fmt = $"F{decimalPlaces}";
         return absValue switch
         {
-            >= 1_000_000_000 => $"{value / 1_000_000_000:F{decimalPlaces}}B",
-            >= 1_000_000 => $"{value / 1_000_000:F{decimalPlaces}}M",
-            >= 1_000 => $"{value / 1_000:F{decimalPlaces}}K",
-            _ => $"{value:F{decimalPlaces}}"
+            >= 1_000_000_000 => (value / 1_000_000_000).ToString(fmt) + "B",
+            >= 1_000_000 => (value / 1_000_000).ToString(fmt) + "M",
+            >= 1_000 => (value / 1_000).ToString(fmt) + "K",
+            _ => value.ToString(fmt)
         };
     }
 
@@ -45,7 +46,7 @@ public static class StringFormatHelper
     /// </summary>
     public static string FormatPercentage(double value, int decimalPlaces = 0)
     {
-        return $"{value:F{decimalPlaces}}%";
+        return value.ToString($"F{decimalPlaces}") + "%";
     }
 
     /// <summary>
