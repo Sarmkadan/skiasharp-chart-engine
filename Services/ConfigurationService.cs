@@ -9,6 +9,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using SkiaSharpChartEngine.Models;
 using SkiaSharpChartEngine.Constants;
+using SkiaSharpChartEngine.Exceptions;
 
 namespace SkiaSharpChartEngine.Services;
 

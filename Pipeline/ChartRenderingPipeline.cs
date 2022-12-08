@@ -106,13 +106,13 @@ public class ChartRenderingPipeline
                     result.StageResults.Add(new StageExecutionResult
                     {
                         StageName = stage.Name,
-                        Success = stageResult.Success,
+                        Success = stageResult.IsSuccess,
                         Message = stageResult.Message,
                         DurationMs = stageStopwatch.ElapsedMilliseconds,
                         Output = stageResult.Output
                     });
 
-                    if (!stageResult.Success)
+                    if (!stageResult.IsSuccess)
                     {
                         _logger.LogError("Stage {StageName} failed: {Message}", stage.Name, stageResult.Message);
                         result.Success = false;
@@ -212,19 +212,19 @@ public class PipelineContext
 /// </summary>
 public class PipelineStageResult
 {
-    public bool Success { get; set; }
+    public bool IsSuccess { get; set; }
     public string? Message { get; set; }
     public object? Output { get; set; }
 
     public static PipelineStageResult Success(object? output = null) => new()
     {
-        Success = true,
+        IsSuccess = true,
         Output = output
     };
 
     public static PipelineStageResult Failure(string message) => new()
     {
-        Success = false,
+        IsSuccess = false,
         Message = message
     };
 }

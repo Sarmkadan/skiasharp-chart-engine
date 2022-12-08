@@ -38,7 +38,7 @@ public static class CollectionExtensions
     }
 
     // Get or default value
-    public static T GetOrDefault<T>(this IEnumerable<T> source, T defaultValue = default)
+    public static T? GetOrDefault<T>(this IEnumerable<T> source, T? defaultValue = default)
     {
         return source?.FirstOrDefault() ?? defaultValue;
     }
