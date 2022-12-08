@@ -13,9 +13,14 @@
     <Title>SkiaSharp Chart Engine</Title>
     <Description>High-performance chart rendering with SkiaSharp - line, bar, pie, heatmap, export to PNG/SVG</Description>
     <Authors>Vladyslav Zaiets</Authors>
+    <PackageId>Zaiets.skiasharp.chart.engine</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/sarmkadan/skiasharp-chart-engine</PackageProjectUrl>
     <RepositoryUrl>https://github.com/sarmkadan/skiasharp-chart-engine</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>skiasharp;chart;rendering;visualization;line-chart;bar-chart;pie-chart;heatmap</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -47,6 +52,10 @@
     <Compile Remove="Services/IExportService.cs" />
     <Compile Remove="ChartEngine.cs" />
     <Compile Remove="Configuration/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
