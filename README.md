@@ -1,6 +1,8 @@
-# SkiaSharp Chart Engine
+[![Build](https://github.com/sarmkadan/skiasharp-chart-engine/actions/workflows/build.yml/badge.svg)](https://github.com/sarmkadan/skiasharp-chart-engine/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
-![Build Status](https://img.shields.io/badge/build-passing-brightgreen) ![License](https://img.shields.io/badge/license-MIT-blue) ![.NET](https://img.shields.io/badge/.NET-10.0-purple) ![NuGet](https://img.shields.io/badge/nuget-1.2.0-blue)
+# SkiaSharp Chart Engine
 
 A **high-performance, production-ready chart rendering library** for .NET applications using SkiaSharp. Render beautiful line, bar, pie, heatmap, area, and scatter charts with lightning-fast performance, comprehensive caching, and export to PNG, SVG, JPEG, WebP, and PDF formats.
 
