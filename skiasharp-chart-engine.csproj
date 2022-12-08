@@ -13,8 +13,9 @@
     <Title>SkiaSharp Chart Engine</Title>
     <Description>High-performance chart rendering with SkiaSharp - line, bar, pie, heatmap, export to PNG/SVG</Description>
     <Authors>Vladyslav Zaiets</Authors>
-    <License>MIT</License>
-    <PackageProjectUrl>https://github.com/vladyslav-zaiets/skiasharp-chart-engine</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/sarmkadan/skiasharp-chart-engine</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/sarmkadan/skiasharp-chart-engine</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
