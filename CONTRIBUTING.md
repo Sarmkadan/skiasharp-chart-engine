@@ -1,15 +1,10 @@
 # Contributing to SkiaSharp Chart Engine
 
-Thank you for your interest in contributing to the SkiaSharp Chart Engine! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to the SkiaSharp Chart Engine! This document provides guidelines and instructions for contributing to our open-source project.
 
 ## Code of Conduct
 
-We are committed to providing a welcoming and inspiring community for all. Please read and adhere to our code of conduct:
-
-- Be respectful and inclusive
-- Welcome diverse perspectives
-- Focus on constructive feedback
-- Report unacceptable behavior appropriately
+We are committed to providing a welcoming and inspiring community for all. Please read and adhere to our [Code of Conduct](CODE_OF_CONDUCT.md) before participating in the project.
 
 ## Getting Started
 
