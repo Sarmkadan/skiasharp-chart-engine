@@ -5,7 +5,7 @@ All notable changes to the SkiaSharp Chart Engine are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.0] - 2026-05-04
+## [1.2.0] - 2025-10-27
 
 ### Added
 - **Enhanced Caching System**: Distributed cache support via Redis/Memcached
@@ -35,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **XSS Prevention**: Sanitization of title and label text
 - **Path Traversal**: Validation of output paths
 
-## [1.1.0] - 2026-04-15
+## [1.1.0] - 2025-08-11
 
 ### Added
 - **SVG Export**: Full support for Scalable Vector Graphics format
@@ -60,7 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Axis Label Rotation**: Improved text rendering at various angles
 - **Memory Management**: Better resource cleanup in rendering pipeline
 
-## [1.0.0] - 2026-03-20
+## [1.0.0] - 2025-05-19
 
 ### Added
 - **Initial Release**: Core chart rendering engine
@@ -108,7 +108,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Structured error handling
 - Performance monitoring
 
-## [0.5.0] - 2026-02-20 (Beta)
+## [0.5.0] - 2025-03-10 (Beta)
 
 ### Added
 - **Initial Beta Release**
@@ -124,7 +124,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - No async support
 - No caching
 
-## [0.1.0] - 2026-01-15 (Alpha)
+## [0.1.0] - 2025-01-06 (Alpha)
 
 ### Added
 - Project scaffolding
@@ -166,11 +166,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Release Date | Status | Chart Types | Export Formats | Key Feature |
 |---------|------------|--------|-------------|----------------|-------------|
-| 1.2.0 | 2026-05-04 | Current | 7 | 5 | Distributed Caching |
-| 1.1.0 | 2026-04-15 | Stable | 7 | 5 | SVG/PDF Export |
-| 1.0.0 | 2026-03-20 | Stable | 5 | 2 | Initial Release |
-| 0.5.0 | 2026-02-20 | Beta | 3 | 1 | Beta Release |
-| 0.1.0 | 2026-01-15 | Alpha | - | - | Project Init |
+| 1.2.0 | 2025-10-27 | Current | 7 | 5 | Distributed Caching |
+| 1.1.0 | 2025-08-11 | Stable | 7 | 5 | SVG/PDF Export |
+| 1.0.0 | 2025-05-19 | Stable | 5 | 2 | Initial Release |
+| 0.5.0 | 2025-03-10 | Beta | 3 | 1 | Beta Release |
+| 0.1.0 | 2025-01-06 | Alpha | - | - | Project Init |
 
 ---
 
