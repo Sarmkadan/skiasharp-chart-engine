@@ -27,7 +27,7 @@ A **high-performance, production-ready chart rendering library** for .NET applic
 - [CLI Usage](#cli-usage)
 - [Troubleshooting](#troubleshooting)
 - [Testing](#testing)
-- [Ecosystem](#ecosystem)
+- [Related Projects](#related-projects)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -748,7 +748,7 @@ public class MyRendererTests
 }
 ```
 
-## Ecosystem
+## Related Projects
 
 Part of a collection of .NET libraries and tools. See more at [github.com/sarmkadan](https://github.com/sarmkadan).
 
