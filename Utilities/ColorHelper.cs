@@ -4,6 +4,8 @@
 // =============================================================================
 
 using System;
+using System.Collections.Generic;
+using System.Linq; // Added for .All() extension method
 
 namespace SkiaSharpChartEngine.Utilities;
 
@@ -105,6 +107,10 @@ public static class ColorHelper
             return false;
 
         var hex = color.Substring(1);
-        return (hex.Length == 6 || hex.Length == 8) && hex.All(c => char.IsDigit(c) || char.IsLetter(c));
+        if (hex.Length != 6 && hex.Length != 8)
+            return false;
+
+        // Fix: Ensure all characters are valid hexadecimal digits (0-9, A-F, a-f).
+        return hex.All(c => Uri.IsHexDigit(c));
     }
 }
