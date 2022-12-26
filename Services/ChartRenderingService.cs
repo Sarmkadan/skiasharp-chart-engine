@@ -128,8 +128,16 @@ public class ChartRenderingService : IChartRenderingService
 
             await Task.Run(() =>
             {
-                var imageData = RenderChartToBytes(chart);
-                File.WriteAllBytes(fullPath, imageData);
+                if (exportOptions.Format == ExportFormat.SVG)
+                {
+                    var svgData = RenderChartToSvg(chart);
+                    File.WriteAllText(fullPath, svgData, System.Text.Encoding.UTF8);
+                }
+                else
+                {
+                    var imageData = RenderChartToBytes(chart);
+                    File.WriteAllBytes(fullPath, imageData);
+                }
             }, cancellationToken);
 
             var renderTime = (long)(DateTime.UtcNow - startTime).TotalMilliseconds;
@@ -239,6 +247,33 @@ public class ChartRenderingService : IChartRenderingService
         return data.ToArray();
     }
 
+    private string RenderChartToSvg(Chart chart)
+    {
+        var width = chart.Configuration.Width;
+        var height = chart.Configuration.Height;
+        var bounds = new SKRect(0, 0, width, height);
+
+        using var stream = new System.IO.MemoryStream();
+
+        // SKSvgCanvas.Create returns an SKCanvas that, when disposed, finalises the SVG
+        // document and flushes all content to the stream. Failing to dispose the canvas
+        // is the root cause of memory leaks because SkiaSharp holds onto the internal
+        // path cache until the document is closed.
+        using (var canvas = SKSvgCanvas.Create(bounds, stream))
+        {
+            canvas.Clear(SKColor.Parse(chart.Configuration.BackgroundColor));
+
+            DrawChartFrame(canvas, chart);
+            DrawGrid(canvas, chart);
+            DrawSeries(canvas, chart);
+            DrawAxes(canvas, chart);
+            DrawLegend(canvas, chart);
+            DrawTitle(canvas, chart);
+        }
+
+        return System.Text.Encoding.UTF8.GetString(stream.ToArray());
+    }
+
     private void DrawChartFrame(SKCanvas canvas, Chart chart)
     {
         var config = chart.Configuration;
@@ -296,7 +331,7 @@ public class ChartRenderingService : IChartRenderingService
             if (series.DataPoints.Count < 2)
                 continue;
 
-            var path = new SKPath();
+            using var path = new SKPath();
             var firstPoint = true;
 
             foreach (var point in series.DataPoints)
@@ -316,7 +351,6 @@ public class ChartRenderingService : IChartRenderingService
             }
 
             canvas.DrawPath(path, paint);
-            path.Dispose();
         }
     }
 

@@ -60,7 +60,7 @@ public class HeatmapRenderer
             var cellHeight = (bounds.Height - (rows + 1) * CellPadding) / rows;
 
             // Render cells
-            var paint = new SKPaint { IsAntialias = true };
+            using var paint = new SKPaint { IsAntialias = true };
             int index = 0;
 
             for (int row = 0; row < rows && index < dataPoints.Count; row++)
