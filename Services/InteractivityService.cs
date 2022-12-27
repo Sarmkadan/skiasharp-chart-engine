@@ -4,6 +4,8 @@
 // =============================================================================
 
 using Microsoft.Extensions.Logging;
+using SkiaSharp;
+using SkiaSharpChartEngine.Constants;
 using SkiaSharpChartEngine.Models;
 
 namespace SkiaSharpChartEngine.Services;
@@ -23,9 +25,24 @@ public interface IInteractivityService
         TooltipOptions? options = null, ViewportState? viewport = null);
 
     /// <summary>
+    /// Convenience overload that accepts the pointer position as an <see cref="SKPoint"/>.
+    /// </summary>
+    TooltipHitResult HitTest(Chart chart, SKPoint point,
+        float canvasWidth, float canvasHeight,
+        TooltipOptions? options = null, ViewportState? viewport = null);
+
+    /// <summary>
     /// Asynchronous overload of <see cref="HitTest"/>. Respects <paramref name="cancellationToken"/>.
     /// </summary>
     Task<TooltipHitResult> HitTestAsync(Chart chart, float pointerX, float pointerY,
+        float canvasWidth, float canvasHeight,
+        TooltipOptions? options = null, ViewportState? viewport = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Async overload that accepts the pointer position as an <see cref="SKPoint"/>.
+    /// </summary>
+    Task<TooltipHitResult> HitTestAsync(Chart chart, SKPoint point,
         float canvasWidth, float canvasHeight,
         TooltipOptions? options = null, ViewportState? viewport = null,
         CancellationToken cancellationToken = default);
@@ -104,8 +121,10 @@ public sealed class InteractivityService : IInteractivityService
 
         if (plotW <= 0f || plotH <= 0f) return TooltipHitResult.Miss;
 
+        var region = _classifyRegion(pointerX, pointerY, plotL, plotT, plotR, plotB, canvasWidth, canvasHeight);
+
         double bestDist = opts.HitRadius;
-        TooltipHitResult best = TooltipHitResult.Miss;
+        TooltipHitResult best = new() { IsHit = false, Region = region };
 
         for (int si = 0; si < chart.Series.Count; si++)
         {
@@ -129,7 +148,8 @@ public sealed class InteractivityService : IInteractivityService
                         SeriesIndex = si,
                         DistancePx  = dist,
                         CanvasX     = cx,
-                        CanvasY     = cy
+                        CanvasY     = cy,
+                        Region      = region
                     };
                 }
             }
@@ -147,6 +167,12 @@ public sealed class InteractivityService : IInteractivityService
     }
 
     /// <inheritdoc />
+    public TooltipHitResult HitTest(Chart chart, SKPoint point,
+        float canvasWidth, float canvasHeight,
+        TooltipOptions? options = null, ViewportState? viewport = null)
+        => HitTest(chart, point.X, point.Y, canvasWidth, canvasHeight, options, viewport);
+
+    /// <inheritdoc />
     public Task<TooltipHitResult> HitTestAsync(Chart chart, float pointerX, float pointerY,
         float canvasWidth, float canvasHeight,
         TooltipOptions? options = null, ViewportState? viewport = null,
@@ -154,6 +180,16 @@ public sealed class InteractivityService : IInteractivityService
     {
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult(HitTest(chart, pointerX, pointerY, canvasWidth, canvasHeight, options, viewport));
+    }
+
+    /// <inheritdoc />
+    public Task<TooltipHitResult> HitTestAsync(Chart chart, SKPoint point,
+        float canvasWidth, float canvasHeight,
+        TooltipOptions? options = null, ViewportState? viewport = null,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(HitTest(chart, point, canvasWidth, canvasHeight, options, viewport));
     }
 
     /// <inheritdoc />
@@ -299,5 +335,33 @@ public sealed class InteractivityService : IInteractivityService
         if (minY == maxY) { minY -= 1; maxY += 1; }
 
         return (minX, maxX, minY, maxY);
+    }
+
+    private static ChartRegion _classifyRegion(
+        float x, float y,
+        float plotL, float plotT, float plotR, float plotB,
+        float canvasWidth, float canvasHeight)
+    {
+        // Title band: above the plot area
+        if (y < plotT && x >= plotL && x <= plotR)
+            return ChartRegion.Title;
+
+        // Y-axis band: left of the plot area
+        if (x < plotL && y >= plotT && y <= plotB)
+            return ChartRegion.YAxis;
+
+        // X-axis band: below the plot area
+        if (y > plotB && x >= plotL && x <= plotR)
+            return ChartRegion.XAxis;
+
+        // Legend band: right of the plot area (matches DrawLegend placement)
+        if (x > plotR && y >= plotT && y <= plotB)
+            return ChartRegion.Legend;
+
+        // Inside the plot area
+        if (x >= plotL && x <= plotR && y >= plotT && y <= plotB)
+            return ChartRegion.PlotArea;
+
+        return ChartRegion.Outside;
     }
 }
