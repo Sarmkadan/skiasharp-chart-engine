@@ -274,10 +274,28 @@ public class ChartRenderingService : IChartRenderingService
         return System.Text.Encoding.UTF8.GetString(stream.ToArray());
     }
 
+    /// <summary>
+    /// Computes the top Y coordinate of the plot area, accounting for any space
+    /// consumed by the chart title and optional subtitle above it.
+    /// </summary>
+    private static float GetPlotAreaTop(Chart chart)
+    {
+        var config = chart.Configuration;
+        float top = config.MarginTop;
+
+        if (!string.IsNullOrEmpty(config.Title))
+            top += ChartConstants.TitleFontSize + 8f;
+
+        if (!string.IsNullOrEmpty(config.Subtitle))
+            top += ChartConstants.SubtitleFontSize + 6f;
+
+        return top;
+    }
+
     private void DrawChartFrame(SKCanvas canvas, Chart chart)
     {
         var config = chart.Configuration;
-        var rect = new SKRect(config.MarginLeft, config.MarginTop,
+        var rect = new SKRect(config.MarginLeft, GetPlotAreaTop(chart),
                               config.Width - config.MarginRight,
                               config.Height - config.MarginBottom);
 
@@ -291,7 +309,7 @@ public class ChartRenderingService : IChartRenderingService
             return;
 
         var config = chart.Configuration;
-        var rect = new SKRect(config.MarginLeft, config.MarginTop,
+        var rect = new SKRect(config.MarginLeft, GetPlotAreaTop(chart),
                               config.Width - config.MarginRight,
                               config.Height - config.MarginBottom);
 
@@ -310,7 +328,7 @@ public class ChartRenderingService : IChartRenderingService
     private void DrawSeries(SKCanvas canvas, Chart chart)
     {
         var config = chart.Configuration;
-        var rect = new SKRect(config.MarginLeft, config.MarginTop,
+        var rect = new SKRect(config.MarginLeft, GetPlotAreaTop(chart),
                               config.Width - config.MarginRight,
                               config.Height - config.MarginBottom);
 
@@ -357,7 +375,7 @@ public class ChartRenderingService : IChartRenderingService
     private void DrawAxes(SKCanvas canvas, Chart chart)
     {
         var config = chart.Configuration;
-        var rect = new SKRect(config.MarginLeft, config.MarginTop,
+        var rect = new SKRect(config.MarginLeft, GetPlotAreaTop(chart),
                               config.Width - config.MarginRight,
                               config.Height - config.MarginBottom);
 
@@ -394,7 +412,7 @@ public class ChartRenderingService : IChartRenderingService
 
         var config = chart.Configuration;
         var legendX = config.Width - config.MarginRight - 150;
-        var legendY = config.MarginTop + 10;
+        var legendY = GetPlotAreaTop(chart) + 10;
 
         using var paint = new SKPaint { Color = SKColor.Parse(config.TextColor), TextSize = ChartConstants.LegendFontSize, IsAntialias = true };
 
@@ -409,18 +427,37 @@ public class ChartRenderingService : IChartRenderingService
 
     private void DrawTitle(SKCanvas canvas, Chart chart)
     {
-        if (string.IsNullOrEmpty(chart.Configuration.Title))
+        var config = chart.Configuration;
+
+        if (string.IsNullOrEmpty(config.Title))
             return;
 
         using var titlePaint = new SKPaint
         {
-            Color = SKColor.Parse(chart.Configuration.TextColor),
+            Color = SKColor.Parse(config.TextColor),
             TextSize = ChartConstants.TitleFontSize,
             IsAntialias = true,
-            TextAlign = SKTextAlign.Center
+            TextAlign = SKTextAlign.Center,
+            FakeBoldText = true
         };
 
-        canvas.DrawText(chart.Configuration.Title, chart.Configuration.Width / 2, 25, titlePaint);
+        var centerX = config.Width / 2f;
+        var titleY = config.MarginTop - 4f;
+        canvas.DrawText(config.Title, centerX, titleY, titlePaint);
+
+        if (!string.IsNullOrEmpty(config.Subtitle))
+        {
+            using var subtitlePaint = new SKPaint
+            {
+                Color = SKColor.Parse(config.TextColor),
+                TextSize = ChartConstants.SubtitleFontSize,
+                IsAntialias = true,
+                TextAlign = SKTextAlign.Center
+            };
+
+            var subtitleY = titleY + ChartConstants.TitleFontSize + 2f;
+            canvas.DrawText(config.Subtitle, centerX, subtitleY, subtitlePaint);
+        }
     }
 
     private string GenerateCacheKey(Chart chart)

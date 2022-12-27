@@ -27,6 +27,7 @@ public static class ChartConstants
 
     // Font sizes
     public const int TitleFontSize = 24;
+    public const int SubtitleFontSize = 16;
     public const int LegendFontSize = 12;
     public const int AxisLabelFontSize = 11;
     public const int TickLabelFontSize = 10;
