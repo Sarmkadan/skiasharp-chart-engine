@@ -10,7 +10,9 @@ using SkiaSharpChartEngine.Constants;
 namespace SkiaSharpChartEngine.Models;
 
 /// <summary>
-/// Chart rendering and display configuration
+/// Defines the visual and structural configuration for rendering a chart,
+/// including dimensions, layout margins, axes scaling, color schemes,
+/// animation settings, and export options.
 /// </summary>
 public class ChartConfiguration
 {

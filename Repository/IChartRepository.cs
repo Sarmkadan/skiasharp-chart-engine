@@ -8,7 +8,8 @@ using SkiaSharpChartEngine.Models;
 namespace SkiaSharpChartEngine.Repository;
 
 /// <summary>
-/// Interface for chart data persistence
+/// Defines the contract for persistence operations on <see cref="Chart"/> objects,
+/// supporting both asynchronous and synchronous retrieval, storage, updates, and deletion.
 /// </summary>
 public interface IChartRepository
 {
