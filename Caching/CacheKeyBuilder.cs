@@ -3,7 +3,8 @@
 // CTO & Software Architect
 // =============================================================================
 
-using System;
+using System.Buffers;
+using System.Collections.Frozen;
 using System.Security.Cryptography;
 using System.Text;
 using SkiaSharpChartEngine.Models;
@@ -11,8 +12,8 @@ using SkiaSharpChartEngine.Models;
 namespace SkiaSharpChartEngine.Caching;
 
 /// <summary>
-/// Builds consistent cache keys for chart renders
-/// Ensures same key for identical render parameters
+/// Builds consistent cache keys for chart renders.
+/// Ensures the same key for identical render parameters.
 /// </summary>
 public static class CacheKeyBuilder
 {
@@ -20,8 +21,15 @@ public static class CacheKeyBuilder
     private const string RenderKeyPrefix = "render_";
     private const string SeriesKeyPrefix = "series_";
 
+    // Pre-computed lookup avoids ToString() + ToLowerInvariant() on every call.
+    private static readonly FrozenDictionary<ChartType, string> _configKeysByType =
+        Enum.GetValues<ChartType>()
+            .ToFrozenDictionary(
+                t => t,
+                t => $"config_{t.ToString().ToLowerInvariant()}");
+
     /// <summary>
-    /// Builds cache key for a chart object
+    /// Builds cache key for a chart object.
     /// </summary>
     public static string BuildChartKey(string chartId)
     {
@@ -32,8 +40,8 @@ public static class CacheKeyBuilder
     }
 
     /// <summary>
-    /// Builds cache key for rendered chart output
-    /// Includes dimensions and format to ensure unique cache entries
+    /// Builds cache key for rendered chart output.
+    /// Includes dimensions and format to ensure unique cache entries.
     /// </summary>
     public static string BuildRenderKey(string chartId, int width, int height, float dpi, string format)
     {
@@ -45,7 +53,7 @@ public static class CacheKeyBuilder
     }
 
     /// <summary>
-    /// Builds cache key for chart series
+    /// Builds cache key for chart series.
     /// </summary>
     public static string BuildSeriesKey(string chartId, string seriesName)
     {
@@ -57,15 +65,15 @@ public static class CacheKeyBuilder
     }
 
     /// <summary>
-    /// Builds cache key for configuration
+    /// Builds cache key for configuration using a pre-computed frozen lookup.
     /// </summary>
-    public static string BuildConfigurationKey(ChartType chartType)
-    {
-        return $"config_{chartType.ToString().ToLowerInvariant()}";
-    }
+    public static string BuildConfigurationKey(ChartType chartType) =>
+        _configKeysByType.TryGetValue(chartType, out var key)
+            ? key
+            : $"config_{chartType.ToString().ToLowerInvariant()}";
 
     /// <summary>
-    /// Builds cache key for axis calculations
+    /// Builds cache key for axis calculations.
     /// </summary>
     public static string BuildAxisKey(float minValue, float maxValue, int tickCount)
     {
@@ -74,7 +82,7 @@ public static class CacheKeyBuilder
     }
 
     /// <summary>
-    /// Builds cache key for color palette
+    /// Builds cache key for color palette.
     /// </summary>
     public static string BuildPaletteKey(string paletteName)
     {
@@ -85,7 +93,7 @@ public static class CacheKeyBuilder
     }
 
     /// <summary>
-    /// Extracts chart ID from cache key
+    /// Extracts chart ID from cache key.
     /// </summary>
     public static string? ExtractChartIdFromKey(string cacheKey)
     {
@@ -101,17 +109,34 @@ public static class CacheKeyBuilder
     }
 
     /// <summary>
-    /// Hashes a key to create a shorter, consistent identifier
+    /// Hashes a key to create a shorter, consistent identifier.
+    /// Uses SHA256.HashData static method and stackalloc to avoid per-call allocations.
     /// </summary>
     private static string HashKey(string keyComponent)
     {
-        using var sha256 = SHA256.Create();
-        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(keyComponent));
-        return Convert.ToBase64String(hashedBytes)[..16];
+        int maxByteCount = Encoding.UTF8.GetMaxByteCount(keyComponent.Length);
+        byte[]? rented = null;
+        Span<byte> inputBuffer = maxByteCount <= 512
+            ? stackalloc byte[maxByteCount]
+            : (rented = ArrayPool<byte>.Shared.Rent(maxByteCount));
+
+        try
+        {
+            int written = Encoding.UTF8.GetBytes(keyComponent, inputBuffer);
+
+            Span<byte> hashBuffer = stackalloc byte[32]; // SHA-256 output is always 32 bytes
+            SHA256.HashData(inputBuffer[..written], hashBuffer);
+            return Convert.ToBase64String(hashBuffer)[..16];
+        }
+        finally
+        {
+            if (rented != null)
+                ArrayPool<byte>.Shared.Return(rented);
+        }
     }
 
     /// <summary>
-    /// Builds a pattern for cache invalidation (e.g., "chart_abc123_*")
+    /// Builds a pattern for cache invalidation (e.g., "chart_abc123_*").
     /// </summary>
     public static string BuildInvalidationPattern(string chartId)
     {
@@ -122,7 +147,7 @@ public static class CacheKeyBuilder
     }
 
     /// <summary>
-    /// Validates cache key format
+    /// Validates cache key format.
     /// </summary>
     public static bool IsValidCacheKey(string key)
     {
@@ -133,15 +158,17 @@ public static class CacheKeyBuilder
     }
 
     /// <summary>
-    /// Creates a composite key for multiple parameters
+    /// Creates a composite key for multiple parameters without LINQ intermediate allocations.
     /// </summary>
     public static string BuildCompositeKey(params object?[] parameters)
     {
-        var parts = parameters
-            .Where(p => p != null)
-            .Select(p => p!.ToString() ?? string.Empty)
-            .ToArray();
-
-        return HashKey(string.Join("_", parts));
+        var sb = new StringBuilder();
+        for (int i = 0; i < parameters.Length; i++)
+        {
+            if (parameters[i] is null) continue;
+            if (sb.Length > 0) sb.Append('_');
+            sb.Append(parameters[i]!.ToString());
+        }
+        return HashKey(sb.ToString());
     }
 }
