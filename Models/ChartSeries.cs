@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.CompilerServices; // Added for MethodImpl
 using SkiaSharpChartEngine.Constants;
 
 namespace SkiaSharpChartEngine.Models;
@@ -108,6 +109,7 @@ public class ChartSeries
         _dataPoints.Clear();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] // Fix: Added for performance optimization
     public int GetDataPointCount() => _dataPoints.Count;
 
     public (double min, double max) GetYAxisRange()
