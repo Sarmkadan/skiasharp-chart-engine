@@ -4,7 +4,7 @@
 # =============================================================================
 
 # Build stage
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
 WORKDIR /src
 
 # Copy project file
@@ -23,7 +23,7 @@ RUN dotnet build "skiasharp-chart-engine.csproj" -c Release -o /app/build
 RUN dotnet publish "skiasharp-chart-engine.csproj" -c Release -o /app/publish
 
 # Runtime stage
-FROM mcr.microsoft.com/dotnet/runtime:10.0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine
 WORKDIR /app
 
 # Create non-root user
