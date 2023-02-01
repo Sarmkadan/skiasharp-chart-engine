@@ -8,15 +8,38 @@ using SkiaSharpChartEngine.Models;
 namespace SkiaSharpChartEngine.Services;
 
 /// <summary>
-/// Interface for exporting charts to various formats
+/// Defines the contract for exporting rendered charts to various output formats
+/// (PNG, JPEG, SVG, PDF) with configurable resolution and compression settings.
 /// </summary>
 public interface IExportService
 {
+    /// <summary>
+    /// Exports a chart in the format specified by <paramref name="options"/> asynchronously.
+    /// </summary>
+    /// <param name="chart">The chart definition to render and export.</param>
+    /// <param name="options">Export configuration including format, DPI, quality, and output path.</param>
+    /// <param name="cancellationToken">Token to cancel the export operation.</param>
+    /// <returns>A <see cref="RenderResult"/> containing the exported data and metadata.</returns>
     Task<RenderResult> ExportAsync(Chart chart, ExportOptions options, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Exports a chart synchronously using the specified options.
+    /// </summary>
+    /// <param name="chart">The chart definition to render and export.</param>
+    /// <param name="options">Export configuration.</param>
+    /// <returns>A <see cref="RenderResult"/> containing the exported data.</returns>
     RenderResult Export(Chart chart, ExportOptions options);
 
+    /// <summary>
+    /// Checks whether the given export format is supported by this service implementation.
+    /// </summary>
+    /// <param name="format">The export format to check.</param>
+    /// <returns><c>true</c> if the format is supported; otherwise <c>false</c>.</returns>
     bool SupportsFormat(ExportFormat format);
 
+    /// <summary>
+    /// Returns all export formats supported by this service implementation.
+    /// </summary>
+    /// <returns>An enumerable of supported <see cref="ExportFormat"/> values.</returns>
     IEnumerable<ExportFormat> GetSupportedFormats();
 }
