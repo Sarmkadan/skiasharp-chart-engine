@@ -51,7 +51,7 @@ public class PieChartRenderer
             var radius = Math.Min(bounds.Width, bounds.Height) / 3;
 
             // Render slices
-            var paint = new SKPaint { IsAntialias = true };
+            using var paint = new SKPaint { IsAntialias = true };
             float currentAngle = -90f; // Start from top
 
             for (int i = 0; i < dataPoints.Count; i++)
@@ -74,7 +74,7 @@ public class PieChartRenderer
                 var labelY = centerY + (float)(Math.Sin(labelRad) * (radius + LabelDistance));
 
                 var percentage = (dataPoint.Value / total * 100).ToString("F1") + "%";
-                var textPaint = new SKPaint { TextSize = 10, Color = SKColors.Black };
+                using var textPaint = new SKPaint { TextSize = 10, Color = SKColors.Black };
                 var textWidth = textPaint.MeasureText(percentage);
                 canvas.DrawText(percentage, labelX - textWidth / 2, labelY + 3, textPaint);
 
