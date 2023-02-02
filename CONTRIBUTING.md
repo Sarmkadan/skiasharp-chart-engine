@@ -44,6 +44,32 @@ We are committed to providing a welcoming and inspiring community for all. Pleas
    make test
    ```
 
+6. **Run the Sample Project**
+
+   The `examples/v2-basic-usage/` project is a runnable console app demonstrating the core API. Start here to verify your environment before making changes:
+
+   ```bash
+   cd examples/v2-basic-usage
+   dotnet run
+   ```
+
+   Rendered PNG files are written to the current directory. To run a specific example from the `examples/` folder, reference it directly:
+
+   ```bash
+   dotnet script examples/BasicLineChart.cs   # requires dotnet-script global tool
+   # — or —
+   dotnet run --project examples/v2-basic-usage
+   ```
+
+   **Verifying your change end-to-end**
+
+   After editing library code, rebuild and re-run the sample to confirm the output looks correct:
+
+   ```bash
+   dotnet build skiasharp-chart-engine.sln
+   dotnet run --project examples/v2-basic-usage
+   ```
+
 ## Development Workflow
 
 ### Making Changes
