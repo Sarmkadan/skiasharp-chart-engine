@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
+using SkiaSharpChartEngine.Constants;
 using SkiaSharpChartEngine.Models;
 
 namespace SkiaSharpChartEngine.Rendering;
@@ -15,6 +16,8 @@ namespace SkiaSharpChartEngine.Rendering;
 /// <summary>
 /// Specialized renderer for heatmap charts.
 /// Renders 2D data grids with color-coded intensity values.
+/// Supports <see cref="HeatmapColorScale.Linear"/>, <see cref="HeatmapColorScale.Logarithmic"/>,
+/// and <see cref="HeatmapColorScale.Quantile"/> color scale modes.
 /// </summary>
 public class HeatmapRenderer
 {
@@ -50,10 +53,8 @@ public class HeatmapRenderer
             var dataPoints = series.DataPoints;
             var (rows, cols) = _calculateGridDimensions(dataPoints.Count);
 
-            // Normalize values
-            var minValue = dataPoints.Min(dp => dp.Value);
-            var maxValue = dataPoints.Max(dp => dp.Value);
-            var valueRange = maxValue - minValue;
+            var colorScale = chart.Configuration?.HeatmapColorScale ?? HeatmapColorScale.Linear;
+            var normalizedValues = _normalizeValues(dataPoints.Select(dp => dp.Value).ToList(), colorScale);
 
             // Calculate cell dimensions
             var cellWidth = (bounds.Width - (cols + 1) * CellPadding) / cols;
@@ -68,13 +69,12 @@ public class HeatmapRenderer
                 for (int col = 0; col < cols && index < dataPoints.Count; col++)
                 {
                     var dataPoint = dataPoints[index];
-
-                    // Normalize value to 0-1
-                    var normalized = valueRange > 0 ? (dataPoint.Value - minValue) / valueRange : 0.5;
+                    var normalized = normalizedValues[index];
 
                     // Map to color (red for high, blue for low)
                     var color = _getHeatColor(normalized);
                     paint.Color = color;
+                    paint.Style = SKPaintStyle.Fill;
 
                     var cellX = bounds.Left + col * (cellWidth + CellPadding) + CellPadding;
                     var cellY = bounds.Top + row * (cellHeight + CellPadding) + CellPadding;
@@ -104,12 +104,71 @@ public class HeatmapRenderer
                 }
             }
 
-            _logger.LogDebug("Heatmap rendered: {Rows}x{Cols} grid", rows, cols);
+            _logger.LogDebug("Heatmap rendered: {Rows}x{Cols} grid, scale={Scale}", rows, cols, colorScale);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error rendering heatmap");
         }
+    }
+
+    /// <summary>
+    /// Normalises a list of raw values to the [0, 1] range according to the chosen
+    /// <see cref="HeatmapColorScale"/>:
+    /// <list type="bullet">
+    ///   <item><see cref="HeatmapColorScale.Linear"/> — (value - min) / range</item>
+    ///   <item><see cref="HeatmapColorScale.Logarithmic"/> — log10-compressed before linear normalisation, revealing detail across wide dynamic ranges</item>
+    ///   <item><see cref="HeatmapColorScale.Quantile"/> — rank-based so each colour band covers an equal number of cells, ideal for skewed distributions</item>
+    /// </list>
+    /// </summary>
+    private static List<double> _normalizeValues(List<double> values, HeatmapColorScale scale)
+    {
+        if (values.Count == 0) return values;
+
+        return scale switch
+        {
+            HeatmapColorScale.Logarithmic => _normalizeLogarithmic(values),
+            HeatmapColorScale.Quantile    => _normalizeQuantile(values),
+            _                             => _normalizeLinear(values)
+        };
+    }
+
+    private static List<double> _normalizeLinear(List<double> values)
+    {
+        var min = values.Min();
+        var max = values.Max();
+        var range = max - min;
+        return values.Select(v => range > 0 ? (v - min) / range : 0.5).ToList();
+    }
+
+    private static List<double> _normalizeLogarithmic(List<double> values)
+    {
+        // Shift all values so the minimum is at least 1 before applying log10,
+        // preserving relative distances regardless of the sign or magnitude of the raw data.
+        var min = values.Min();
+        var shift = min < 1.0 ? 1.0 - min : 0.0;
+        var logValues = values.Select(v => Math.Log10(v + shift)).ToList();
+        return _normalizeLinear(logValues);
+    }
+
+    private static List<double> _normalizeQuantile(List<double> values)
+    {
+        // Build a sorted index to obtain per-value percentile ranks.
+        var indexed = values
+            .Select((v, i) => (Value: v, Index: i))
+            .OrderBy(x => x.Value)
+            .ToList();
+
+        var result = new double[values.Count];
+        for (int rank = 0; rank < indexed.Count; rank++)
+        {
+            // Map rank to [0, 1]; use 0.5 when there is only one element.
+            result[indexed[rank].Index] = indexed.Count > 1
+                ? (double)rank / (indexed.Count - 1)
+                : 0.5;
+        }
+
+        return result.ToList();
     }
 
     private (int rows, int cols) _calculateGridDimensions(int totalPoints)
