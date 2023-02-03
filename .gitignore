@@ -58,3 +58,12 @@ coverage/
 ## Distribution
 dist/
 publish/
+
+## Test Results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+## Benchmark artifacts
+BenchmarkDotNet.Artifacts/

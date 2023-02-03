@@ -18,7 +18,7 @@ We are committed to providing a welcoming and inspiring community for all. Pleas
 
 1. **Fork the Repository**
    ```bash
-   # Visit https://github.com/vladyslav-zaiets/skiasharp-chart-engine
+   # Visit https://github.com/sarmkadan/skiasharp-chart-engine
    # Click "Fork" to create your copy
    ```
 
@@ -30,7 +30,7 @@ We are committed to providing a welcoming and inspiring community for all. Pleas
 
 3. **Add Upstream Remote**
    ```bash
-   git remote add upstream https://github.com/vladyslav-zaiets/skiasharp-chart-engine.git
+   git remote add upstream https://github.com/sarmkadan/skiasharp-chart-engine.git
    ```
 
 4. **Create Development Branch**
@@ -134,7 +134,7 @@ Closes #123
 
 2. **Run Local CI**
    ```bash
-   make ci
+   dotnet restore && dotnet build --configuration Release && dotnet test --no-build --configuration Release --verbosity normal
    ```
 
 3. **Push Changes**
@@ -375,8 +375,8 @@ We welcome documentation improvements:
 
 ## Getting Help
 
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/vladyslav-zaiets/skiasharp-chart-engine/discussions)
-- 🐛 **Issues**: [GitHub Issues](https://github.com/vladyslav-zaiets/skiasharp-chart-engine/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/sarmkadan/skiasharp-chart-engine/discussions)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/sarmkadan/skiasharp-chart-engine/issues)
 - 📧 **Direct Contact**: Open an issue with question tag
 
 ## Recognition
