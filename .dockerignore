@@ -1,0 +1,34 @@
+# Build output directories
+bin/
+obj/
+
+# Git
+.git
+.gitignore
+.gitmodules
+
+# Visual Studio
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build and test output
+*.cache
+*.bak
+*.tmp
+*.suo
+*.userprefs
+
+# Runtime files
+*.pdb
+*.runtimeconfig.json
+*.deps.json
+
+# IDE specific
+.idea/
+.vscode/
+
+# Docker
+.dockerignore
+Dockerfile*
