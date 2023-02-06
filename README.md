@@ -230,6 +230,8 @@ docker run -p 5000:5000 skiasharp-chart-engine:latest
 
 ## Usage Examples
 
+For more complete, runnable examples, please refer to the [examples/](examples/) directory.
+
 ### Creating a Line Chart
 
 ```csharp
