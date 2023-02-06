@@ -160,9 +160,59 @@ dotnet pack
 
 ### Docker
 
+You can run SkiaSharp Chart Engine using Docker for easy deployment and scalability.
+
+#### Building and Running with Docker
+
 ```bash
+# Build the Docker image
 docker build -t skiasharp-chart-engine:latest .
-docker run -p 5000:5000 skiasharp-chart-engine:latest
+
+# Run the container (port 8080)
+docker run -p 8080:8080 --name skiasharp-chart-engine skiasharp-chart-engine:latest
+```
+
+#### Using Docker Compose
+
+For production deployments with persistent storage and resource limits:
+
+```bash
+# Start the service
+docker-compose up -d
+
+# View logs
+docker-compose logs -f chart-engine
+
+# Stop the service
+docker-compose down
+```
+
+#### Configuration
+
+Environment variables can be configured via docker-compose.yml or passed to `docker run`:
+
+```bash
+docker run -p 8080:8080 \
+  -e ASPNETCORE_ENVIRONMENT=Production \
+  -e CACHE_DURATION=600 \
+  -e MAX_CONCURRENT_RENDERS=20 \
+  --name skiasharp-chart-engine \
+  skiasharp-chart-engine:latest
+```
+
+#### Volumes
+
+The container uses the following volumes for persistent storage:
+- `/app/output` - Chart output files
+- `/app/config` - Configuration files
+- `/app/cache` - Rendering cache (managed as a named volume)
+
+To mount custom directories:
+```bash
+docker run -p 8080:8080 \
+  -v /host/output:/app/output \
+  -v /host/config:/app/config \
+  skiasharp-chart-engine:latest
 ```
 
 ## Architecture
