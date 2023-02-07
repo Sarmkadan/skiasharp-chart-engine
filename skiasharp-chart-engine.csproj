@@ -24,6 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="benchmarks\**\*.cs" />
     <Compile Remove="tests/**/*.cs" />
     <Compile Remove="API/**/*.cs" />
     <Compile Remove="examples/**/*.cs" />
