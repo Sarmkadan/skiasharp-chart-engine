@@ -1,8 +1,4 @@
-// =============================================================================
-// Author: Vladyslav Zaiets | https://sarmkadan.com
-// CTO & Software Architect
-// =============================================================================
-
+// ChartEngineOptions.cs
 using SkiaSharpChartEngine.Constants;
 
 namespace SkiaSharpChartEngine.Configuration;
@@ -10,7 +6,7 @@ namespace SkiaSharpChartEngine.Configuration;
 /// <summary>
 /// Configuration options for the chart engine
 /// </summary>
-public class ChartEngineOptions
+public class ChartEngineOptions : SkiasharpChartEngineOptions
 {
     public int CacheSize { get; set; } = ChartConstants.CacheSize;
 
