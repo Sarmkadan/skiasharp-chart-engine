@@ -18,6 +18,29 @@ public class ChartEngineOptions
 
     public bool EnableCaching { get; set; } = true;
 
+    /// <summary>
+    /// Alias for <see cref="EnableCaching"/> used by hosting bootstrap code.
+    /// </summary>
+    public bool CacheEnabled
+    {
+        get => EnableCaching;
+        set => EnableCaching = value;
+    }
+
+    /// <summary>
+    /// Cache expiration expressed in whole seconds, backed by <see cref="CacheExpirationTime"/>.
+    /// </summary>
+    public int CacheDurationSeconds
+    {
+        get => (int)CacheExpirationTime.TotalSeconds;
+        set => CacheExpirationTime = TimeSpan.FromSeconds(value);
+    }
+
+    /// <summary>
+    /// Maximum number of chart renders that may run concurrently.
+    /// </summary>
+    public int MaxConcurrentRenders { get; set; } = Environment.ProcessorCount;
+
     public int DefaultChartWidth { get; set; } = ChartConstants.DefaultChartWidth;
 
     public int DefaultChartHeight { get; set; } = ChartConstants.DefaultChartHeight;

@@ -359,12 +359,12 @@ public class ChartRenderingService : IChartRenderingService
 
                 if (firstPoint)
                 {
-                    path.MoveTo(x, y);
+                    path.MoveTo((float)x, (float)y);
                     firstPoint = false;
                 }
                 else
                 {
-                    path.LineTo(x, y);
+                    path.LineTo((float)x, (float)y);
                 }
             }
 

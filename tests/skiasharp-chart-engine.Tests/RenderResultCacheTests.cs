@@ -372,7 +372,7 @@ public class RenderResultCacheTests
         // Assert
         stats.OldestEntry.Should().NotBeNull();
         stats.NewestEntry.Should().NotBeNull();
-        stats.NewestEntry.Should().BeGreaterThanOrEqualTo(stats.OldestEntry);
+        stats.NewestEntry.Should().BeOnOrAfter(stats.OldestEntry!.Value);
     }
 
     // ---------------------------------------------------------------

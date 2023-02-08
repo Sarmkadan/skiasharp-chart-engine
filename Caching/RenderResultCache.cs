@@ -16,7 +16,7 @@ namespace SkiaSharpChartEngine.Caching;
 /// In-memory cache specifically for rendered chart results.
 /// Tracks cache hits/misses and automatically evicts stale entries.
 /// </summary>
-public class RenderResultCache
+public class RenderResultCache : IDisposable
 {
     private readonly Dictionary<string, CachedRenderResult> _cache;
     private readonly ILogger<RenderResultCache> _logger;

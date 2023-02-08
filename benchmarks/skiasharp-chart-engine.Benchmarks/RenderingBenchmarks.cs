@@ -6,6 +6,7 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
 using SkiaSharpChartEngine;
+using SkiaSharpChartEngine.Constants;
 using SkiaSharpChartEngine.Models;
 
 namespace SkiaSharpChartEngine.Benchmarks;
@@ -24,14 +25,14 @@ public class RenderingBenchmarks
     public void Setup()
     {
         _engine = ChartEngine.Create();
-        _chart = new Chart(ChartType.LineChart)
+        _chart = new Chart(new ChartConfiguration
         {
-            Configuration = new ChartConfiguration
-            {
-                Title = "Benchmark Chart",
-                Width = 800,
-                Height = 600
-            }
+            Title = "Benchmark Chart",
+            Width = 800,
+            Height = 600
+        })
+        {
+            Type = ChartType.LineChart
         };
 
         var series = new ChartSeries("Series", "#FF6B6B");

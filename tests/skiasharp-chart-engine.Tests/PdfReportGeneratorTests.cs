@@ -6,6 +6,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
+using SkiaSharpChartEngine.Constants;
 using SkiaSharpChartEngine.Models;
 using SkiaSharpChartEngine.Reports;
 using SkiaSharpChartEngine.Services;

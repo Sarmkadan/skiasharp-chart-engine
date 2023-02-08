@@ -45,6 +45,26 @@ public class ExportOptions
 
     public string? OutputDirectory { get; set; }
 
+    /// <summary>
+    /// Alias for <see cref="Filename"/> matching the naming used by callers that treat
+    /// export options as a plain file-system destination.
+    /// </summary>
+    public string FileName
+    {
+        get => Filename;
+        set => Filename = value;
+    }
+
+    /// <summary>
+    /// Alias for <see cref="OutputDirectory"/> matching the naming used by callers that
+    /// treat export options as a plain file-system destination.
+    /// </summary>
+    public string? DirectoryPath
+    {
+        get => OutputDirectory;
+        set => OutputDirectory = value;
+    }
+
     public Dictionary<string, object>? CustomFormatOptions { get; set; }
 
     public ExportOptions() { }
