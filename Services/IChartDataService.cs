@@ -4,6 +4,7 @@
 // =============================================================================
 
 using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Exceptions;
 
 namespace SkiaSharpChartEngine.Services;
 
