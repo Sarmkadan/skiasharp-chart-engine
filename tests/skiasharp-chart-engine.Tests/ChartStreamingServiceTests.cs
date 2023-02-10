@@ -11,14 +11,18 @@ using SkiaSharpChartEngine.Services;
 using SkiaSharpChartEngine.Streaming;
 using Xunit;
 
-namespace SkiaSharpChartEngine.Tests.Streaming;
-
+/// <summary>
+/// Tests for the ChartStreamingService class.
+/// </summary>
 public class ChartStreamingServiceTests
 {
     private readonly Mock<IChartRenderingService> _renderMock;
     private readonly Mock<ILogger<ChartStreamingService>> _loggerMock;
     private readonly ChartStreamingService _service;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChartStreamingServiceTests"/> class.
+    /// </summary>
     public ChartStreamingServiceTests()
     {
         _renderMock  = new Mock<IChartRenderingService>();
@@ -26,6 +30,11 @@ public class ChartStreamingServiceTests
         _service     = new ChartStreamingService(_renderMock.Object, _loggerMock.Object);
     }
 
+    /// <summary>
+    /// Creates a new chart with the specified ID.
+    /// </summary>
+    /// <param name="id">The ID of the chart.</param>
+    /// <returns>A new chart instance.</returns>
     private static Chart CreateChart(string id = "stream-chart")
     {
         var chart = new Chart(id);
@@ -33,6 +42,9 @@ public class ChartStreamingServiceTests
         return chart;
     }
 
+    /// <summary>
+    /// Verifies that a new chart is registered successfully.
+    /// </summary>
     [Fact]
     public void Register_NewChart_IsRegisteredSuccessfully()
     {
@@ -48,6 +60,9 @@ public class ChartStreamingServiceTests
         snapshot.Id.Should().Be(chart.Id);
     }
 
+    /// <summary>
+    /// Verifies that publishing an unregistered chart throws an InvalidOperationException.
+    /// </summary>
     [Fact]
     public void Publish_UnregisteredChart_ThrowsInvalidOperationException()
     {
@@ -58,6 +73,9 @@ public class ChartStreamingServiceTests
         act.Should().Throw<InvalidOperationException>().WithMessage("*unknown*");
     }
 
+    /// <summary>
+    /// Verifies that publishing a valid point is applied to the snapshot.
+    /// </summary>
     [Fact]
     public void Publish_ValidPoint_IsAppliedToSnapshot()
     {
@@ -76,6 +94,9 @@ public class ChartStreamingServiceTests
         series.DataPoints[0].Y.Should().Be(42.0);
     }
 
+    /// <summary>
+    /// Verifies that publishing a batch of points is applied to the snapshot.
+    /// </summary>
     [Fact]
     public void PublishBatch_MultiplePoints_AllApplied()
     {
@@ -94,6 +115,9 @@ public class ChartStreamingServiceTests
         chart.GetSeriesByName("Sensor")!.GetDataPointCount().Should().Be(5);
     }
 
+    /// <summary>
+    /// Verifies that the window size is enforced and oldest points are dropped.
+    /// </summary>
     [Fact]
     public void WindowSize_Enforced_OldestPointsDropped()
     {
@@ -114,6 +138,9 @@ public class ChartStreamingServiceTests
         series.DataPoints[0].X.Should().Be(3);
     }
 
+    /// <summary>
+    /// Verifies that auto-creating a series when it does not exist creates the series.
+    /// </summary>
     [Fact]
     public void AutoCreateSeries_WhenSeriesDoesNotExist_SeriesCreated()
     {
@@ -130,6 +157,9 @@ public class ChartStreamingServiceTests
         chart.GetSeriesByName("NewSeries")!.DataPoints[0].Y.Should().Be(99);
     }
 
+    /// <summary>
+    /// Verifies that unregistering a chart and then publishing to it throws an InvalidOperationException.
+    /// </summary>
     [Fact]
     public void Unregister_PublishAfterwards_ThrowsInvalidOperationException()
     {
@@ -145,6 +175,10 @@ public class ChartStreamingServiceTests
         act.Should().Throw<InvalidOperationException>();
     }
 
+    /// <summary>
+    /// Verifies that flushing the buffer applies the buffered points.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     [Fact]
     public async Task FlushAsync_AppliesBufferedPoints()
     {
