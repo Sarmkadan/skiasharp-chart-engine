@@ -12,14 +12,18 @@ using SkiaSharpChartEngine.Models;
 using SkiaSharpChartEngine.Services;
 using Xunit;
 
-namespace SkiaSharpChartEngine.Tests.Services;
-
+/// <summary>
+/// Tests for the ChartInteractionService class.
+/// </summary>
 public class ChartInteractionServiceTests
 {
     private readonly Mock<IInteractivityService> _interactivityMock;
     private readonly Mock<ILogger<ChartInteractionService>> _loggerMock;
     private readonly ChartInteractionService _service;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChartInteractionServiceTests"/> class.
+    /// </summary>
     public ChartInteractionServiceTests()
     {
         _interactivityMock = new Mock<IInteractivityService>();
@@ -27,6 +31,11 @@ public class ChartInteractionServiceTests
         _service           = new ChartInteractionService(_interactivityMock.Object, _loggerMock.Object);
     }
 
+    /// <summary>
+    /// Creates a new chart with a single series and two data points.
+    /// </summary>
+    /// <param name="id">The ID of the chart.</param>
+    /// <returns>A new chart instance.</returns>
     private static Chart CreateChart(string id = "chart-1")
     {
         var chart  = new Chart(id);
@@ -37,6 +46,11 @@ public class ChartInteractionServiceTests
         return chart;
     }
 
+    /// <summary>
+    /// Creates a new tooltip hit result with the specified data point.
+    /// </summary>
+    /// <param name="chart">The chart instance.</param>
+    /// <returns>A new tooltip hit result instance.</returns>
     private static TooltipHitResult MakeHit(Chart chart)
     {
         var dp = chart.Series[0].DataPoints[0];
@@ -51,6 +65,9 @@ public class ChartInteractionServiceTests
         };
     }
 
+    /// <summary>
+    /// Tests that ProcessInteraction throws an ArgumentNullException when the chart is null.
+    /// </summary>
     [Fact]
     public void ProcessInteraction_WithNullChart_ThrowsArgumentNullException()
     {
@@ -61,6 +78,9 @@ public class ChartInteractionServiceTests
         act.Should().Throw<ArgumentNullException>().WithParameterName("chart");
     }
 
+    /// <summary>
+    /// Tests that ProcessInteraction raises the Clicked event when a data point is clicked.
+    /// </summary>
     [Fact]
     public void ProcessInteraction_ClickOnDataPoint_RaisesClickedEvent()
     {
@@ -88,6 +108,9 @@ public class ChartInteractionServiceTests
         received!.InteractionType.Should().Be(ChartInteractionType.Click);
     }
 
+    /// <summary>
+    /// Tests that ProcessInteraction returns a NoHit result when the hover is missed.
+    /// </summary>
     [Fact]
     public void ProcessInteraction_HoverMiss_ReturnsNoHit()
     {
@@ -107,6 +130,9 @@ public class ChartInteractionServiceTests
         result.SeriesIndex.Should().Be(-1);
     }
 
+    /// <summary>
+    /// Tests that ToggleSelection selects a data point and raises the SelectionChanged event.
+    /// </summary>
     [Fact]
     public void ToggleSelection_HitDataPoint_SelectsAndRaisesEvent()
     {
@@ -130,6 +156,9 @@ public class ChartInteractionServiceTests
         selArgs!.TotalSelected.Should().Be(1);
     }
 
+    /// <summary>
+    /// Tests that ToggleSelection deselects a data point when called twice.
+    /// </summary>
     [Fact]
     public void ToggleSelection_SamePointTwice_DeselectionRemovesPoint()
     {
@@ -151,6 +180,9 @@ public class ChartInteractionServiceTests
         total.Should().Be(0);
     }
 
+    /// <summary>
+    /// Tests that ClearSelection empties the selection after a selection has been made.
+    /// </summary>
     [Fact]
     public void ClearSelection_AfterSelect_EmptiesSelection()
     {
@@ -176,6 +208,9 @@ public class ChartInteractionServiceTests
         _service.GetSelection(chart).Should().BeEmpty();
     }
 
+    /// <summary>
+    /// Tests that ProcessInteractionAsync throws an OperationCanceledException when the cancellation token is cancelled.
+    /// </summary>
     [Fact]
     public async Task ProcessInteractionAsync_WithCancellation_ThrowsOperationCancelled()
     {
