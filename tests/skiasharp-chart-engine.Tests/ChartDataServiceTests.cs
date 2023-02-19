@@ -16,6 +16,11 @@ using Xunit;
 
 namespace SkiaSharpChartEngine.Tests.Services;
 
+/// <summary>
+/// Provides unit tests for the <see cref="ChartDataService"/> class.
+/// Tests chart validation, data transformation, normalization, and axis range calculations
+/// to ensure the ChartDataService handles various chart scenarios correctly.
+/// </summary>
 public class ChartDataServiceTests
 {
     private readonly Mock<ILogger<ChartDataService>> _loggerMock;
@@ -28,9 +33,14 @@ public class ChartDataServiceTests
     }
 
     // -------------------------------------------------------------------------
-    // ValidateChart tests
+/// <summary>
+/// ValidateChart tests
+/// </summary>
     // -------------------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that ValidateChart throws ArgumentNullException when passed a null chart.
+    /// </summary>
     [Fact]
     public void ValidateChart_WithNullChart_ThrowsArgumentNullException()
     {
@@ -41,6 +51,9 @@ public class ChartDataServiceTests
         act.Should().Throw<ArgumentNullException>().WithParameterName("chart");
     }
 
+    /// <summary>
+    /// Tests that ValidateChart throws InvalidChartDataException when chart has no series.
+    /// </summary>
     [Fact]
     public void ValidateChart_WithNoSeries_ThrowsInvalidChartDataException()
     {
@@ -55,6 +68,9 @@ public class ChartDataServiceTests
            .WithMessage("*at least one series*");
     }
 
+    /// <summary>
+    /// Tests that ValidateChart does not throw when chart has valid data with at least one series.
+    /// </summary>
     [Fact]
     public void ValidateChart_WithValidChartData_DoesNotThrow()
     {
@@ -72,6 +88,9 @@ public class ChartDataServiceTests
         act.Should().NotThrow();
     }
 
+    /// <summary>
+    /// Tests that ValidateSeries throws InvalidChartDataException when series has zero line width.
+    /// </summary>
     [Fact]
     public void ValidateSeries_WithZeroLineWidth_ThrowsInvalidChartDataException()
     {
@@ -87,9 +106,14 @@ public class ChartDataServiceTests
     }
 
     // -------------------------------------------------------------------------
-    // CalculateAxisRange tests
+    /// <summary>
+    /// CalculateAxisRange tests
+    /// </summary>
     // -------------------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that CalculateAxisRange returns exact minimum and maximum values for linear scale.
+    /// </summary>
     [Fact]
     public void CalculateAxisRange_WithLinearScale_ReturnsExactMinAndMax()
     {
@@ -104,6 +128,10 @@ public class ChartDataServiceTests
         max.Should().Be(10.0);
     }
 
+    /// <summary>
+    /// Tests that CalculateAxisRange enforces minimum value of 1 for logarithmic scale
+    /// since log(0) is undefined.
+    /// </summary>
     [Fact]
     public void CalculateAxisRange_WithLogarithmicScale_EnforcesMinimumOfOne()
     {
@@ -117,6 +145,9 @@ public class ChartDataServiceTests
         min.Should().BeGreaterThanOrEqualTo(1.0);
     }
 
+    /// <summary>
+    /// Tests that CalculateAxisRange returns default range (0.0 to 1.0) when given empty collection.
+    /// </summary>
     [Fact]
     public void CalculateAxisRange_EmptyCollection_ReturnsDefaultRange()
     {
@@ -132,9 +163,14 @@ public class ChartDataServiceTests
     }
 
     // -------------------------------------------------------------------------
-    // FilterDataPoints tests
+    /// <summary>
+    /// FilterDataPoints tests
+    /// </summary>
     // -------------------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that FilterDataPoints returns only data points where Y value is positive.
+    /// </summary>
     [Fact]
     public void FilterDataPoints_WithPositiveYFilter_ReturnsOnlyMatchingPoints()
     {
@@ -155,6 +191,9 @@ public class ChartDataServiceTests
         result.Should().AllSatisfy(p => p.Y.Should().BePositive());
     }
 
+    /// <summary>
+    /// Tests that FilterDataPoints throws ArgumentNullException when predicate is null.
+    /// </summary>
     [Fact]
     public void FilterDataPoints_WithNullPredicate_ThrowsArgumentNullException()
     {
@@ -169,9 +208,15 @@ public class ChartDataServiceTests
     }
 
     // -------------------------------------------------------------------------
-    // TransformChartData tests
+    /// <summary>
+    /// TransformChartData tests
+    /// </summary>
     // -------------------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that TransformChartData applies the transformer function to all data points,
+    /// doubling the Y values in this test case.
+    /// </summary>
     [Fact]
     public void TransformChartData_WithDoubleYTransformer_TransformsAllSeriesPoints()
     {
@@ -191,6 +236,9 @@ public class ChartDataServiceTests
         transformedPoints[1].Y.Should().Be(40.0);
     }
 
+    /// <summary>
+    /// Tests that TransformChartData returns a new chart instance without mutating the original chart.
+    /// </summary>
     [Fact]
     public void TransformChartData_OriginalChartIsNotMutated()
     {
@@ -208,9 +256,15 @@ public class ChartDataServiceTests
     }
 
     // -------------------------------------------------------------------------
-    // NormalizeDataPoints tests
+    /// <summary>
+    /// NormalizeDataPoints tests
+    /// </summary>
     // -------------------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that NormalizeDataPoints scales all data points to the [0, 1] interval
+    /// based on the minimum and maximum values in the collection.
+    /// </summary>
     [Fact]
     public void NormalizeDataPoints_WithKnownRange_ScalesPointsToZeroOneInterval()
     {
@@ -233,9 +287,15 @@ public class ChartDataServiceTests
     }
 
     // -------------------------------------------------------------------------
-    // Logger interaction tests (Moq verification)
+    /// <summary>
+    /// Logger interaction tests (Moq verification)
+    /// </summary>
     // -------------------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that ValidateChart logs an information message after successful validation.
+    /// Verifies that the ILogger is called at Information level.
+    /// </summary>
     [Fact]
     public void ValidateChart_AfterSuccessfulValidation_LogsInformationMessage()
     {
