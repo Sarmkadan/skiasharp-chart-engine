@@ -13,7 +13,7 @@ using Xunit;
 namespace SkiaSharpChartEngine.Tests.Services;
 
 /// <summary>
-/// Unit tests for <see cref="ChartRenderingService"/> that verify chart rendering functionality.
+/// Contains unit tests for <see cref="ChartRenderingService"/> that verify chart rendering functionality.
 /// Tests cover both async and sync rendering methods, cache behavior, file operations,
 /// and constructor validation for the chart rendering service.
 /// </summary>
@@ -25,9 +25,7 @@ public class ChartRenderingServiceTests
     private readonly ChartRenderingService _service;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ChartRenderingServiceTests"/> class.
-    /// Sets up mock dependencies for logger, chart data service, and cache service,
-    /// and creates an instance of <see cref="ChartRenderingService"/> for testing.
+    /// Initializes a new instance of <see cref="ChartRenderingServiceTests"/> and sets up mock dependencies.
     /// </summary>
     public ChartRenderingServiceTests()
     {
@@ -38,11 +36,10 @@ public class ChartRenderingServiceTests
     }
 
     /// <summary>
-    /// Creates a valid chart for testing with default ID "test-chart".
-    /// The chart contains one series with two data points at x-values 1.0 and 2.0.
+    /// Creates a valid <see cref="Chart"/> instance with a default ID and a single series containing two data points.
     /// </summary>
     /// <param name="id">Optional chart identifier. Defaults to "test-chart".</param>
-    /// <returns>A configured <see cref="Chart"/> instance ready for rendering tests.</returns>
+    /// <returns>A configured <see cref="Chart"/> ready for rendering tests.</returns>
     private Chart CreateValidChart(string id = "test-chart")
     {
         var chart = new Chart(id);
@@ -57,6 +54,11 @@ public class ChartRenderingServiceTests
     // RenderToByteArrayAsync tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Verifies that <see cref="ChartRenderingService.RenderToByteArrayAsync(Chart)"/> throws an
+    /// <see cref="ArgumentNullException"/> when the chart argument is null.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test execution.</returns>
     [Fact]
     public async Task RenderToByteArrayAsync_WithNullChart_ThrowsArgumentNullException()
     {
@@ -67,6 +69,11 @@ public class ChartRenderingServiceTests
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("chart");
     }
 
+    /// <summary>
+    /// Ensures that when a cached result exists, <see cref="ChartRenderingService.RenderToByteArrayAsync(Chart)"/>
+    /// returns the cached image data without invoking the cache set operation.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test execution.</returns>
     [Fact]
     public async Task RenderToByteArrayAsync_WithCachedResult_ReturnsCachedData()
     {
@@ -85,6 +92,11 @@ public class ChartRenderingServiceTests
         _cacheServiceMock.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<byte[]>()), Times.Never);
     }
 
+    /// <summary>
+    /// Verifies that when no cached result is found, <see cref="ChartRenderingService.RenderToByteArrayAsync(Chart)"/>
+    /// renders the chart, returns image data, and stores the result in the cache.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test execution.</returns>
     [Fact]
     public async Task RenderToByteArrayAsync_WithoutCachedResult_RendersAndCaches()
     {
@@ -103,6 +115,10 @@ public class ChartRenderingServiceTests
         _cacheServiceMock.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<byte[]>()), Times.Once);
     }
 
+    /// <summary>
+    /// Confirms that the <see cref="RenderResult.RenderTimeMilliseconds"/> property is populated with a non‑negative value.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test execution.</returns>
     [Fact]
     public async Task RenderToByteArrayAsync_RecordsRenderTime()
     {
@@ -117,6 +133,10 @@ public class ChartRenderingServiceTests
         result.RenderTimeMilliseconds.Should().BeGreaterThanOrEqualTo(0);
     }
 
+    /// <summary>
+    /// Ensures that when a cancellation token is already cancelled, the async render operation returns a failed result.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test execution.</returns>
     [Fact]
     public async Task RenderToByteArrayAsync_WithCancellation_StopsOperation()
     {
@@ -137,6 +157,11 @@ public class ChartRenderingServiceTests
     // RenderToFileAsync tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Verifies that <see cref="ChartRenderingService.RenderToFileAsync(Chart,string)"/> throws an
+    /// <see cref="ArgumentNullException"/> when the chart argument is null.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test execution.</returns>
     [Fact]
     public async Task RenderToFileAsync_WithNullChart_ThrowsArgumentNullException()
     {
@@ -147,6 +172,11 @@ public class ChartRenderingServiceTests
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("chart");
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ChartRenderingService.RenderToFileAsync(Chart,string)"/> throws an
+    /// <see cref="ArgumentNullException"/> when the output path is null.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test execution.</returns>
     [Fact]
     public async Task RenderToFileAsync_WithNullPath_ThrowsArgumentNullException()
     {
@@ -160,6 +190,11 @@ public class ChartRenderingServiceTests
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("outputPath");
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ChartRenderingService.RenderToFileAsync(Chart,string)"/> throws an
+    /// <see cref="ArgumentNullException"/> when the output path is empty or whitespace.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test execution.</returns>
     [Fact]
     public async Task RenderToFileAsync_WithEmptyPath_ThrowsArgumentNullException()
     {
@@ -173,6 +208,10 @@ public class ChartRenderingServiceTests
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("outputPath");
     }
 
+    /// <summary>
+    /// Confirms that the service creates the target directory if it does not already exist.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test execution.</returns>
     [Fact]
     public async Task RenderToFileAsync_CreatesDirectoryIfNotExists()
     {
@@ -197,6 +236,10 @@ public class ChartRenderingServiceTests
         }
     }
 
+    /// <summary>
+    /// Verifies that the rendered image data is written to the specified file path.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test execution.</returns>
     [Fact]
     public async Task RenderToFileAsync_WritesImageDataToFile()
     {
@@ -225,6 +268,11 @@ public class ChartRenderingServiceTests
     // RenderWithExportAsync tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Verifies that <see cref="ChartRenderingService.RenderWithExportAsync(Chart,ExportOptions)"/> throws an
+    /// <see cref="ArgumentNullException"/> when the chart argument is null.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test execution.</returns>
     [Fact]
     public async Task RenderWithExportAsync_WithNullChart_ThrowsArgumentNullException()
     {
@@ -238,6 +286,11 @@ public class ChartRenderingServiceTests
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("chart");
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ChartRenderingService.RenderWithExportAsync(Chart,ExportOptions)"/> throws an
+    /// <see cref="ArgumentNullException"/> when the export options argument is null.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test execution.</returns>
     [Fact]
     public async Task RenderWithExportAsync_WithNullOptions_ThrowsArgumentNullException()
     {
@@ -251,6 +304,10 @@ public class ChartRenderingServiceTests
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("exportOptions");
     }
 
+    /// <summary>
+    /// Ensures that when exporting to SVG format, the service writes an SVG file containing the expected root element.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test execution.</returns>
     [Fact]
     public async Task RenderWithExportAsync_WithSvgFormat_WritesSvgText()
     {
@@ -282,6 +339,10 @@ public class ChartRenderingServiceTests
         }
     }
 
+    /// <summary>
+    /// Ensures that when exporting to PNG format, the service writes a non‑empty PNG file.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test execution.</returns>
     [Fact]
     public async Task RenderWithExportAsync_WithPngFormat_WritesPngBytes()
     {
@@ -317,6 +378,10 @@ public class ChartRenderingServiceTests
     // RenderToByteArray (sync) tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Verifies that the synchronous <see cref="ChartRenderingService.RenderToByteArray(Chart)"/> method throws an
+    /// <see cref="ArgumentNullException"/> when the chart argument is null.
+    /// </summary>
     [Fact]
     public void RenderToByteArray_WithNullChart_ThrowsArgumentNullException()
     {
@@ -327,6 +392,9 @@ public class ChartRenderingServiceTests
         act.Should().Throw<ArgumentNullException>().WithParameterName("chart");
     }
 
+    /// <summary>
+    /// Confirms that a valid chart renders to a non‑empty byte array using the synchronous method.
+    /// </summary>
     [Fact]
     public void RenderToByteArray_WithValidChart_ReturnsNonEmptyByteArray()
     {
@@ -346,6 +414,10 @@ public class ChartRenderingServiceTests
     // RenderToFile (sync) tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Verifies that the synchronous <see cref="ChartRenderingService.RenderToFile(Chart,string)"/> method throws an
+    /// <see cref="ArgumentNullException"/> when the chart argument is null.
+    /// </summary>
     [Fact]
     public void RenderToFile_WithNullChart_ThrowsArgumentNullException()
     {
@@ -356,6 +428,9 @@ public class ChartRenderingServiceTests
         act.Should().Throw<ArgumentNullException>().WithParameterName("chart");
     }
 
+    /// <summary>
+    /// Verifies that the synchronous method throws an <see cref="ArgumentNullException"/> when the output path is null.
+    /// </summary>
     [Fact]
     public void RenderToFile_WithNullPath_ThrowsArgumentNullException()
     {
@@ -369,6 +444,9 @@ public class ChartRenderingServiceTests
         act.Should().Throw<ArgumentNullException>().WithParameterName("outputPath");
     }
 
+    /// <summary>
+    /// Confirms that the synchronous render-to-file operation writes a file successfully.
+    /// </summary>
     [Fact]
     public void RenderToFile_WritesFileSuccessfully()
     {
@@ -396,6 +474,10 @@ public class ChartRenderingServiceTests
     // PrewarmCache tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Verifies that calling <see cref="ChartRenderingService.PrewarmCache(Chart)"/> with a null chart does not throw
+    /// and does not interact with the cache service.
+    /// </summary>
     [Fact]
     public void PrewarmCache_WithNullChart_DoesNotThrow()
     {
@@ -407,6 +489,9 @@ public class ChartRenderingServiceTests
         _cacheServiceMock.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<byte[]>()), Times.Never);
     }
 
+    /// <summary>
+    /// Confirms that pre‑warming the cache with a valid chart results in a single cache set operation.
+    /// </summary>
     [Fact]
     public void PrewarmCache_WithValidChart_PopulatesCache()
     {
@@ -420,6 +505,10 @@ public class ChartRenderingServiceTests
         _cacheServiceMock.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<byte[]>()), Times.Once);
     }
 
+    /// <summary>
+    /// Ensures that if the cache service throws an exception during pre‑warming, the method logs a warning
+    /// but does not propagate the exception.
+    /// </summary>
     [Fact]
     public void PrewarmCache_WhenRenderingFails_LogsWarningButDoesNotThrow()
     {
@@ -439,6 +528,10 @@ public class ChartRenderingServiceTests
     // Constructor validation
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Verifies that the <see cref="ChartRenderingService"/> constructor throws an <see cref="ArgumentNullException"/>
+    /// when the logger dependency is null.
+    /// </summary>
     [Fact]
     public void Constructor_WithNullLogger_ThrowsArgumentNullException()
     {
@@ -449,6 +542,10 @@ public class ChartRenderingServiceTests
         act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
     }
 
+    /// <summary>
+    /// Verifies that the <see cref="ChartRenderingService"/> constructor throws an <see cref="ArgumentNullException"/>
+    /// when the data service dependency is null.
+    /// </summary>
     [Fact]
     public void Constructor_WithNullDataService_ThrowsArgumentNullException()
     {
@@ -459,6 +556,10 @@ public class ChartRenderingServiceTests
         act.Should().Throw<ArgumentNullException>().WithParameterName("dataService");
     }
 
+    /// <summary>
+    /// Verifies that the <see cref="ChartRenderingService"/> constructor throws an <see cref="ArgumentNullException"/>
+    /// when the cache service dependency is null.
+    /// </summary>
     [Fact]
     public void Constructor_WithNullCacheService_ThrowsArgumentNullException()
     {
