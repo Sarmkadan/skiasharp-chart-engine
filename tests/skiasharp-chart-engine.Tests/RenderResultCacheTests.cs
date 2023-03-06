@@ -11,16 +11,31 @@ using Xunit;
 
 namespace SkiaSharpChartEngine.Tests.Caching;
 
+/// <summary>
+/// Contains unit tests for the <see cref="RenderResultCache"/> class.
+/// Tests various scenarios including cache operations, thread safety, statistics tracking,
+/// and edge cases to ensure the cache behaves correctly under different conditions.
+/// </summary>
 public class RenderResultCacheTests
 {
     private readonly Mock<ILogger<RenderResultCache>> _loggerMock;
     private const long TestMaxCacheSize = 1_000_000; // 1 MB for tests
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RenderResultCacheTests"/> class.
+    /// Sets up the test dependencies including a mocked logger for testing cache operations.
+    /// </summary>
     public RenderResultCacheTests()
     {
         _loggerMock = new Mock<ILogger<RenderResultCache>>();
     }
 
+    /// <summary>
+    /// Creates a test <see cref="RenderResult"/> for testing purposes.
+    /// </summary>
+    /// <param name="id">The chart identifier. Defaults to "test".</param>
+    /// <param name="dataSize">The size of the result data in bytes. Defaults to 1000.</param>
+    /// <returns>A successfully created <see cref="RenderResult"/> with the specified parameters.</returns>
     private RenderResult CreateTestResult(string id = "test", int dataSize = 1000)
     {
         return RenderResult.CreateSuccess(id, new byte[dataSize], 100, ExportFormat.PNG);
@@ -30,6 +45,10 @@ public class RenderResultCacheTests
     // Cache tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that caching with a null key does not throw exceptions.
+    /// Ensures the cache handles null keys gracefully without crashing.
+    /// </summary>
     [Fact]
     public void Cache_WithNullKey_DoesNotCrash()
     {
@@ -44,6 +63,10 @@ public class RenderResultCacheTests
         act.Should().NotThrow();
     }
 
+    /// <summary>
+    /// Tests that caching with a null result does not throw exceptions.
+    /// Ensures the cache handles null results gracefully without crashing.
+    /// </summary>
     [Fact]
     public void Cache_WithNullResult_DoesNotCrash()
     {
@@ -57,6 +80,10 @@ public class RenderResultCacheTests
         act.Should().NotThrow();
     }
 
+    /// <summary>
+    /// Tests that caching valid data stores the result with default TTL.
+    /// Verifies that a successfully cached result can be retrieved immediately after caching.
+    /// </summary>
     [Fact]
     public void Cache_WithValidData_StoresResultWithDefaultTtl()
     {
@@ -73,6 +100,10 @@ public class RenderResultCacheTests
         retrieved.ChartId.Should().Be("test");
     }
 
+    /// <summary>
+    /// Tests that caching with custom TTL respects the specified TTL value.
+    /// Verifies that the cache respects time-to-live settings when storing entries.
+    /// </summary>
     [Fact]
     public void Cache_WithCustomTtl_RespectsTtlValue()
     {
@@ -89,6 +120,10 @@ public class RenderResultCacheTests
         retrieved.Should().NotBeNull();
     }
 
+    /// <summary>
+    /// Tests that the cache stores multiple entries independently.
+    /// Verifies that each cached entry can be retrieved separately and maintains its own data.
+    /// </summary>
     [Fact]
     public void Cache_StoresMultipleEntriesIndependently()
     {
@@ -106,6 +141,10 @@ public class RenderResultCacheTests
         cache.Get("key2")?.ChartId.Should().Be("chart2");
     }
 
+    /// <summary>
+    /// Tests that when cache size exceeds the limit, the least recently used entry is evicted.
+    /// Verifies the LRU (Least Recently Used) eviction policy is correctly implemented.
+    /// </summary>
     [Fact]
     public void Cache_WhenSizeExceedsLimit_EvictsLRU()
     {
@@ -127,6 +166,10 @@ public class RenderResultCacheTests
         cache.Get("key3").Should().NotBeNull();
     }
 
+    /// <summary>
+    /// Tests that caching replaces an existing entry with the same key.
+    /// Verifies that the cache updates existing entries when the same key is used again.
+    /// </summary>
     [Fact]
     public void Cache_ReplacesExistingEntry()
     {
@@ -148,6 +191,10 @@ public class RenderResultCacheTests
     // Get tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that getting a value with a non-existent key returns null.
+    /// Verifies that the cache correctly handles requests for non-existent keys.
+    /// </summary>
     [Fact]
     public void Get_WithNonExistentKey_ReturnsNull()
     {
@@ -161,6 +208,10 @@ public class RenderResultCacheTests
         result.Should().BeNull();
     }
 
+    /// <summary>
+    /// Tests that getting a value with a valid key returns the cached result.
+    /// Verifies that cached entries can be successfully retrieved by their keys.
+    /// </summary>
     [Fact]
     public void Get_WithValidKey_ReturnsResult()
     {
@@ -177,6 +228,10 @@ public class RenderResultCacheTests
         result.ChartId.Should().Be("test-id");
     }
 
+    /// <summary>
+    /// Tests that getting a value updates access count and last accessed time.
+    /// Verifies that cache statistics are properly updated on each access.
+    /// </summary>
     [Fact]
     public void Get_UpdatesAccessCountAndLastAccessedTime()
     {
@@ -195,6 +250,10 @@ public class RenderResultCacheTests
         result2.Should().NotBeNull();
     }
 
+    /// <summary>
+    /// Tests that getting an expired entry returns null and removes the entry.
+    /// Verifies that the cache correctly handles TTL expiration and removes expired entries.
+    /// </summary>
     [Fact]
     public void Get_WithExpiredEntry_ReturnsNullAndRemovesEntry()
     {
@@ -216,6 +275,10 @@ public class RenderResultCacheTests
     // Remove tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that removing an existing key returns true and removes the entry.
+    /// Verifies that the Remove method correctly identifies and removes existing entries.
+    /// </summary>
     [Fact]
     public void Remove_WithExistingKey_ReturnsTrue()
     {
@@ -232,6 +295,10 @@ public class RenderResultCacheTests
         cache.Get("key").Should().BeNull();
     }
 
+    /// <summary>
+    /// Tests that removing a non-existent key returns false.
+    /// Verifies that the Remove method correctly handles requests to remove non-existent entries.
+    /// </summary>
     [Fact]
     public void Remove_WithNonExistentKey_ReturnsFalse()
     {
@@ -245,6 +312,10 @@ public class RenderResultCacheTests
         removed.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that removing an entry decreases the cache size counter.
+    /// Verifies that the cache statistics are properly updated when entries are removed.
+    /// </summary>
     [Fact]
     public void Remove_DecreasesCacheSizeCounter()
     {
@@ -267,6 +338,10 @@ public class RenderResultCacheTests
     // Clear tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that clearing the cache removes all entries.
+    /// Verifies that the Clear method completely empties the cache.
+    /// </summary>
     [Fact]
     public void Clear_RemovesAllEntries()
     {
@@ -285,6 +360,10 @@ public class RenderResultCacheTests
         cache.Get("key3").Should().BeNull();
     }
 
+    /// <summary>
+    /// Tests that clearing the cache resets the size counter to zero.
+    /// Verifies that the Clear method properly resets all cache statistics.
+    /// </summary>
     [Fact]
     public void Clear_ResetsSizeCounter()
     {
@@ -306,6 +385,10 @@ public class RenderResultCacheTests
     // GetStatistics tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that getting statistics with an empty cache returns zero values.
+    /// Verifies that the cache statistics are correctly initialized and reported.
+    /// </summary>
     [Fact]
     public void GetStatistics_WithEmptyCache_ReturnsZeroStats()
     {
@@ -322,6 +405,10 @@ public class RenderResultCacheTests
         stats.MaxSize.Should().Be(TestMaxCacheSize);
     }
 
+    /// <summary>
+    /// Tests that the statistics correctly track entry count and total size.
+    /// Verifies that the cache statistics accurately reflect the number and size of stored entries.
+    /// </summary>
     [Fact]
     public void GetStatistics_TracksEntryCountAndSize()
     {
@@ -340,6 +427,10 @@ public class RenderResultCacheTests
         stats.TotalSize.Should().BeGreaterThan(0);
     }
 
+    /// <summary>
+    /// Tests that the statistics correctly track hit count.
+    /// Verifies that the cache statistics accurately count cache hits.
+    /// </summary>
     [Fact]
     public void GetStatistics_TracksHitCount()
     {
@@ -357,6 +448,10 @@ public class RenderResultCacheTests
         stats.TotalHits.Should().BeGreaterThanOrEqualTo(0);
     }
 
+    /// <summary>
+    /// Tests that the statistics include oldest and newest entry dates.
+    /// Verifies that the cache statistics track the creation timestamps of the oldest and newest entries.
+    /// </summary>
     [Fact]
     public void GetStatistics_IncludesOldestAndNewestEntryDates()
     {
@@ -379,6 +474,10 @@ public class RenderResultCacheTests
     // Thread safety tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that the cache is thread-safe for concurrent reads.
+    /// Verifies that multiple threads can safely read from the cache simultaneously without issues.
+    /// </summary>
     [Fact]
     public void Cache_IsThreadSafe_ConcurrentReads()
     {
@@ -410,6 +509,10 @@ public class RenderResultCacheTests
         results.Should().AllSatisfy(r => r.Should().NotBeNull());
     }
 
+    /// <summary>
+    /// Tests that the cache is thread-safe for concurrent writes.
+    /// Verifies that multiple threads can safely write to the cache simultaneously without corruption.
+    /// </summary>
     [Fact]
     public void Cache_IsThreadSafe_ConcurrentWrites()
     {
@@ -444,6 +547,10 @@ public class RenderResultCacheTests
     // Constructor tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that the constructor throws ArgumentNullException when provided with a null logger.
+    /// Verifies that the cache requires a valid logger instance for proper operation.
+    /// </summary>
     [Fact]
     public void Constructor_WithNullLogger_ThrowsArgumentNullException()
     {
@@ -454,6 +561,10 @@ public class RenderResultCacheTests
         act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
     }
 
+    /// <summary>
+    /// Tests that the constructor with default max size uses 100 MB.
+    /// Verifies that the cache defaults to a 100 MB maximum size when no size is specified.
+    /// </summary>
     [Fact]
     public void Constructor_WithDefaultMaxSize_Uses100Mb()
     {
@@ -465,6 +576,10 @@ public class RenderResultCacheTests
         stats.MaxSize.Should().Be(104_857_600); // 100 MB
     }
 
+    /// <summary>
+    /// Tests that disposing the cache disposes it gracefully without throwing exceptions.
+    /// Verifies that the Dispose method can be called safely and doesn't leave the cache in an inconsistent state.
+    /// </summary>
     [Fact]
     public void Dispose_DisposesCacheGracefully()
     {
