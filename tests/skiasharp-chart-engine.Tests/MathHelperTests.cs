@@ -11,8 +11,14 @@ using Xunit;
 
 namespace SkiaSharpChartEngine.Tests.Utilities;
 
+/// <summary>
+/// Provides unit tests for the <see cref="MathHelper"/> class to verify mathematical utility functions used in chart rendering calculations.
+/// </summary>
 public class MathHelperTests
 {
+    /// <summary>
+    /// Tests that <see cref="MathHelper.GetMinMax"/> throws an <see cref="ArgumentException"/> when provided with an empty collection.
+    /// </summary>
     [Fact]
     public void GetMinMax_EmptyCollection_ThrowsArgumentException()
     {
@@ -26,6 +32,10 @@ public class MathHelperTests
         act.Should().Throw<ArgumentException>().WithParameterName("values");
     }
 
+    /// <summary>
+    /// Tests that <see cref="MathHelper.Normalize"/> returns 0.5 when min and max values are equal.
+    /// This edge case ensures the normalization function handles degenerate ranges correctly.
+    /// </summary>
     [Fact]
     public void Normalize_WhenMinAndMaxAreEqual_ReturnsHalf()
     {
@@ -39,6 +49,9 @@ public class MathHelperTests
         result.Should().Be(0.5f);
     }
 
+    /// <summary>
+    /// Tests that <see cref="MathHelper.Normalize"/> returns 0.5 when the input value is exactly at the midpoint between min and max bounds.
+    /// </summary>
     [Fact]
     public void Normalize_MidpointBetweenBounds_ReturnsZeroPointFive()
     {
@@ -49,6 +62,9 @@ public class MathHelperTests
         result.Should().BeApproximately(0.5f, 0.0001f);
     }
 
+    /// <summary>
+    /// Tests that <see cref="MathHelper.Lerp"/> clamps the interpolation parameter t to the range [0, 1], returning the end value when t exceeds 1.
+    /// </summary>
     [Fact]
     public void Lerp_TExceedsOne_ClampsToEndValue()
     {
@@ -62,6 +78,9 @@ public class MathHelperTests
         result.Should().Be(end);
     }
 
+    /// <summary>
+    /// Tests that <see cref="MathHelper.Lerp"/> returns the start value when the interpolation parameter t is 0.
+    /// </summary>
     [Fact]
     public void Lerp_TIsZero_ReturnsStartValue()
     {
@@ -75,6 +94,10 @@ public class MathHelperTests
         result.Should().Be(start);
     }
 
+    /// <summary>
+    /// Tests that <see cref="MathHelper.StandardDeviation"/> throws an <see cref="ArgumentException"/> when provided with a collection containing only a single element.
+    /// Standard deviation calculation requires at least 2 elements to compute sample variance.
+    /// </summary>
     [Fact]
     public void StandardDeviation_CollectionWithSingleElement_ThrowsArgumentException()
     {
@@ -88,6 +111,10 @@ public class MathHelperTests
         act.Should().Throw<ArgumentException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="MathHelper.StandardDeviation"/> returns the correct standard deviation for two symmetric values.
+    /// For input [2, 4], the mean is 3, squared differences are [1, 1], sample variance is 2, and standard deviation is sqrt(2).
+    /// </summary>
     [Fact]
     public void StandardDeviation_TwoSymmetricValues_ReturnsExpectedDeviation()
     {
@@ -101,6 +128,10 @@ public class MathHelperTests
         result.Should().BeApproximately((float)Math.Sqrt(2), 0.0001f);
     }
 
+    /// <summary>
+    /// Tests that <see cref="MathHelper.GenerateAxisTicks"/> returns a single tick value when the input range is zero (min equals max).
+    /// This ensures axis tick generation handles degenerate ranges correctly.
+    /// </summary>
     [Fact]
     public void GenerateAxisTicks_ZeroRange_ReturnsSingleTick()
     {
@@ -111,6 +142,9 @@ public class MathHelperTests
         ticks.Should().ContainSingle().Which.Should().Be(10f);
     }
 
+    /// <summary>
+    /// Tests that <see cref="MathHelper.Clamp"/> returns the maximum value when the input value exceeds the specified maximum bound.
+    /// </summary>
     [Fact]
     public void Clamp_ValueAboveMax_ReturnsMax()
     {
@@ -121,6 +155,9 @@ public class MathHelperTests
         result.Should().Be(100f);
     }
 
+    /// <summary>
+    /// Tests that <see cref="MathHelper.Clamp"/> returns the minimum value when the input value is below the specified minimum bound.
+    /// </summary>
     [Fact]
     public void Clamp_ValueBelowMin_ReturnsMin()
     {
