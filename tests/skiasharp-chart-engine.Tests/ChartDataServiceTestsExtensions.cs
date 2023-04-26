@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using FluentAssertions;
 using SkiaSharpChartEngine.Models;
 using SkiaSharpChartEngine.Services;
@@ -13,16 +12,26 @@ using Xunit;
 
 namespace SkiaSharpChartEngine.Tests.Services;
 
+/// <summary>
+/// Extension methods for creating and asserting test charts in unit tests.
+/// Provides fluent API for test data setup and validation.
+/// </summary>
+
 public static class ChartDataServiceTestsExtensions
 {
     /// <summary>
     /// Creates a test chart with the specified name and adds a single series with the given data points.
     /// </summary>
-    /// <param name="chartName">Name of the chart</param>
-    /// <param name="dataPoints">Collection of (x, y) tuples to add to the series</param>
-    /// <returns>A populated Chart object ready for testing</returns>
+    /// <param name="chartName">Name of the chart.</param>
+    /// <param name="dataPoints">Collection of (x, y) tuples to add to the series.</param>
+    /// <returns>A populated Chart object ready for testing.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="chartName"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="dataPoints"/> is <see langword="null"/>.</exception>
     public static Chart CreateTestChart(this ChartDataServiceTests _, string chartName, IEnumerable<(double x, double y)> dataPoints)
     {
+        ArgumentNullException.ThrowIfNull(chartName);
+        ArgumentNullException.ThrowIfNull(dataPoints);
+
         var chart = new Chart(chartName);
         var series = new ChartSeries("Series1");
 
@@ -38,15 +47,20 @@ public static class ChartDataServiceTestsExtensions
     /// <summary>
     /// Creates a test chart with a single series containing evenly spaced data points.
     /// </summary>
-    /// <param name="chartName">Name of the chart</param>
-    /// <param name="pointCount">Number of data points to generate</param>
-    /// <param name="xStart">Starting X value</param>
-    /// <param name="xStep">Increment between X values</param>
-    /// <param name="yStart">Starting Y value</param>
-    /// <param name="yStep">Increment between Y values</param>
-    /// <returns>A populated Chart object ready for testing</returns>
+    /// <param name="chartName">Name of the chart.</param>
+    /// <param name="pointCount">Number of data points to generate.</param>
+    /// <param name="xStart">Starting X value.</param>
+    /// <param name="xStep">Increment between X values.</param>
+    /// <param name="yStart">Starting Y value.</param>
+    /// <param name="yStep">Increment between Y values.</param>
+    /// <returns>A populated Chart object ready for testing.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="chartName"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="pointCount"/> is less than 0.</exception>
     public static Chart CreateTestChartWithSeries(this ChartDataServiceTests _, string chartName, int pointCount, double xStart = 0.0, double xStep = 1.0, double yStart = 0.0, double yStep = 10.0)
     {
+        ArgumentNullException.ThrowIfNull(chartName);
+        ArgumentOutOfRangeException.ThrowIfNegative(pointCount);
+
         var chart = new Chart(chartName);
         var series = new ChartSeries("Series1");
 
@@ -62,11 +76,16 @@ public static class ChartDataServiceTestsExtensions
     /// <summary>
     /// Asserts that two charts are equivalent by comparing their series and data points.
     /// </summary>
-    /// <param name="expected">Expected chart</param>
-    /// <param name="actual">Actual chart</param>
-    /// <param name="because">Optional reason for the assertion</param>
+    /// <param name="expected">Expected chart.</param>
+    /// <param name="actual">Actual chart.</param>
+    /// <param name="because">Optional reason for the assertion.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="actual"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="expected"/> is <see langword="null"/>.</exception>
     public static void ShouldBeEquivalentTo(this Chart actual, Chart expected, string because = "")
     {
+        ArgumentNullException.ThrowIfNull(actual, nameof(actual));
+        ArgumentNullException.ThrowIfNull(expected, nameof(expected));
+
         actual.Should().NotBeNull(because);
         expected.Should().NotBeNull(because);
 
@@ -95,15 +114,23 @@ public static class ChartDataServiceTestsExtensions
     /// <summary>
     /// Creates a chart with multiple series for testing cross-series operations.
     /// </summary>
-    /// <param name="chartName">Name of the chart</param>
-    /// <param name="seriesConfig">Collection of (seriesName, dataPoints) tuples</param>
-    /// <returns>A populated Chart object with multiple series</returns>
+    /// <param name="chartName">Name of the chart.</param>
+    /// <param name="seriesConfig">Collection of (seriesName, dataPoints) tuples.</param>
+    /// <returns>A populated Chart object with multiple series.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="chartName"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="seriesConfig"/> is <see langword="null"/>.</exception>
     public static Chart CreateMultiSeriesChart(this ChartDataServiceTests _, string chartName, IEnumerable<(string seriesName, IEnumerable<(double x, double y)> dataPoints)> seriesConfig)
     {
+        ArgumentNullException.ThrowIfNull(chartName);
+        ArgumentNullException.ThrowIfNull(seriesConfig);
+
         var chart = new Chart(chartName);
 
         foreach (var (seriesName, dataPoints) in seriesConfig)
         {
+            ArgumentNullException.ThrowIfNull(seriesName);
+            ArgumentNullException.ThrowIfNull(dataPoints);
+
             var series = new ChartSeries(seriesName);
             foreach (var (x, y) in dataPoints)
             {
