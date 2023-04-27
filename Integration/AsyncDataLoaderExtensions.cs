@@ -16,87 +16,79 @@ using SkiaSharpChartEngine.Models;
 namespace SkiaSharpChartEngine.Integration;
 
 /// <summary>
-/// Provides extension methods for AsyncDataLoader to enhance functionality
+/// Provides extension methods for <see cref="AsyncDataLoader"/> to enhance functionality
+/// with additional chart loading capabilities.
 /// </summary>
 public static class AsyncDataLoaderExtensions
 {
     /// <summary>
     /// Loads a chart from a file path, automatically determining the file type
-    /// and falling back to CSV if JSON fails
+    /// and falling back to CSV if JSON fails.
     /// </summary>
-    /// <param name="loader">The AsyncDataLoader instance</param>
-    /// <param name="filePath">Path to the chart file (JSON or CSV)</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Loaded chart or null if failed</returns>
+    /// <param name="loader">The <see cref="AsyncDataLoader"/> instance.</param>
+    /// <param name="filePath">Path to the chart file (JSON or CSV).</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
+    /// <returns>A loaded <see cref="Chart"/> instance if successful; otherwise, <see langword="null"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="loader"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="filePath"/> is <see langword="null"/>, empty, or consists only of whitespace.</exception>
     public static async Task<Chart?> LoadChartFromFileWithFallbackAsync(
         this AsyncDataLoader loader,
         string filePath,
         CancellationToken cancellationToken = default)
     {
-        if (loader == null)
-            throw new ArgumentNullException(nameof(loader));
-
-        if (string.IsNullOrWhiteSpace(filePath))
-            throw new ArgumentException("File path cannot be null or empty", nameof(filePath));
+        ArgumentNullException.ThrowIfNull(loader);
+        ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
 
         // Try JSON first (most common format)
-        var chart = await loader.LoadChartFromFileAsync(filePath, cancellationToken);
+        var chart = await loader.LoadChartFromFileAsync(filePath, cancellationToken).ConfigureAwait(false);
 
-        if (chart != null)
-            return chart;
-
-        // If JSON failed, try CSV with same name but different extension
-        var csvPath = Path.ChangeExtension(filePath, ".csv");
-        if (File.Exists(csvPath))
-        {
-            return await loader.LoadChartFromFileAsync(csvPath, cancellationToken);
-        }
-
-        return null;
+        return chart ?? await TryLoadCsvFallbackAsync(loader, filePath, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Loads all charts from a directory, filtering by file extension
+    /// Loads all charts from a directory, filtering by file extension.
     /// </summary>
-    /// <param name="loader">The AsyncDataLoader instance</param>
-    /// <param name="directoryPath">Path to the directory containing chart files</param>
-    /// <param name="fileExtensions">File extensions to include (e.g., [".json", ".csv"])</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>List of loaded charts</returns>
+    /// <param name="loader">The <see cref="AsyncDataLoader"/> instance.</param>
+    /// <param name="directoryPath">Path to the directory containing chart files.</param>
+    /// <param name="fileExtensions">File extensions to include (e.g., [".json", ".csv"]).</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
+    /// <returns>A <see cref="List{Chart}"/> containing all successfully loaded charts.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="loader"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="directoryPath"/> is <see langword="null"/>, empty, or consists only of whitespace.
+    /// -or-
+    /// <paramref name="fileExtensions"/> is <see langword="null"/> or empty.
+    /// </exception>
     public static async Task<List<Chart>> LoadChartsFromDirectoryAsync(
         this AsyncDataLoader loader,
         string directoryPath,
         string[] fileExtensions,
         CancellationToken cancellationToken = default)
     {
-        if (loader == null)
-            throw new ArgumentNullException(nameof(loader));
-
-        if (string.IsNullOrWhiteSpace(directoryPath))
-            throw new ArgumentException("Directory path cannot be null or empty", nameof(directoryPath));
-
-        if (fileExtensions == null || fileExtensions.Length == 0)
-            throw new ArgumentException("At least one file extension must be provided", nameof(fileExtensions));
+        ArgumentNullException.ThrowIfNull(loader);
+        ArgumentException.ThrowIfNullOrWhiteSpace(directoryPath);
+        ArgumentException.ThrowIfNullOrEmpty(fileExtensions);
 
         var charts = new List<Chart>();
 
+        if (!Directory.Exists(directoryPath))
+        {
+            loader.LogDirectoryNotFound(directoryPath);
+            return charts;
+        }
+
         try
         {
-            if (!Directory.Exists(directoryPath))
-            {
-                loader.LogDirectoryNotFound(directoryPath);
-                return charts;
-            }
-
-            // Build search pattern for all specified extensions
-            var searchPattern = $"*.{{"{string.Join(",", fileExtensions.Select(e => e.TrimStart('.')))}"}};";
-
-            var files = Directory.GetFiles(directoryPath, searchPattern, SearchOption.TopDirectoryOnly);
+            // Get all files with any of the specified extensions
+            var files = fileExtensions
+                .SelectMany(ext => Directory.GetFiles(directoryPath, $"*{ext}", SearchOption.TopDirectoryOnly))
+                .Distinct()
+                .ToArray();
 
             foreach (var file in files)
             {
-                var chart = await loader.LoadChartFromFileAsync(file, cancellationToken);
-                if (chart != null)
+                var chart = await loader.LoadChartFromFileAsync(file, cancellationToken).ConfigureAwait(false);
+                if (chart is not null)
                 {
                     charts.Add(chart);
                 }
@@ -111,30 +103,29 @@ public static class AsyncDataLoaderExtensions
     }
 
     /// <summary>
-    /// Loads charts from multiple directories, merging results
+    /// Loads charts from multiple directories, merging results.
     /// </summary>
-    /// <param name="loader">The AsyncDataLoader instance</param>
-    /// <param name="directoryPaths">Array of directory paths to search</param>
-    /// <param name="searchPattern">File search pattern (e.g., "*.json")</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>List of all loaded charts from all directories</returns>
+    /// <param name="loader">The <see cref="AsyncDataLoader"/> instance.</param>
+    /// <param name="directoryPaths">Array of directory paths to search.</param>
+    /// <param name="searchPattern">File search pattern (e.g., "*.json").</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
+    /// <returns>A <see cref="List{Chart}"/> containing all loaded charts from all directories.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="loader"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="directoryPaths"/> is <see langword="null"/> or empty.</exception>
     public static async Task<List<Chart>> LoadChartsFromDirectoriesAsync(
         this AsyncDataLoader loader,
         string[] directoryPaths,
         string searchPattern = "*.json",
         CancellationToken cancellationToken = default)
     {
-        if (loader == null)
-            throw new ArgumentNullException(nameof(loader));
-
-        if (directoryPaths == null || directoryPaths.Length == 0)
-            throw new ArgumentException("At least one directory path must be provided", nameof(directoryPaths));
+        ArgumentNullException.ThrowIfNull(loader);
+        ArgumentException.ThrowIfNullOrEmpty(directoryPaths);
 
         var allCharts = new List<Chart>();
 
         foreach (var directoryPath in directoryPaths)
         {
-            var charts = await loader.LoadChartsFromDirectoryAsync(directoryPath, searchPattern, cancellationToken);
+            var charts = await loader.LoadChartsFromDirectoryAsync(directoryPath, [searchPattern], cancellationToken).ConfigureAwait(false);
             allCharts.AddRange(charts);
         }
 
@@ -142,50 +133,53 @@ public static class AsyncDataLoaderExtensions
     }
 
     /// <summary>
-    /// Validates multiple files at once and returns only the valid ones
+    /// Validates multiple files at once and returns only the valid ones.
     /// </summary>
-    /// <param name="loader">The AsyncDataLoader instance</param>
-    /// <param name="filePaths">Array of file paths to validate</param>
-    /// <returns>List of valid file paths</returns>
+    /// <param name="loader">The <see cref="AsyncDataLoader"/> instance.</param>
+    /// <param name="filePaths">Array of file paths to validate.</param>
+    /// <returns>A <see cref="List{String}"/> containing only valid file paths.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="loader"/> is <see langword="null"/>.</exception>
     public static List<string> GetValidFiles(
         this AsyncDataLoader loader,
         string[] filePaths)
     {
-        if (loader == null)
-            throw new ArgumentNullException(nameof(loader));
+        ArgumentNullException.ThrowIfNull(loader);
 
-        if (filePaths == null || filePaths.Length == 0)
-            return new List<string>();
-
-        var validFiles = new List<string>();
-
-        foreach (var filePath in filePaths)
-        {
-            if (!string.IsNullOrWhiteSpace(filePath) && loader.CanLoadFile(filePath))
-            {
-                validFiles.Add(filePath);
-            }
-        }
-
-        return validFiles;
+        return filePaths
+            .Where(filePath => !string.IsNullOrWhiteSpace(filePath) && loader.CanLoadFile(filePath))
+            .ToList();
     }
 
     #region Private logging helpers
 
     private static void LogDirectoryNotFound(this AsyncDataLoader loader, string directoryPath)
     {
-        if (loader is IHasLogger hasLogger)
+        if (loader is IHasLogger { Logger: var logger })
         {
-            hasLogger.Logger.LogWarning("Directory not found: {DirectoryPath}", directoryPath);
+            logger.LogWarning("Directory not found: {DirectoryPath}", directoryPath);
         }
     }
 
     private static void LogDirectoryLoadError(this AsyncDataLoader loader, string directoryPath, Exception ex)
     {
-        if (loader is IHasLogger hasLogger)
+        if (loader is IHasLogger { Logger: var logger })
         {
-            hasLogger.Logger.LogError(ex, "Error loading charts from directory {DirectoryPath}", directoryPath);
+            logger.LogError(ex, "Error loading charts from directory {DirectoryPath}", directoryPath);
         }
+    }
+
+    /// <summary>
+    /// Attempts to load a chart from a CSV file with the same base name as the original file.
+    /// </summary>
+    private static async Task<Chart?> TryLoadCsvFallbackAsync(
+        AsyncDataLoader loader,
+        string originalFilePath,
+        CancellationToken cancellationToken)
+    {
+        var csvPath = Path.ChangeExtension(originalFilePath, ".csv");
+        return File.Exists(csvPath)
+            ? await loader.LoadChartFromFileAsync(csvPath, cancellationToken).ConfigureAwait(false)
+            : null;
     }
 
     // Interface to access logger from extension methods
