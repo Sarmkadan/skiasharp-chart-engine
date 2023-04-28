@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Pipeline; // Ensure IPipelineStage and IPipelineInterceptor are in scope
 
 namespace SkiaSharpChartEngine.Pipeline
 {
@@ -24,13 +25,15 @@ namespace SkiaSharpChartEngine.Pipeline
         /// </summary>
         /// <param name="pipeline">The pipeline to extend.</param>
         /// <param name="stages">The stages to add.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="pipeline"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="stages"/> is <see langword="null"/>.</exception>
         /// <returns>The same pipeline instance, enabling fluent chaining.</returns>
         public static ChartRenderingPipeline AddStages(
             this ChartRenderingPipeline pipeline,
             params IPipelineStage[] stages)
         {
-            if (pipeline == null) throw new ArgumentNullException(nameof(pipeline));
-            if (stages == null) throw new ArgumentNullException(nameof(stages));
+            ArgumentNullException.ThrowIfNull(pipeline);
+            ArgumentNullException.ThrowIfNull(stages);
 
             foreach (var stage in stages)
             {
@@ -45,13 +48,15 @@ namespace SkiaSharpChartEngine.Pipeline
         /// </summary>
         /// <param name="pipeline">The pipeline to extend.</param>
         /// <param name="interceptors">The interceptors to add.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="pipeline"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="interceptors"/> is <see langword="null"/>.</exception>
         /// <returns>The same pipeline instance, enabling fluent chaining.</returns>
         public static ChartRenderingPipeline AddInterceptors(
             this ChartRenderingPipeline pipeline,
             params IPipelineInterceptor[] interceptors)
         {
-            if (pipeline == null) throw new ArgumentNullException(nameof(pipeline));
-            if (interceptors == null) throw new ArgumentNullException(nameof(interceptors));
+            ArgumentNullException.ThrowIfNull(pipeline);
+            ArgumentNullException.ThrowIfNull(interceptors);
 
             foreach (var interceptor in interceptors)
             {
@@ -67,25 +72,21 @@ namespace SkiaSharpChartEngine.Pipeline
         /// <param name="pipeline">The pipeline to execute.</param>
         /// <param name="chart">The chart to render.</param>
         /// <param name="cancellationToken">Optional cancellation token.</param>
-        /// <returns>
-        /// A read‑only list of <see cref="StageExecutionResult"/> objects whose
-        /// <c>Success</c> flag is true.
-        /// </returns>
+        /// <exception cref="ArgumentNullException"><paramref name="pipeline"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="chart"/> is <see langword="null"/>.</exception>
+        /// <returns>A read-only list of <see cref="StageExecutionResult"/> objects whose <c>Success</c> flag is true.</returns>
         public static async Task<IReadOnlyList<StageExecutionResult>> ExecuteAndGetSuccessfulStagesAsync(
             this ChartRenderingPipeline pipeline,
             Chart chart,
             CancellationToken cancellationToken = default)
         {
-            if (pipeline == null) throw new ArgumentNullException(nameof(pipeline));
-            if (chart == null) throw new ArgumentNullException(nameof(chart));
+            ArgumentNullException.ThrowIfNull(pipeline);
+            ArgumentNullException.ThrowIfNull(chart);
 
             var result = await pipeline.ExecuteAsync(chart, new PipelineContext(), cancellationToken)
-                                      .ConfigureAwait(false);
+                .ConfigureAwait(false);
 
-            return result.StageResults
-                         .Where(sr => sr.Success)
-                         .ToList()
-                         .AsReadOnly();
+            return result.StageResults.Where(sr => sr.Success).ToList().AsReadOnly();
         }
 
         /// <summary>
@@ -96,23 +97,22 @@ namespace SkiaSharpChartEngine.Pipeline
         /// <param name="chart">The chart to render.</param>
         /// <param name="stageName">The name of the stage whose result is required.</param>
         /// <param name="cancellationToken">Optional cancellation token.</param>
-        /// <returns>
-        /// The <see cref="StageExecutionResult"/> for the requested stage, or
-        /// <c>null</c> if the stage was not found or did not run.
-        /// </returns>
+        /// <exception cref="ArgumentNullException"><paramref name="pipeline"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="chart"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="stageName"/> is <see langword="null"/>, empty, or consists only of whitespace.</exception>
+        /// <returns>The <see cref="StageExecutionResult"/> for the requested stage, or <c>null</c> if the stage was not found or did not run.</returns>
         public static async Task<StageExecutionResult?> ExecuteAndGetStageResultAsync(
             this ChartRenderingPipeline pipeline,
             Chart chart,
             string stageName,
             CancellationToken cancellationToken = default)
         {
-            if (pipeline == null) throw new ArgumentNullException(nameof(pipeline));
-            if (chart == null) throw new ArgumentNullException(nameof(chart));
-            if (string.IsNullOrWhiteSpace(stageName))
-                throw new ArgumentException("Stage name must be provided.", nameof(stageName));
+            ArgumentNullException.ThrowIfNull(pipeline);
+            ArgumentNullException.ThrowIfNull(chart);
+            ArgumentException.ThrowIfNullOrEmpty(stageName);
 
             var result = await pipeline.ExecuteAsync(chart, new PipelineContext(), cancellationToken)
-                                      .ConfigureAwait(false);
+                .ConfigureAwait(false);
 
             return result.StageResults.FirstOrDefault(sr => sr.StageName.Equals(stageName, StringComparison.Ordinal));
         }
