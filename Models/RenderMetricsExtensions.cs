@@ -10,53 +10,20 @@ using SkiaSharpChartEngine.Models;
 namespace SkiaSharpChartEngine.Models;
 
 /// <summary>
-/// Extension methods for RenderMetrics providing additional functionality
+/// Extension methods for <see cref="RenderMetrics"/> providing additional functionality
+/// for formatting and performance analysis.
 /// </summary>
 public static class RenderMetricsExtensions
 {
     /// <summary>
-    /// Calculates the rendering speed in megabytes per second
+    /// Gets a formatted string representation of the metrics with additional details.
     /// </summary>
-    /// <param name="metrics">The render metrics instance</param>
-    /// <returns>Speed in MB/s, or 0 if render time is 0</returns>
-    public static double GetMegabytesPerSecond(this RenderMetrics metrics)
-    {
-        if (metrics == null)
-            throw new ArgumentNullException(nameof(metrics));
-
-        if (metrics.RenderTimeMs == 0)
-            return 0;
-
-        var megabytes = metrics.ImageSizeBytes / (1024.0 * 1024.0);
-        var seconds = metrics.RenderTimeMs / 1000.0;
-        return megabytes / seconds;
-    }
-
-    /// <summary>
-    /// Calculates the data points processing rate
-    /// </summary>
-    /// <param name="metrics">The render metrics instance</param>
-    /// <returns>Data points per second, or 0 if render time is 0</returns>
-    public static double GetDataPointsPerSecond(this RenderMetrics metrics)
-    {
-        if (metrics == null)
-            throw new ArgumentNullException(nameof(metrics));
-
-        if (metrics.RenderTimeMs == 0)
-            return 0;
-
-        return (metrics.DataPointCount * 1000.0) / metrics.RenderTimeMs;
-    }
-
-    /// <summary>
-    /// Gets a formatted string representation of the metrics with additional details
-    /// </summary>
-    /// <param name="metrics">The render metrics instance</param>
-    /// <returns>Formatted string with metrics details</returns>
+    /// <param name="metrics">The render metrics instance. Cannot be null.</param>
+    /// <returns>Formatted string with metrics details.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="metrics"/> is null.</exception>
     public static string ToDetailedString(this RenderMetrics metrics)
     {
-        if (metrics == null)
-            throw new ArgumentNullException(nameof(metrics));
+        ArgumentNullException.ThrowIfNull(metrics);
 
         var mbPerSec = metrics.GetMegabytesPerSecond();
         var pointsPerSec = metrics.GetDataPointsPerSecond();
@@ -75,13 +42,16 @@ public static class RenderMetricsExtensions
     }
 
     /// <summary>
-    /// Formats a byte size into a human-readable string
+    /// Formats a byte size into a human-readable string.
     /// </summary>
-    /// <param name="bytes">Number of bytes</param>
-    /// <returns>Formatted string with appropriate unit</returns>
+    /// <param name="bytes">Number of bytes to format. Must be non-negative.</param>
+    /// <returns>Formatted string with appropriate unit (B, KB, MB, GB, or TB).</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="bytes"/> is negative.</exception>
     private static string FormatSize(long bytes)
     {
-        string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
+        ArgumentOutOfRangeException.ThrowIfNegative(bytes);
+
+        string[] suffixes = ["B", "KB", "MB", "GB", "TB"];
         int counter = 0;
         double value = bytes;
 
@@ -95,28 +65,30 @@ public static class RenderMetricsExtensions
     }
 
     /// <summary>
-    /// Checks if the render operation was fast (under 100ms)
+    /// Checks if the render operation was fast (under 100ms).
     /// </summary>
-    /// <param name="metrics">The render metrics instance</param>
-    /// <returns>True if render time was under 100ms</returns>
+    /// <param name="metrics">The render metrics instance. Cannot be null.</param>
+    /// <returns>True if render time was under 100ms; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="metrics"/> is null.</exception>
     public static bool IsFastRender(this RenderMetrics metrics)
     {
-        if (metrics == null)
-            throw new ArgumentNullException(nameof(metrics));
+        ArgumentNullException.ThrowIfNull(metrics);
 
         return metrics.RenderTimeMs < 100;
     }
 
     /// <summary>
-    /// Gets a comparison string showing how this render compares to a baseline
+    /// Gets a comparison string showing how this render compares to a baseline.
     /// </summary>
-    /// <param name="metrics">The render metrics instance</param>
-    /// <param name="baselineTimeMs">Baseline render time in milliseconds</param>
-    /// <returns>Comparison string</returns>
+    /// <param name="metrics">The render metrics instance. Cannot be null.</param>
+    /// <param name="baselineTimeMs">Baseline render time in milliseconds. Must be non-negative.</param>
+    /// <returns>Comparison string indicating whether the render was faster, slower, or equal to baseline.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="metrics"/> is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="baselineTimeMs"/> is negative.</exception>
     public static string CompareToBaseline(this RenderMetrics metrics, long baselineTimeMs)
     {
-        if (metrics == null)
-            throw new ArgumentNullException(nameof(metrics));
+        ArgumentNullException.ThrowIfNull(metrics);
+        ArgumentOutOfRangeException.ThrowIfNegative(baselineTimeMs);
 
         var diff = metrics.RenderTimeMs - baselineTimeMs;
         var pct = baselineTimeMs > 0 ? (diff / (double)baselineTimeMs) * 100 : 0;
