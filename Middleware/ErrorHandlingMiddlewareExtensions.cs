@@ -4,6 +4,7 @@
 // =====================================================================
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SkiaSharpChartEngine.Exceptions;
@@ -20,12 +21,10 @@ public static class ErrorHandlingMiddlewareExtensions
     /// </summary>
     /// <param name="logger">The logger instance</param>
     /// <returns>A new ErrorHandlingMiddleware instance</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="logger"/> is null</exception>
     public static ErrorHandlingMiddleware WithLogger(this ILogger<ErrorHandlingMiddleware> logger)
     {
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(logger);
 
         return new ErrorHandlingMiddleware(logger);
     }
@@ -61,6 +60,7 @@ public static class ErrorHandlingMiddlewareExtensions
     /// </summary>
     /// <param name="logMessages">Output parameter that will contain captured log messages</param>
     /// <returns>A new ErrorHandlingMiddleware instance with capturing logger</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="logMessages"/> is null</exception>
     public static ErrorHandlingMiddleware WithCapturingLogger(out List<string> logMessages)
     {
         logMessages = new List<string>();
@@ -82,17 +82,11 @@ public static class ErrorHandlingMiddlewareExtensions
     /// <param name="middleware">The middleware instance</param>
     /// <param name="exception">The exception to process</param>
     /// <returns>The MiddlewareException that would be thrown by InvokeAsync</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="middleware"/> or <paramref name="exception"/> is null</exception>
     public static async Task<MiddlewareException> ProcessExceptionAsync(this ErrorHandlingMiddleware middleware, Exception exception)
     {
-        if (middleware == null)
-        {
-            throw new ArgumentNullException(nameof(middleware));
-        }
-
-        if (exception == null)
-        {
-            throw new ArgumentNullException(nameof(exception));
-        }
+        ArgumentNullException.ThrowIfNull(middleware);
+        ArgumentNullException.ThrowIfNull(exception);
 
         try
         {
@@ -113,17 +107,11 @@ public static class ErrorHandlingMiddlewareExtensions
     /// <param name="middleware">The middleware instance</param>
     /// <param name="exception">The exception to process</param>
     /// <returns>The generated ErrorResponse</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="middleware"/> or <paramref name="exception"/> is null</exception>
     public static async Task<ErrorResponse> CreateErrorResponseAsync(this ErrorHandlingMiddleware middleware, Exception exception)
     {
-        if (middleware == null)
-        {
-            throw new ArgumentNullException(nameof(middleware));
-        }
-
-        if (exception == null)
-        {
-            throw new ArgumentNullException(nameof(exception));
-        }
+        ArgumentNullException.ThrowIfNull(middleware);
+        ArgumentNullException.ThrowIfNull(exception);
 
         var (statusCode, message) = middleware.MapException(exception);
         var errorResponse = new ErrorResponse
@@ -145,17 +133,11 @@ public static class ErrorHandlingMiddlewareExtensions
     /// <param name="middleware">The middleware instance</param>
     /// <param name="exception">The exception to map</param>
     /// <returns>Tuple containing status code and message</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="middleware"/> or <paramref name="exception"/> is null</exception>
     public static (int StatusCode, string Message) MapException(this ErrorHandlingMiddleware middleware, Exception exception)
     {
-        if (middleware == null)
-        {
-            throw new ArgumentNullException(nameof(middleware));
-        }
-
-        if (exception == null)
-        {
-            throw new ArgumentNullException(nameof(exception));
-        }
+        ArgumentNullException.ThrowIfNull(middleware);
+        ArgumentNullException.ThrowIfNull(exception);
 
         return middleware.MapException(exception);
     }
