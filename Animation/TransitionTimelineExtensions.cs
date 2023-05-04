@@ -4,7 +4,6 @@
 // =====================================================================
 
 using SkiaSharpChartEngine.Models;
-using System.Text;
 
 namespace SkiaSharpChartEngine.Animation;
 
@@ -36,8 +35,7 @@ public static class TransitionTimelineExtensions
         if (relativeTimeMs < 0)
             throw new ArgumentOutOfRangeException(nameof(relativeTimeMs), "Relative time must be non-negative.");
 
-        double absoluteTime = relativeTimeMs;
-        return timeline.AddKeyframe(chart, absoluteTime, easing);
+        return timeline.AddKeyframe(chart, relativeTimeMs, easing);
     }
 
     /// <summary>
@@ -45,12 +43,21 @@ public static class TransitionTimelineExtensions
     /// </summary>
     /// <param name="timeline">The timeline to extend.</param>
     /// <param name="toChart">The chart state to transition into.</param>
-    /// <param name="relativeStartTimeMs">Relative start time in milliseconds (0 = start, TotalDurationMs = end).</param>
-    /// <param name="durationMs">Duration of this new segment in milliseconds. Must be positive.</param>
-    /// <param name="easing">Easing applied when transitioning from the previous keyframe to toChart.</param>
+    /// <param name="relativeStartTimeMs">
+    /// Relative start time in milliseconds (0 = start, TotalDurationMs = end).
+    /// Must be non-negative and less than or equal to the timeline's total duration.
+    /// </param>
+    /// <param name="durationMs">
+    /// Duration of this new segment in milliseconds. Must be positive.
+    /// </param>
+    /// <param name="easing">
+    /// Easing applied when transitioning from the previous keyframe to <paramref name="toChart"/>.
+    /// </param>
     /// <returns>The same timeline instance for fluent chaining.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when timeline or toChart is null.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when relativeStartTimeMs is negative or durationMs is not positive.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="timeline"/> or <paramref name="toChart"/> is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="relativeStartTimeMs"/> is negative or <paramref name="durationMs"/> is not positive.
+    /// </exception>
     public static TransitionTimeline AppendTransitionAt(
         this TransitionTimeline timeline,
         Chart toChart,
@@ -67,41 +74,44 @@ public static class TransitionTimelineExtensions
         if (durationMs <= 0)
             throw new ArgumentOutOfRangeException(nameof(durationMs), "Segment duration must be positive.");
 
-        double absoluteStartTime = relativeStartTimeMs;
-        double absoluteEndTime = absoluteStartTime + durationMs;
+        double absoluteEndTime = relativeStartTimeMs + durationMs;
 
         // If this is the first keyframe, set it at time 0
         if (timeline.Keyframes.Count == 0)
         {
             timeline.AddKeyframe(toChart, 0, easing);
+            return timeline;
+        }
+
+        // Find the keyframe at or before the relative start time
+        var segments = timeline.GetSegments().ToList();
+        TransitionKeyframe? fromKeyframe = null;
+
+        foreach (var segment in segments)
+        {
+            if (segment.From.TimeMs <= relativeStartTimeMs && segment.To.TimeMs >= relativeStartTimeMs)
+            {
+                fromKeyframe = segment.From;
+                break;
+            }
+        }
+
+        // If we found a starting point within an existing segment, insert the transition there
+        if (fromKeyframe != null)
+        {
+            // Insert a keyframe at the relative start time if it doesn't already exist
+            if (timeline.Keyframes.All(k => Math.Abs(k.TimeMs - relativeStartTimeMs) > double.Epsilon))
+            {
+                timeline.AddKeyframe(toChart, relativeStartTimeMs, easing);
+            }
+
+            // Add the new keyframe at the end time
+            timeline.AddKeyframe(toChart, absoluteEndTime, easing);
         }
         else
         {
-            // Find the keyframe at or before the relative start time
-            var segments = timeline.GetSegments().ToList();
-            TransitionKeyframe? fromKeyframe = null;
-            double fromTime = 0;
-
-            foreach (var segment in segments)
-            {
-                if (segment.From.TimeMs <= relativeStartTimeMs && segment.To.TimeMs >= relativeStartTimeMs)
-                {
-                    fromKeyframe = segment.From;
-                    fromTime = segment.From.TimeMs;
-                    break;
-                }
-            }
-
-            // If we found a starting point, insert at the calculated absolute time
-            if (fromKeyframe != null)
-            {
-                timeline.AddKeyframe(toChart, absoluteEndTime, easing);
-            }
-            else
-            {
-                // Fallback: append at the end
-                timeline.AppendTransition(toChart, durationMs, easing);
-            }
+            // Fallback: append at the end
+            timeline.AppendTransition(toChart, durationMs, easing);
         }
 
         return timeline;
@@ -120,39 +130,39 @@ public static class TransitionTimelineExtensions
     {
         ArgumentNullException.ThrowIfNull(timeline);
 
-        if (timeOffsetMs == 0)
-            return timeline;
+        return timeOffsetMs == 0
+            ? timeline
+            : CreateShiftedTimeline(timeline, timeOffsetMs);
 
-        var newTimeline = new TransitionTimeline();
-        newTimeline.Repeat(timeline.LoopCount);
-
-        foreach (var keyframe in timeline.Keyframes)
+        static TransitionTimeline CreateShiftedTimeline(TransitionTimeline timeline, double timeOffsetMs)
         {
-            newTimeline.AddKeyframe(keyframe.Chart, keyframe.TimeMs + timeOffsetMs, keyframe.Easing);
-        }
+            var newTimeline = new TransitionTimeline();
+            newTimeline.Repeat(timeline.LoopCount);
 
-        return newTimeline;
+            foreach (var keyframe in timeline.Keyframes)
+            {
+                newTimeline.AddKeyframe(keyframe.Chart, keyframe.TimeMs + timeOffsetMs, keyframe.Easing);
+            }
+
+            return newTimeline;
+        }
     }
 
     /// <summary>
     /// Gets the duration of each segment in the timeline.
     /// </summary>
     /// <param name="timeline">The timeline to analyze.</param>
-    /// <returns>An array of segment durations in milliseconds, or empty array if timeline has fewer than 2 keyframes.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when timeline is null.</exception>
+    /// <returns>
+    /// An array of segment durations in milliseconds, or empty array if timeline has fewer than 2 keyframes.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="timeline"/> is null.</exception>
     public static double[] GetSegmentDurations(this TransitionTimeline timeline)
     {
         ArgumentNullException.ThrowIfNull(timeline);
 
-        var segments = timeline.GetSegments().ToList();
-        var durations = new double[segments.Count];
-
-        for (int i = 0; i < segments.Count; i++)
-        {
-            durations[i] = segments[i].To.TimeMs - segments[i].From.TimeMs;
-        }
-
-        return durations;
+        return timeline.GetSegments()
+            .Select(segment => segment.To.TimeMs - segment.From.TimeMs)
+            .ToArray();
     }
 
     /// <summary>
@@ -161,8 +171,10 @@ public static class TransitionTimelineExtensions
     /// </summary>
     /// <param name="timeline">The timeline to reverse.</param>
     /// <returns>A new timeline instance with reversed keyframe order.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when timeline is null.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when timeline has fewer than 2 keyframes.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="timeline"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <paramref name="timeline"/> has fewer than 2 keyframes.
+    /// </exception>
     public static TransitionTimeline Reverse(
         this TransitionTimeline timeline)
     {
