@@ -275,4 +275,82 @@ public class DataAggregatorTestsDemo
 }
 ```
 
-These extensions make test code concise and expressive while ensuring that the data aggregation logic is thoroughly validated.```````
+These extensions make test code concise and expressive while ensuring that the data aggregation logic is thoroughly validated.
+
+## ChartInteractionServiceTestsExtensions
+
+`ChartInteractionServiceTestsExtensions` provides a collection of fluent extension methods for testing chart interaction scenarios with the `ChartInteractionService`. It includes factory methods for creating charts and tooltip hit results, as well as assertion helpers for validating interaction results. These extensions simplify testing of chart interactivity features like tooltip display, hit detection, and user interaction handling.
+
+### Usage example
+
+```csharp
+using System;
+using Moq;
+using SkiasharpChartEngine.Models;
+using SkiasharpChartEngine.Services;
+using SkiasharpChartEngine.Tests;
+using Xunit;
+
+public class ChartInteractionTestsDemo
+{
+    public void Run()
+    {
+        // 1️⃣ Create a chart with multiple series and data points for testing
+        var chart = new ChartInteractionServiceTests().CreateChart(
+            id: "test-chart",
+            seriesCount: 3,
+            dataPointsPerSeries: 5
+        );
+
+        // Verify the chart was created correctly
+        Assert.Equal(3, chart.Series.Count);
+        Assert.Equal(5, chart.Series[0].DataPoints.Count);
+
+        // 2️⃣ Create a tooltip hit result at a specific data point
+        var hitResult = new ChartInteractionServiceTests().MakeHit(
+            chart: chart,
+            seriesIndex: 1,
+            dataPointIndex: 2
+        );
+
+        // Verify the hit result properties
+        Assert.True(hitResult.IsHit);
+        Assert.Equal(2, hitResult.SeriesIndex);
+        Assert.Equal(3.0, hitResult.DataPoint.X);
+        Assert.Equal(30.0, hitResult.DataPoint.Y);
+
+        // 3️⃣ Set up a mock interactivity service to return a specific hit result
+        var mockService = new Mock<IInteractivityService>();
+        mockService.SetupHitTest(chart, hitResult);
+
+        // 4️⃣ Set up a mock interactivity service to return a miss result
+        mockService.SetupHitMiss(chart);
+
+        // 5️⃣ Verify that an interaction result is a valid hit
+        var interactionArgs = new ChartInteractionEventArgs
+        {
+            HitDataPoint = hitResult.DataPoint,
+            HitSeries = chart.Series[1],
+            Region = ChartRegion.PlotArea,
+            SeriesIndex = 1
+        };
+        new ChartInteractionServiceTests().ShouldBeValidHit(
+            interactionArgs,
+            hitResult.DataPoint,
+            chart.Series[1]
+        );
+
+        // 6️⃣ Verify that an interaction result is a miss
+        var missArgs = new ChartInteractionEventArgs
+        {
+            HitDataPoint = null,
+            HitSeries = null,
+            Region = ChartRegion.Outside,
+            SeriesIndex = -1
+        };
+        new ChartInteractionServiceTests().ShouldBeMiss(missArgs);
+    }
+}
+```
+
+These extensions make chart interaction tests concise and readable while ensuring comprehensive coverage of interactivity scenarios.
