@@ -118,6 +118,43 @@ public class ApiResponseDemo
         ApiResponse<List<string>> responseWithError = standardResponse.WithError("myError");
     }
 }
-```
 
-The example demonstrates each public member of `ApiResponseExtensions` in a realistic scenario.
+## TooltipOptionsExtensions
+
+`TooltipOptionsExtensions` provides a set of extension methods for customizing tooltip options. It allows you to easily switch between light, dark, and high contrast themes, adjust the size, clone existing options, and more.
+
+### Usage example
+
+```csharp
+using System;
+using SkiasharpChartEngine.Models;
+
+public class TooltipDemo
+{
+    public static void Main(string[] args)
+    {
+        // Create a new tooltip options instance with a light theme
+        TooltipOptions lightTooltip = TooltipOptionsExtensions.WithLightTheme();
+
+        // Create a new tooltip options instance with a dark theme
+        TooltipOptions darkTooltip = TooltipOptionsExtensions.WithDarkTheme();
+
+        // Create a new tooltip options instance with a high contrast theme
+        TooltipOptions highContrastTooltip = TooltipOptionsExtensions.WithHighContrast();
+
+        // Create a new tooltip options instance with a large size
+        TooltipOptions largeTooltip = TooltipOptionsExtensions.WithLargeSize();
+
+        // Create a new tooltip options instance with a small size
+        TooltipOptions smallTooltip = TooltipOptionsExtensions.WithSmallSize();
+
+        // Clone an existing tooltip options instance
+        TooltipOptions clonedTooltip = lightTooltip.Clone();
+
+        // Check if a tooltip should be shown
+        bool shouldShowTooltip = TooltipOptionsExtensions.ShouldShow(clonedTooltip);
+
+        // Customize the background color of a tooltip
+        TooltipOptions customizedTooltip = TooltipOptionsExtensions.WithBackgroundColor(clonedTooltip, "#CCCCCC");
+    }
+}
