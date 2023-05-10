@@ -1,4 +1,3 @@
-
 ## RenderMetricsExtensions
 
 `RenderMetricsExtensions` provides utility methods to analyze and compare rendering performance metrics. These extensions help evaluate rendering speed and efficiency by calculating metrics such as megabytes per second and data points per second.
@@ -141,3 +140,43 @@ public class PerformanceMonitoringDemo
         }
     }
 }
+```
+
+## TransitionTimelineExtensions
+
+`TransitionTimelineExtensions` provides utility methods to manipulate and analyze animation transition timelines. It enables adding keyframes, appending transitions, adjusting timing, extracting segment durations, and reversing animation sequences.
+
+### Usage example
+
+```csharp
+using SkiasharpChartEngine.Animation;
+using SkiasharpChartEngine.Models;
+
+public class TransitionTimelineDemo
+{
+    public static void Main(string[] args)
+    {
+        // Create a transition timeline
+        var timeline = new TransitionTimeline();
+        
+        // Add keyframes at specific times
+        timeline = timeline.AddKeyframeAt(new Chart(), 0, 0.5, 1.0)
+                          .AddKeyframeAt(new Chart(), 1000, 0.75, 0.9);
+        
+        // Append a transition at 2000ms
+        timeline = timeline.AppendTransitionAt(2000, "ease-in-out");
+        
+        // Shift all timeline elements forward by 500ms
+        timeline = timeline.ShiftTime(500);
+        
+        // Get durations of each segment
+        double[] durations = timeline.GetSegmentDurations();
+        
+        // Reverse the timeline sequence
+        timeline = timeline.Reverse();
+        
+        // Output segment durations
+        Console.WriteLine($"Segment durations: {string.Join(", ", durations)}");
+    }
+}
+```
