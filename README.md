@@ -119,5 +119,55 @@ public class DataControllerExample
 }
 ```
 
-// ... (rest of the file remains the same)
+## ChartController
+
+`ChartController` is a REST API controller that handles chart creation, retrieval, update, and deletion operations. It provides endpoints for creating new charts, retrieving existing charts by ID, updating chart configurations, and deleting charts.
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using SkiaSharpChartEngine.API.Controllers;
+using SkiaSharpChartEngine.API.Responses;
+using SkiaSharpChartEngine.Models;
+
+public class ChartControllerExample
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize controller (typically injected via DI in real applications)
+        var chartController = new ChartController(
+            new ChartDataService(), // Mock service for demonstration
+            new Microsoft.Extensions.Logging.Abstractions.NullLogger<ChartController>()
+        );
+
+        // Create a new chart
+        var chartId = await chartController.CreateChartAsync(
+            "My Chart",
+            ChartType.Line,
+            new ChartConfiguration { Series = new[] { new ChartSeries { DataPoints = new[] { new DataPoint { X = 1, Y = 10 } } } } }
+        );
+        Console.WriteLine($"Chart ID: {chartId}");
+
+        // Retrieve an existing chart by ID
+        var chart = await chartController.GetChartAsync(chartId);
+        Console.WriteLine($"Chart Title: {chart.Title}");
+        Console.WriteLine($"Chart Type: {chart.ChartType}");
+        Console.WriteLine($"Chart Configuration: {chart.Configuration?.Series[0].DataPoints[0].X}, {chart.Configuration?.Series[0].DataPoints[0].Y}");
+
+        // Update a chart configuration
+        var updatedChart = await chartController.UpdateChartAsync(
+            chartId,
+            "Updated Chart",
+            chart.ChartType,
+            new ChartConfiguration { Series = new[] { new ChartSeries { DataPoints = new[] { new DataPoint { X = 1, Y = 20 } } } } }
+        );
+        Console.WriteLine($"Updated Chart ID: {updatedChart.Id}");
+
+        // Delete a chart
+        var deleted = await chartController.DeleteChartAsync(chartId);
+        Console.WriteLine($"Chart Deleted: {deleted}");
+    }
+}
 ```
+
+// ... (rest of the file remains the same)
