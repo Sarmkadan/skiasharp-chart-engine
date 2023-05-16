@@ -3,6 +3,7 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.ObjectPool;
@@ -30,10 +31,10 @@ public class StringFormatHelper
         var fmt = $"F{decimalPlaces}";
         return absValue switch
         {
-            >= 1_000_000_000 => (value / 1_000_000_000).ToString(fmt) + "B",
-            >= 1_000_000 => (value / 1_000_000).ToString(fmt) + "M",
-            >= 1_000 => (value / 1_000).ToString(fmt) + "K",
-            _ => value.ToString(fmt)
+            >= 1_000_000_000 => (value / 1_000_000_000).ToString(fmt, CultureInfo.InvariantCulture) + "B",
+            >= 1_000_000 => (value / 1_000_000).ToString(fmt, CultureInfo.InvariantCulture) + "M",
+            >= 1_000 => (value / 1_000).ToString(fmt, CultureInfo.InvariantCulture) + "K",
+            _ => value.ToString(fmt, CultureInfo.InvariantCulture)
         };
     }
 
@@ -42,7 +43,7 @@ public class StringFormatHelper
     /// </summary>
     public static string FormatCurrency(double value, string currencySymbol = "$")
     {
-        return $"{currencySymbol}{value:N2}";
+        return currencySymbol + value.ToString("N2", CultureInfo.InvariantCulture);
     }
 
     /// <summary>
@@ -50,7 +51,7 @@ public class StringFormatHelper
     /// </summary>
     public static string FormatPercentage(double value, int decimalPlaces = 0)
     {
-        return value.ToString($"F{decimalPlaces}") + "%";
+        return value.ToString($"F{decimalPlaces}", CultureInfo.InvariantCulture) + "%";
     }
 
     /// <summary>
