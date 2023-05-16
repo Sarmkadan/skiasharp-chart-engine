@@ -65,3 +65,42 @@ catch (ChartEngineException ex)
 throw new ChartEngineException("Invalid chart data", new InvalidChartDataException("Invalid data points"));
 ```
 
+## AnimationFrameGenerator
+
+`AnimationFrameGenerator` is a class responsible for generating animation frames. It provides methods for generating frames and data frames, as well as accessing the current frame number, progress, and values.
+
+```csharp
+using System.Collections.Generic;
+using SkiaSharpChartEngine.Rendering;
+
+public class AnimationFrameGeneratorExample
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize animation frame generator
+        var animationFrameGenerator = new AnimationFrameGenerator();
+
+        // Generate frames
+        var frames = animationFrameGenerator.GenerateFrames();
+        Console.WriteLine($"Generated frames count: {frames.Count}");
+
+        // Generate data frames
+        var dataFrames = animationFrameGenerator.GenerateDataFrames();
+        Console.WriteLine($"Generated data frames count: {dataFrames.Count}");
+
+        // Get current frame number
+        var frameNumber = animationFrameGenerator.FrameNumber;
+        Console.WriteLine($"Current frame number: {frameNumber}");
+
+        // Get current progress
+        var progress = animationFrameGenerator.Progress;
+        Console.WriteLine($"Current progress: {progress}");
+
+        // Get current values
+        var values = animationFrameGenerator.Values;
+        Console.WriteLine($"Current values count: {values.Count}");
+    }
+}
+```
+
+```
