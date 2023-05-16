@@ -27,13 +27,13 @@ public class DataAggregator
     // Aggregate data points into buckets
     public List<DataPoint> AggregateByCount(List<DataPoint> dataPoints, int bucketCount, AggregationType aggregationType)
     {
+        if (bucketCount <= 0)
+            throw new ArgumentException("Bucket count must be positive", nameof(bucketCount));
+
         try
         {
             if (dataPoints == null || dataPoints.Count == 0)
                 return new List<DataPoint>();
-
-            if (bucketCount <= 0)
-                throw new ArgumentException("Bucket count must be positive", nameof(bucketCount));
 
             _logger.LogInformation("Aggregating {Count} points into {BucketCount} buckets using {AggregationType}",
                 dataPoints.Count, bucketCount, aggregationType);

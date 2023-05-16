@@ -67,18 +67,20 @@ public class ChartEngineTests
     }
 
     [Fact]
-    public void RenderChart_WithEmptySeries_ThrowsInvalidChartDataException()
+    public void RenderChart_WithEmptySeries_ReturnsFailureResult()
     {
         // Arrange
         var engine = ChartEngine.Create();
         var chart = new Chart("empty-chart");
 
         // Act
-        Action act = () => engine.RenderChart(chart);
+        var result = engine.RenderChart(chart);
 
-        // Assert
-        act.Should().Throw<InvalidChartDataException>()
-            .WithMessage("*must contain at least one series*");
+        // Assert - domain validation errors are reported as a failure result,
+        // consistent with RenderChartAsync's behavior for the same condition.
+        result.Should().NotBeNull();
+        result.Success.Should().BeFalse();
+        result.ErrorMessage.Should().Contain("must contain at least one series");
     }
 
     [Fact]
@@ -244,8 +246,11 @@ public class ChartEngineTests
         series.AddDataPoint(1.0, 100.0);
         chart.AddSeries(series);
 
+        // Cancel up front rather than after a delay: rendering a single data point
+        // completes in well under a millisecond, so a delayed cancellation races the
+        // render and never reliably fires before completion.
         var cts = new CancellationTokenSource();
-        cts.CancelAfter(TimeSpan.FromMilliseconds(10));
+        cts.Cancel();
 
         // Act
         var result = await engine.RenderChartAsync(chart, cts.Token);

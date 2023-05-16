@@ -102,7 +102,10 @@ public class ExportOptions
     {
         var directory = string.IsNullOrWhiteSpace(OutputDirectory) ? Environment.CurrentDirectory : OutputDirectory;
         var extension = GetFileExtension(Format);
-        return Path.Combine(directory, $"{Filename}.{extension}");
+        var baseName = Filename.EndsWith("." + extension, StringComparison.OrdinalIgnoreCase)
+            ? Filename[..^(extension.Length + 1)]
+            : Filename;
+        return Path.Combine(directory, $"{baseName}.{extension}");
     }
 
     public static string GetFileExtension(ExportFormat format) => format switch

@@ -79,6 +79,7 @@ public class RenderResult
             ChartId = chartId,
             Success = true,
             OutputPath = outputPath,
+            ImageData = fileInfo.Exists ? File.ReadAllBytes(outputPath) : null,
             FileSizeBytes = fileInfo.Exists ? fileInfo.Length : null,
             ExportFormat = format,
             RenderTimeMs = renderTimeMs,

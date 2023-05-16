@@ -165,8 +165,9 @@ public class Chart
 
     public Chart Clone()
     {
-        var cloned = new Chart(Type, Id)
+        var cloned = new Chart(_configuration.Clone(), Id)
         {
+            Type = Type,
             CreatedAt = CreatedAt,
             ModifiedAt = ModifiedAt,
             CreatedBy = CreatedBy,

@@ -80,22 +80,24 @@ public class ExportService : IExportService
 
     public RenderResult Export(Chart chart, ExportOptions options)
     {
+        if (chart == null)
+            throw new ArgumentNullException(nameof(chart));
+
+        if (options == null)
+            throw new ArgumentNullException(nameof(options));
+
+        if (!SupportsFormat(options.Format))
+            throw new UnsupportedExportFormatException(options.Format.ToString());
+
+        options.Validate();
+
         try
         {
-            if (chart == null)
-                throw new ArgumentNullException(nameof(chart));
-
-            if (options == null)
-                throw new ArgumentNullException(nameof(options));
-
-            if (!SupportsFormat(options.Format))
-                throw new UnsupportedExportFormatException(options.Format.ToString());
-
-            options.Validate();
-
             _logger.LogInformation($"Exporting chart {chart.Id} as {options.Format}");
 
-            return _renderingService.RenderToFile(chart, options.GetFullPath());
+            // Route through the format-aware export path (RenderToFile only ever
+            // produces PNG) so that SVG/JPEG/WebP requests are honored here too.
+            return _renderingService.RenderWithExportAsync(chart, options).GetAwaiter().GetResult();
         }
         catch (Exception ex)
         {

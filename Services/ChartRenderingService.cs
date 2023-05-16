@@ -35,19 +35,19 @@ public class ChartRenderingService : IChartRenderingService
 
     public async Task<RenderResult> RenderToByteArrayAsync(Chart chart, CancellationToken cancellationToken = default)
     {
+        if (chart == null)
+            throw new ArgumentNullException(nameof(chart));
+
         var startTime = DateTime.UtcNow;
 
         try
         {
-            if (chart == null)
-                throw new ArgumentNullException(nameof(chart));
-
             chart.ValidateForRendering();
 
             var cacheKey = GenerateCacheKey(chart);
             var cachedData = _cacheService.Get(cacheKey);
 
-            if (cachedData != null)
+            if (cachedData is { Length: > 0 })
             {
                 _logger.LogInformation($"Using cached render result for chart {chart.Id}");
                 return RenderResult.CreateSuccess(chart.Id, cachedData, 0, ExportFormat.PNG);
@@ -71,16 +71,16 @@ public class ChartRenderingService : IChartRenderingService
 
     public async Task<RenderResult> RenderToFileAsync(Chart chart, string outputPath, CancellationToken cancellationToken = default)
     {
+        if (chart == null)
+            throw new ArgumentNullException(nameof(chart));
+
+        if (string.IsNullOrWhiteSpace(outputPath))
+            throw new ArgumentNullException(nameof(outputPath));
+
         var startTime = DateTime.UtcNow;
 
         try
         {
-            if (chart == null)
-                throw new ArgumentNullException(nameof(chart));
-
-            if (string.IsNullOrWhiteSpace(outputPath))
-                throw new ArgumentNullException(nameof(outputPath));
-
             chart.ValidateForRendering();
 
             var directory = Path.GetDirectoryName(outputPath);
@@ -107,16 +107,16 @@ public class ChartRenderingService : IChartRenderingService
 
     public async Task<RenderResult> RenderWithExportAsync(Chart chart, ExportOptions exportOptions, CancellationToken cancellationToken = default)
     {
+        if (chart == null)
+            throw new ArgumentNullException(nameof(chart));
+
+        if (exportOptions == null)
+            throw new ArgumentNullException(nameof(exportOptions));
+
         var startTime = DateTime.UtcNow;
 
         try
         {
-            if (chart == null)
-                throw new ArgumentNullException(nameof(chart));
-
-            if (exportOptions == null)
-                throw new ArgumentNullException(nameof(exportOptions));
-
             exportOptions.Validate();
             chart.ValidateForRendering();
 
@@ -135,7 +135,7 @@ public class ChartRenderingService : IChartRenderingService
                 }
                 else
                 {
-                    var imageData = RenderChartToBytes(chart);
+                    var imageData = RenderChartToBytes(chart, exportOptions.Format, exportOptions.Quality);
                     File.WriteAllBytes(fullPath, imageData);
                 }
             }, cancellationToken);
@@ -154,16 +154,27 @@ public class ChartRenderingService : IChartRenderingService
 
     public RenderResult RenderToByteArray(Chart chart)
     {
+        if (chart == null)
+            throw new ArgumentNullException(nameof(chart));
+
         var startTime = DateTime.UtcNow;
 
         try
         {
-            if (chart == null)
-                throw new ArgumentNullException(nameof(chart));
-
             chart.ValidateForRendering();
 
+            var cacheKey = GenerateCacheKey(chart);
+            var cachedData = _cacheService.Get(cacheKey);
+
+            if (cachedData is { Length: > 0 })
+            {
+                var cachedRenderTime = (long)(DateTime.UtcNow - startTime).TotalMilliseconds;
+                return RenderResult.CreateSuccess(chart.Id, cachedData, cachedRenderTime, ExportFormat.PNG);
+            }
+
             var imageData = RenderChartToBytes(chart);
+            _cacheService.Set(cacheKey, imageData);
+
             var renderTime = (long)(DateTime.UtcNow - startTime).TotalMilliseconds;
 
             return RenderResult.CreateSuccess(chart.Id, imageData, renderTime, ExportFormat.PNG);
@@ -177,16 +188,16 @@ public class ChartRenderingService : IChartRenderingService
 
     public RenderResult RenderToFile(Chart chart, string outputPath)
     {
+        if (chart == null)
+            throw new ArgumentNullException(nameof(chart));
+
+        if (string.IsNullOrWhiteSpace(outputPath))
+            throw new ArgumentNullException(nameof(outputPath));
+
         var startTime = DateTime.UtcNow;
 
         try
         {
-            if (chart == null)
-                throw new ArgumentNullException(nameof(chart));
-
-            if (string.IsNullOrWhiteSpace(outputPath))
-                throw new ArgumentNullException(nameof(outputPath));
-
             chart.ValidateForRendering();
 
             var directory = Path.GetDirectoryName(outputPath);
@@ -226,6 +237,9 @@ public class ChartRenderingService : IChartRenderingService
     }
 
     private byte[] RenderChartToBytes(Chart chart)
+        => RenderChartToBytes(chart, ExportFormat.PNG, 1.0f);
+
+    private byte[] RenderChartToBytes(Chart chart, ExportFormat format, float quality)
     {
         var width = chart.Configuration.Width;
         var height = chart.Configuration.Height;
@@ -243,8 +257,20 @@ public class ChartRenderingService : IChartRenderingService
         DrawTitle(canvas, chart);
 
         using var image = surface.Snapshot();
-        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+        var (encodedFormat, quality100) = MapEncodingFormat(format, quality);
+        using var data = image.Encode(encodedFormat, quality100);
         return data.ToArray();
+    }
+
+    private static (SKEncodedImageFormat Format, int Quality) MapEncodingFormat(ExportFormat format, float quality)
+    {
+        var quality100 = (int)Math.Clamp(quality * 100, 1, 100);
+        return format switch
+        {
+            ExportFormat.JPEG => (SKEncodedImageFormat.Jpeg, quality100),
+            ExportFormat.WEBP => (SKEncodedImageFormat.Webp, quality100),
+            _ => (SKEncodedImageFormat.Png, 100)
+        };
     }
 
     private string RenderChartToSvg(Chart chart)
@@ -462,6 +488,35 @@ public class ChartRenderingService : IChartRenderingService
 
     private string GenerateCacheKey(Chart chart)
     {
-        return $"chart_{chart.Id}_{chart.ModifiedAt:yyyyMMddHHmmss}";
+        // ModifiedAt alone is not a reliable cache-invalidation signal: callers can mutate a
+        // chart's series/configuration in place without ever touching ModifiedAt, which would
+        // otherwise serve stale bytes for genuinely different content. Fold the render-relevant
+        // state into the key so a content change always misses the cache.
+        var config = chart.Configuration;
+        var hash = new HashCode();
+        hash.Add(config.Width);
+        hash.Add(config.Height);
+        hash.Add(config.Title);
+        hash.Add(config.Subtitle);
+        hash.Add(config.BackgroundColor);
+        hash.Add(config.ShowGrid);
+        hash.Add(config.ShowLegend);
+        hash.Add(config.ShowAxisLabels);
+
+        foreach (var series in chart.Series)
+        {
+            hash.Add(series.Name);
+            hash.Add(series.Color);
+            hash.Add(series.IsVisible);
+            hash.Add(series.LineWidth);
+            hash.Add(series.DataPoints.Count);
+            foreach (var point in series.DataPoints)
+            {
+                hash.Add(point.X);
+                hash.Add(point.Y);
+            }
+        }
+
+        return $"chart_{chart.Id}_{chart.ModifiedAt:yyyyMMddHHmmss}_{hash.ToHashCode():x8}";
     }
 }
