@@ -391,3 +391,97 @@ public class Program
     }
 }
 ```
+
+## ChartInteractionEventArgs
+
+`ChartInteractionEventArgs` provides the event data for user interactions with chart elements such as clicks, hovers, selections, and context menu gestures. It contains detailed information about the interaction including the pointer position, the chart region affected, and any data points or series that were hit during the interaction.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using SkiaSharpChartEngine.Events;
+using SkiaSharpChartEngine.Models;
+
+public class ChartInteractionHandler
+{
+    private readonly IChartInteractionService _interactionService;
+
+    public ChartInteractionHandler(IChartInteractionService interactionService)
+    {
+        _interactionService = interactionService;
+        _interactionService.Interaction += OnChartInteraction;
+    }
+
+    private void OnChartInteraction(object? sender, ChartInteractionEventArgs e)
+    {
+        Console.WriteLine($"Interaction at ({e.PointerX}, {e.PointerY})");
+        Console.WriteLine($"Type: {e.InteractionType}");
+        Console.WriteLine($"Region: {e.Region}");
+        Console.WriteLine($"Series: {e.HitSeries?.Name ?? "None"}");
+        Console.WriteLine($"DataPoint: {e.HitDataPoint?.Value ?? 0}");
+        Console.WriteLine($"Tooltip: {e.TooltipText}");
+        Console.WriteLine($"Timestamp: {e.Timestamp:O}");
+
+        // Add custom metadata
+        e.Metadata["userId"] = "user-123";
+        e.Metadata["sessionId"] = Guid.NewGuid().ToString();
+
+        // Handle selection-based interactions
+        if (e.InteractionType == ChartInteractionType.Select && e.HitDataPoint != null)
+        {
+            Console.WriteLine($"Selected point: Series={e.SeriesIndex}, Value={e.HitDataPoint.Value}");
+        }
+    }
+}
+
+// Example usage with different interaction types
+public class InteractionExamples
+{
+    public static void Main()
+    {
+        var now = DateTime.UtcNow;
+        var metadata = new Dictionary<string, object>
+        {
+            ["chartId"] = "sales-line-chart",
+            ["userRole"] = "analyst"
+        };
+
+        // Click interaction
+        var clickArgs = new ChartInteractionEventArgs
+        {
+            InteractionType = ChartInteractionType.Click,
+            PointerX = 150.5f,
+            PointerY = 200.75f,
+            Region = ChartRegion.PlotArea,
+            HitSeries = new ChartSeries { Name = "Sales" },
+            HitDataPoint = new DataPoint { X = 3, Y = 1500 },
+            SeriesIndex = 0,
+            TooltipText = "Q3 2024: $1,500",
+            Metadata = metadata
+        };
+
+        Console.WriteLine("Click interaction:");
+        Console.WriteLine($"  Position: ({clickArgs.PointerX}, {clickArgs.PointerY})");
+        Console.WriteLine($"  DataPoint: X={clickArgs.HitDataPoint?.X}, Y={clickArgs.HitDataPoint?.Y}");
+        Console.WriteLine($"  Tooltip: {clickArgs.TooltipText}");
+
+        // Hover interaction
+        var hoverArgs = new ChartInteractionEventArgs
+        {
+            InteractionType = ChartInteractionType.Hover,
+            PointerX = 200.0f,
+            PointerY = 180.0f,
+            Region = ChartRegion.AxisX,
+            HitSeries = null,
+            HitDataPoint = null,
+            SeriesIndex = -1,
+            TooltipText = "",
+            Metadata = new Dictionary<string, object>()
+        };
+
+        Console.WriteLine("\nHover interaction:");
+        Console.WriteLine($"  Position: ({hoverArgs.PointerX}, {hoverArgs.PointerY})");
+        Console.WriteLine($"  SeriesIndex: {hoverArgs.SeriesIndex}");
+    }
+}
+```
