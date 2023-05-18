@@ -404,6 +404,59 @@ The benchmarks cover:
 - **FormatNumberWithUnits**: Formats numbers with appropriate units (thousands, millions, billions)
 - **FormatPercentage**: Formats numbers as percentages with specified decimal places
 
+## MathHelperBenchmarks
+
+`MathHelperBenchmarks` is a benchmark suite that measures the performance of mathematical operations used throughout the SkiaSharp chart engine. It focuses on hot paths for statistical calculations including min/max finding, averaging, and standard deviation computation. The benchmarks compare traditional `IEnumerable<T>`-based approaches against zero-allocation `ReadOnlySpan<T>`-based implementations to demonstrate performance improvements.
+
+The benchmarks cover:
+- **GetMinMax**: Finds minimum and maximum values in a dataset
+- **Average**: Computes the arithmetic mean of values
+- **StandardDeviation**: Calculates the standard deviation (measure of data dispersion)
+
+```csharp
+using System;
+using System.Collections.Generic;
+using SkiaSharpChartEngine.Benchmarks;
+using SkiaSharpChartEngine.Utilities;
+
+public class MathHelperBenchmarksExample
+{
+    public static void Main()
+    {
+        // Create sample data for analysis
+        var random = new Random(42);
+        var dataPoints = new float[1000];
+        for (int i = 0; i < dataPoints.Length; i++)
+        {
+            dataPoints[i] = (float)(random.NextDouble() * 1000.0);
+        }
+
+        // Get min/max values using ReadOnlySpan (recommended for performance)
+        var (min, max) = MathHelper.GetMinMax(dataPoints.AsSpan());
+        Console.WriteLine($"Min: {min:F2}, Max: {max:F2}");
+        // Example output: Min: 0.02, Max: 999.98
+
+        // Calculate average using ReadOnlySpan
+        float average = MathHelper.Average(dataPoints.AsSpan());
+        Console.WriteLine($"Average: {average:F2}");
+        // Example output: Average: 499.50
+
+        // Calculate standard deviation using ReadOnlySpan
+        float stdDev = MathHelper.StandardDeviation(dataPoints.AsSpan());
+        Console.WriteLine($"Standard Deviation: {stdDev:F2}");
+        // Example output: Standard Deviation: 288.67
+
+        // For comparison: using IEnumerable (less efficient)
+        var dataEnumerable = (IEnumerable<float>)dataPoints;
+        var (minEnum, maxEnum) = MathHelper.GetMinMax(dataEnumerable);
+        float averageEnum = MathHelper.Average(dataEnumerable);
+        float stdDevEnum = MathHelper.StandardDeviation(dataEnumerable);
+        
+        Console.WriteLine($"\nIEnumerable results - Min: {minEnum:F2}, Max: {maxEnum:F2}, Avg: {averageEnum:F2}, StdDev: {stdDevEnum:F2}");
+    }
+}
+```
+
 ```csharp
 using System;
 using SkiaSharpChartEngine.Benchmarks;
