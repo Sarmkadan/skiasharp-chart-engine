@@ -392,6 +392,69 @@ public class Program
 }
 ```
 
+## StringFormatBenchmarks
+
+`StringFormatBenchmarks` is a benchmark suite that measures the performance of common string formatting operations used throughout the SkiaSharp chart engine. It focuses on hot paths for string formatting including camelCase/snake_case conversion, CSV generation, string repetition, and number formatting with units.
+
+The benchmarks cover:
+- **CamelCaseToTitleCase**: Converts camelCase strings to Title Case using `string.Create`
+- **SnakeCaseToTitleCase**: Converts snake_case strings to Title Case using `string.Create`
+- **ToCsvLine**: Generates CSV lines from arrays of values using pooled `StringBuilder`
+- **Repeat**: Repeats strings multiple times efficiently
+- **FormatNumberWithUnits**: Formats numbers with appropriate units (thousands, millions, billions)
+- **FormatPercentage**: Formats numbers as percentages with specified decimal places
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Benchmarks;
+using SkiaSharpChartEngine.Utilities;
+
+public class StringFormatBenchmarksExample
+{
+    public static void Main()
+    {
+        // CamelCaseToTitleCase example
+        string camelCase = "salesPerformanceMonthlyDashboard";
+        string titleCase = StringFormatHelper.CamelCaseToTitleCase(camelCase);
+        Console.WriteLine($"CamelCase: {camelCase}");
+        Console.WriteLine($"TitleCase: {titleCase}");
+        // Output: TitleCase: Sales Performance Monthly Dashboard
+
+        // SnakeCaseToTitleCase example
+        string snakeCase = "sales_performance_monthly_dashboard";
+        string titleCase2 = StringFormatHelper.SnakeCaseToTitleCase(snakeCase);
+        Console.WriteLine($"SnakeCase: {snakeCase}");
+        Console.WriteLine($"TitleCase: {titleCase2}");
+        // Output: TitleCase: Sales Performance Monthly Dashboard
+
+        // ToCsvLine example - format data for CSV export
+        var csvValues = new object[] { "Monthly Revenue", 1234567.89, "North America", true, null };
+        string csvLine = StringFormatHelper.ToCsvLine(csvValues);
+        Console.WriteLine($"CSV Line: {csvLine}");
+        // Output: CSV Line: "Monthly Revenue",1234567.89,North America,True,
+
+        // Repeat example - create separator lines
+        string separator = StringFormatHelper.Repeat("-", 50);
+        Console.WriteLine(separator);
+        // Output: --------------------------------------------------
+
+        // FormatNumberWithUnits examples
+        string formattedBillions = StringFormatHelper.FormatNumberWithUnits(1234567890);
+        Console.WriteLine($"Billions: {formattedBillions}");
+        // Output: Billions: 1.23B
+
+        string formattedThousands = StringFormatHelper.FormatNumberWithUnits(4567.5);
+        Console.WriteLine($"Thousands: {formattedThousands}");
+        // Output: Thousands: 4.57K
+
+        // FormatPercentage example
+        string percentage = StringFormatHelper.FormatPercentage(73.456, 2);
+        Console.WriteLine($"Percentage: {percentage}");
+        // Output: Percentage: 73.46%
+    }
+}
+```
+
 ## ChartInteractionEventArgs
 
 `ChartInteractionEventArgs` provides the event data for user interactions with chart elements such as clicks, hovers, selections, and context menu gestures. It contains detailed information about the interaction including the pointer position, the chart region affected, and any data points or series that were hit during the interaction.
