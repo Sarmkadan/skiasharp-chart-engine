@@ -457,6 +457,42 @@ public class MathHelperBenchmarksExample
 }
 ```
 
+## QuickStartExample
+
+`QuickStartExample` provides a collection of practical examples demonstrating common usage patterns for the SkiaSharp chart engine. It showcases how to create various chart types, configure chart properties, render charts to images, export charts to files, validate chart configurations, work with color palettes, and perform asynchronous rendering operations.
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using SkiaSharpChartEngine;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Utilities;
+
+public class QuickStartExampleUsage
+{
+    public static void Main()
+    {
+        // Example 1: Create a simple line chart
+        QuickStartExample.CreateSimpleLineChart();
+        
+        // Example 2: Create a multi-series chart with custom configuration
+        QuickStartExample.CreateMultiSeriesChart();
+        
+        // Example 3: Export a chart to a file
+        QuickStartExample.ExportChartToFile();
+        
+        // Example 4: Validate a chart before rendering
+        QuickStartExample.ValidateChartBeforeRendering();
+        
+        // Example 5: Generate and visualize different color palettes
+        QuickStartExample.GenerateAndVisualizePaletteColors();
+        
+        // Example 6: Perform asynchronous chart rendering
+        QuickStartExample.RenderChartAsync().GetAwaiter().GetResult();
+    }
+}
+```
+
 ```csharp
 using System;
 using SkiaSharpChartEngine.Benchmarks;
