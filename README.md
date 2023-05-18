@@ -195,6 +195,86 @@ public class ChartEventLoggerSubscriber : IChartEventSubscriber
 }
 ```
 
+## EventDispatcher
+
+`EventDispatcher` is a central event dispatcher implementing the publish-subscribe pattern. It manages event subscriptions and dispatches events to all registered handlers, supporting both synchronous and asynchronous event handling. The dispatcher provides thread-safe subscription management, comprehensive logging, and utilities for inspecting the current subscription state.
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Events;
+
+public class EventDispatcherExample
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize dispatcher with logger
+        var logger = new NullLogger<EventDispatcher>();
+        var dispatcher = new EventDispatcher(logger);
+
+        // Check initial handler count
+        Console.WriteLine($"Initial handler count for 'chart.created': {dispatcher.GetHandlerCount("chart.created")}");
+
+        // Create handlers
+        var syncHandler = new SyncEventHandler();
+        var asyncHandler = new AsyncEventHandler();
+
+        // Subscribe handlers
+        dispatcher.Subscribe("chart.created", syncHandler);
+        dispatcher.Subscribe("chart.created", asyncHandler);
+        dispatcher.Subscribe("chart.updated", syncHandler);
+
+        Console.WriteLine($"After subscribe - 'chart.created' handlers: {dispatcher.GetHandlerCount("chart.created")}");
+        Console.WriteLine($"Subscribed event types: {string.Join(", ", dispatcher.GetSubscribedEventTypes())}");
+
+        // Dispatch synchronous event
+        dispatcher.Dispatch("chart.created", new { ChartId = "line-chart-001", Timestamp = DateTime.UtcNow });
+
+        // Dispatch asynchronous event
+        await dispatcher.DispatchAsync("chart.updated", new { 
+            ChartId = "bar-chart-002", 
+            Timestamp = DateTime.UtcNow,
+            Changes = new[] { "Title", "DataPoints" }
+        });
+
+        // Unsubscribe
+        dispatcher.Unsubscribe("chart.created", syncHandler);
+        Console.WriteLine($"After unsubscribe - 'chart.created' handlers: {dispatcher.GetHandlerCount("chart.created")}");
+
+        // Clear all handlers
+        dispatcher.Clear();
+        Console.WriteLine($"After clear - 'chart.updated' handlers: {dispatcher.GetHandlerCount("chart.updated")}");
+    }
+}
+
+// Synchronous event handler implementation
+public class SyncEventHandler : IEventHandler
+{
+    public void Handle(string eventType, object eventData)
+    {
+        Console.WriteLine($"[Sync] Received {eventType}: {System.Text.Json.JsonSerializer.Serialize(eventData)}");
+    }
+}
+
+// Asynchronous event handler implementation
+public class AsyncEventHandler : IAsyncEventHandler
+{
+    public async Task HandleAsync(string eventType, object eventData)
+    {
+        Console.WriteLine($"[Async] Processing {eventType}...");
+        await Task.Delay(100); // Simulate async work
+        Console.WriteLine($"[Async] Completed {eventType}");
+    }
+    
+    public void Handle(string eventType, object eventData)
+    {
+        Console.WriteLine($"[Async] Sync fallback for {eventType}");
+    }
+}
+```
+
 ## IChartEventSubscriber
 
 `IChartEventSubscriber` is an interface that defines the contract for receiving chart events from the `ChartEventPublisher`. It provides a standardized way for components to react to various chart lifecycle events such as creation, updates, deletions, rendering, exports, and errors. Implementations of this interface can be registered with the event publisher to receive asynchronous notifications about chart events.
