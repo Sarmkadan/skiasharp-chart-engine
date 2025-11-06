@@ -3,21 +3,25 @@
 // CTO & Software Architect
 // =============================================================================
 
-using System;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.ObjectPool;
 
 namespace SkiaSharpChartEngine.Utilities;
 
 /// <summary>
-/// String formatting and transformation utilities
-/// Provides methods for formatting numbers, currencies, and chart labels
+/// String formatting and transformation utilities.
+/// Provides methods for formatting numbers, currencies, and chart labels.
 /// </summary>
 public static class StringFormatHelper
 {
+    // Shared pool reduces StringBuilder allocations in high-frequency call paths.
+    private static readonly ObjectPool<StringBuilder> _sbPool =
+        new DefaultObjectPoolProvider().CreateStringBuilderPool(initialCapacity: 256, maximumRetainedCapacity: 4096);
+
     /// <summary>
-    /// Formats a number with optional units (K, M, B for thousands, millions, billions)
-    /// Used for axis labels with large numbers
+    /// Formats a number with optional units (K, M, B for thousands, millions, billions).
+    /// Used for axis labels with large numbers.
     /// </summary>
     public static string FormatNumberWithUnits(double value, int decimalPlaces = 1)
     {
@@ -34,7 +38,7 @@ public static class StringFormatHelper
     }
 
     /// <summary>
-    /// Formats a number as currency
+    /// Formats a number as currency.
     /// </summary>
     public static string FormatCurrency(double value, string currencySymbol = "$")
     {
@@ -42,7 +46,7 @@ public static class StringFormatHelper
     }
 
     /// <summary>
-    /// Formats a number as percentage
+    /// Formats a number as percentage.
     /// </summary>
     public static string FormatPercentage(double value, int decimalPlaces = 0)
     {
@@ -50,8 +54,8 @@ public static class StringFormatHelper
     }
 
     /// <summary>
-    /// Truncates text to specified length and adds ellipsis
-    /// Useful for long chart labels
+    /// Truncates text to specified length and adds ellipsis.
+    /// Useful for long chart labels.
     /// </summary>
     public static string TruncateWithEllipsis(string text, int maxLength)
     {
@@ -62,47 +66,73 @@ public static class StringFormatHelper
     }
 
     /// <summary>
-    /// Converts camelCase to Title Case
-    /// Useful for formatting property names as labels
+    /// Converts camelCase to Title Case using string.Create to avoid StringBuilder allocation.
     /// </summary>
     public static string CamelCaseToTitleCase(string camelCase)
     {
         if (string.IsNullOrEmpty(camelCase))
             return camelCase;
 
-        var result = new StringBuilder();
-        result.Append(char.ToUpper(camelCase[0]));
-
+        // Count extra spaces needed so string.Create can pre-size the result.
+        int extraSpaces = 0;
         for (int i = 1; i < camelCase.Length; i++)
+            if (char.IsUpper(camelCase[i])) extraSpaces++;
+
+        if (extraSpaces == 0)
         {
-            if (char.IsUpper(camelCase[i]))
+            // Only need to capitalize first character.
+            if (char.IsUpper(camelCase[0])) return camelCase;
+            return string.Create(camelCase.Length, camelCase, static (span, src) =>
             {
-                result.Append(' ');
-            }
-            result.Append(camelCase[i]);
+                src.AsSpan().CopyTo(span);
+                span[0] = char.ToUpper(span[0]);
+            });
         }
 
-        return result.ToString();
+        return string.Create(camelCase.Length + extraSpaces, camelCase, static (span, src) =>
+        {
+            span[0] = char.ToUpper(src[0]);
+            int pos = 1;
+            for (int i = 1; i < src.Length; i++)
+            {
+                if (char.IsUpper(src[i]))
+                    span[pos++] = ' ';
+                span[pos++] = src[i];
+            }
+        });
     }
 
     /// <summary>
-    /// Converts snake_case to Title Case
-    /// Useful for formatting identifiers as labels
+    /// Converts snake_case to Title Case using string.Create — avoids Split + LINQ allocations.
     /// </summary>
     public static string SnakeCaseToTitleCase(string snakeCase)
     {
         if (string.IsNullOrEmpty(snakeCase))
             return snakeCase;
 
-        var parts = snakeCase.Split('_');
-        var titleParts = parts.Select(p =>
-            char.ToUpper(p[0]) + (p.Length > 1 ? p[1..] : string.Empty));
-
-        return string.Join(" ", titleParts);
+        // Output length equals input length: every '_' becomes ' ', every other char is kept.
+        return string.Create(snakeCase.Length, snakeCase, static (span, src) =>
+        {
+            bool capitalizeNext = true;
+            int pos = 0;
+            foreach (char c in src.AsSpan())
+            {
+                if (c == '_')
+                {
+                    span[pos++] = ' ';
+                    capitalizeNext = true;
+                }
+                else
+                {
+                    span[pos++] = capitalizeNext ? char.ToUpper(c) : c;
+                    capitalizeNext = false;
+                }
+            }
+        });
     }
 
     /// <summary>
-    /// Sanitizes string for safe display (removes special characters if needed)
+    /// Sanitizes string for safe display (removes special characters if needed).
     /// </summary>
     public static string Sanitize(string text, bool allowSpecialChars = true)
     {
@@ -116,7 +146,7 @@ public static class StringFormatHelper
     }
 
     /// <summary>
-    /// Pads a string to align with other strings (right-aligned numbers)
+    /// Pads a string to align with other strings (right-aligned numbers).
     /// </summary>
     public static string PadForAlignment(string text, int width, char padChar = ' ', bool rightAlign = true)
     {
@@ -127,7 +157,7 @@ public static class StringFormatHelper
     }
 
     /// <summary>
-    /// Formats elapsed time in human-readable format
+    /// Formats elapsed time in human-readable format.
     /// </summary>
     public static string FormatTimespan(TimeSpan timespan)
     {
@@ -142,42 +172,56 @@ public static class StringFormatHelper
     }
 
     /// <summary>
-    /// Repeats a string multiple times
-    /// Useful for generating separator lines
+    /// Repeats a string multiple times using a pooled StringBuilder.
     /// </summary>
     public static string Repeat(string text, int count)
     {
         if (string.IsNullOrEmpty(text) || count <= 0)
             return string.Empty;
 
-        var sb = new StringBuilder();
-        for (int i = 0; i < count; i++)
+        var sb = _sbPool.Get();
+        try
         {
-            sb.Append(text);
+            sb.EnsureCapacity(text.Length * count);
+            for (int i = 0; i < count; i++)
+                sb.Append(text);
+            return sb.ToString();
         }
-        return sb.ToString();
+        finally
+        {
+            sb.Clear();
+            _sbPool.Return(sb);
+        }
     }
 
     /// <summary>
-    /// Generates a CSV line from values
+    /// Generates a CSV line from values using a pooled StringBuilder.
     /// </summary>
     public static string ToCsvLine(params object?[] values)
     {
-        var sb = new StringBuilder();
-        for (int i = 0; i < values.Length; i++)
+        var sb = _sbPool.Get();
+        try
         {
-            if (i > 0) sb.Append(',');
+            for (int i = 0; i < values.Length; i++)
+            {
+                if (i > 0) sb.Append(',');
 
-            var value = values[i]?.ToString() ?? string.Empty;
-            if (value.Contains(',') || value.Contains('"') || value.Contains('\n'))
-            {
-                sb.Append('"').Append(value.Replace("\"", "\"\"")).Append('"');
+                var value = values[i]?.ToString() ?? string.Empty;
+                if (value.Contains(',') || value.Contains('"') || value.Contains('\n'))
+                {
+                    sb.Append('"').Append(value.Replace("\"", "\"\"")).Append('"');
+                }
+                else
+                {
+                    sb.Append(value);
+                }
             }
-            else
-            {
-                sb.Append(value);
-            }
+            return sb.ToString();
         }
-        return sb.ToString();
+        finally
+        {
+            sb.Clear();
+            _sbPool.Return(sb);
+        }
     }
 }
