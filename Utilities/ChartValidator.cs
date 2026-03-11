@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq; // Added for Select() in ToString() if not already there, and for potential other Linq usage
+using System.Runtime.CompilerServices; // Added for MethodImpl
 using SkiaSharpChartEngine.Models;
 
 namespace SkiaSharpChartEngine.Utilities;
@@ -67,7 +69,8 @@ public static class ChartValidator
             result.AddError($"Series '{series.Name}' has invalid line width: {series.LineWidth}");
 
         if (!ColorHelper.IsValidHexColor(series.Color))
-            result.AddError($"Series '{series.Name}' has invalid color: {series.Color}");
+            // Fix: Improved error message for invalid hex color format.
+            result.AddError($"Series '{series.Name}' has an invalid color format. Expected #RRGGBB or #RRGGBBAA, but received: {series.Color}");
 
         return result;
     }
@@ -114,13 +117,16 @@ public static class ChartValidator
             result.AddWarning("Chart title is empty");
 
         if (!ColorHelper.IsValidHexColor(config.BackgroundColor))
-            result.AddError($"Invalid background color: {config.BackgroundColor}");
+            // Fix: Improved error message for invalid hex color format.
+            result.AddError($"Invalid background color format: {config.BackgroundColor}. Expected #RRGGBB or #RRGGBBAA.");
 
         if (!ColorHelper.IsValidHexColor(config.GridColor))
-            result.AddError($"Invalid grid color: {config.GridColor}");
+            // Fix: Improved error message for invalid hex color format.
+            result.AddError($"Invalid grid color format: {config.GridColor}. Expected #RRGGBB or #RRGGBBAA.");
 
         if (!ColorHelper.IsValidHexColor(config.AxisColor))
-            result.AddError($"Invalid axis color: {config.AxisColor}");
+            // Fix: Improved error message for invalid hex color format.
+            result.AddError($"Invalid axis color format: {config.AxisColor}. Expected #RRGGBB or #RRGGBBAA.");
 
         if (config.MarginTop < 0 || config.MarginBottom < 0 || config.MarginLeft < 0 || config.MarginRight < 0)
             result.AddError("Margins cannot be negative");
@@ -136,14 +142,17 @@ public static class ChartValidator
         public IReadOnlyList<string> Errors => _errors.AsReadOnly();
         public IReadOnlyList<string> Warnings => _warnings.AsReadOnly();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] // Fix: Added for performance optimization
         public bool IsValid => _errors.Count == 0;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] // Fix: Added for performance optimization
         public void AddError(string message)
         {
             if (!string.IsNullOrWhiteSpace(message))
                 _errors.Add(message);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] // Fix: Added for performance optimization
         public void AddWarning(string message)
         {
             if (!string.IsNullOrWhiteSpace(message))
