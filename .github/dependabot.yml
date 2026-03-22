@@ -1,12 +1,1 @@
-version: 2
-updates:
-  - package-ecosystem: "nuget"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
+1 version: 2 2 updates: 3 - package-ecosystem: "nuget" 4 directory: "/" 5 schedule: 6 interval: "weekly" 7 open-pull-requests-limit: 10 8 - package-ecosystem: "github-actions" 9 directory: "/" 10 schedule: 11 interval: "weekly" 12 open-pull-requests-limit: 5 13 - package-ecosystem: "nuget" 14 directory: "/" 15 schedule: 16 interval: "weekly" 17 open-pull-requests-limit: 10 18 auto-merge: 19 enabled: true 20 allow-on-default-branch: true 21 merge-method: "merge" 22 auto-merge-strategy: "auto" 23 label: "auto-merge"

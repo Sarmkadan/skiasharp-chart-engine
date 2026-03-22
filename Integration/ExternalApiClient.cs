@@ -38,6 +38,12 @@ public class ExternalApiClient
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(url))
+                throw new ArgumentException("URL cannot be null, empty, or whitespace", nameof(url));
+
+            if (url.Length > 2048)
+                throw new ArgumentException("URL exceeds maximum length of 2048 characters", nameof(url));
+
             return await _executeWithRetryAsync(async () =>
             {
                 _logger.LogDebug("GET request to {Url}", url);
@@ -60,6 +66,12 @@ public class ExternalApiClient
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(url))
+                throw new ArgumentException("URL cannot be null, empty, or whitespace", nameof(url));
+
+            if (url.Length > 2048)
+                throw new ArgumentException("URL exceeds maximum length of 2048 characters", nameof(url));
+
             return await _executeWithRetryAsync(async () =>
             {
                 _logger.LogDebug("POST request to {Url}", url);
