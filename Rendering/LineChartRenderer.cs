@@ -135,7 +135,9 @@ public class LineChartRenderer
         {
             var value = minValue + (maxValue - minValue) * i / 5;
             var y = bounds.Bottom - (float)(i / 5.0 * bounds.Height);
-            canvas.DrawText(value.ToString("F0"), bounds.Left - 35, y + 3, textPaint);
+            // Hotfix: Use dynamic decimal places based on value range to prevent label overlap
+            var format = Math.Abs(maxValue - minValue) < 1 ? "F1" : "F0";
+            canvas.DrawText(value.ToString(format), bounds.Left - 35, y + 3, textPaint);
         }
     }
 
