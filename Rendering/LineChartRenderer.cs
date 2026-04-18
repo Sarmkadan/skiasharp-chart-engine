@@ -76,7 +76,7 @@ public class LineChartRenderer
     private void _renderLine(SKCanvas canvas, ChartSeries series, SKRect bounds,
         double minValue, double valueRange, SKColor color)
     {
-        var paint = new SKPaint
+        using var paint = new SKPaint
         {
             Color = color,
             Style = SKPaintStyle.Stroke,
@@ -87,20 +87,19 @@ public class LineChartRenderer
         var points = series.DataPoints;
         var pointWidth = bounds.Width / (points.Count - 1);
 
-        // Draw line
-        for (int i = 0; i < points.Count - 1; i++)
+        using var path = new SKPath();
+        var x0 = bounds.Left;
+        var y0 = bounds.Bottom - (float)((points[0].Value - minValue) / valueRange * bounds.Height);
+        path.MoveTo(x0, y0);
+
+        for (int i = 1; i < points.Count; i++)
         {
-            var p1 = points[i];
-            var p2 = points[i + 1];
-
-            var x1 = bounds.Left + i * pointWidth;
-            var y1 = bounds.Bottom - (float)((p1.Value - minValue) / valueRange * bounds.Height);
-
-            var x2 = bounds.Left + (i + 1) * pointWidth;
-            var y2 = bounds.Bottom - (float)((p2.Value - minValue) / valueRange * bounds.Height);
-
-            canvas.DrawLine(x1, y1, x2, y2, paint);
+            var x = bounds.Left + i * pointWidth;
+            var y = bounds.Bottom - (float)((points[i].Value - minValue) / valueRange * bounds.Height);
+            path.LineTo(x, y);
         }
+
+        canvas.DrawPath(path, paint);
 
         // Draw markers
         paint.Style = SKPaintStyle.Fill;
@@ -116,7 +115,7 @@ public class LineChartRenderer
 
     private void _renderAxes(SKCanvas canvas, SKRect bounds, double minValue, double maxValue)
     {
-        var axisPaint = new SKPaint
+        using var axisPaint = new SKPaint
         {
             Color = SKColors.Black,
             StrokeWidth = 1,
@@ -130,7 +129,7 @@ public class LineChartRenderer
         canvas.DrawLine(bounds.Left, bounds.Top, bounds.Left, bounds.Bottom, axisPaint);
 
         // Y axis labels
-        var textPaint = new SKPaint { TextSize = 10, Color = SKColors.Black };
+        using var textPaint = new SKPaint { TextSize = 10, Color = SKColors.Black };
         for (int i = 0; i <= 5; i++)
         {
             var value = minValue + (maxValue - minValue) * i / 5;
