@@ -54,6 +54,11 @@ public class PieChartRenderer
             using var paint = new SKPaint { IsAntialias = true };
             float currentAngle = -90f; // Start from top
 
+            // A tiny overlap applied to each slice's sweep angle closes the sub-pixel
+            // gaps that appear at segment boundaries on high-DPI / Retina displays due
+            // to floating-point rounding in the arc sweep calculation.
+            const float sweepOverlap = 0.5f;
+
             for (int i = 0; i < dataPoints.Count; i++)
             {
                 var dataPoint = dataPoints[i];
@@ -62,10 +67,10 @@ public class PieChartRenderer
                 paint.Color = _getColor(i);
                 paint.Style = SKPaintStyle.Fill;
 
-                // Draw slice
+                // Draw slice with a slight overlap so rounding gaps are not visible
                 var rect = new SKRect(centerX - (float)radius, centerY - (float)radius,
                     centerX + (float)radius, centerY + (float)radius);
-                canvas.DrawArc(rect, currentAngle, sliceAngle, true, paint);
+                canvas.DrawArc(rect, currentAngle, sliceAngle + sweepOverlap, true, paint);
 
                 // Draw label
                 var labelAngle = currentAngle + sliceAngle / 2;
