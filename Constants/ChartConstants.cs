@@ -98,3 +98,18 @@ public enum AxisScaleType
     Categorical = 2,
     DateTimeLinear = 3
 }
+
+/// <summary>
+/// Controls how data values are mapped to colors in a heatmap.
+/// <list type="bullet">
+///   <item><term>Linear</term><description>Default. Color interpolates linearly between min and max.</description></item>
+///   <item><term>Logarithmic</term><description>Applies log10 compression before interpolation. Useful when data has outliers or a wide dynamic range.</description></item>
+///   <item><term>Quantile</term><description>Ranks values and maps by percentile. Each colour band covers an equal number of data points, giving the best contrast for skewed distributions.</description></item>
+/// </list>
+/// </summary>
+public enum HeatmapColorScale
+{
+    Linear = 0,
+    Logarithmic = 1,
+    Quantile = 2
+}

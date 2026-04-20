@@ -103,6 +103,12 @@ public class ChartConfiguration
 
     public bool AntiAlias { get; set; } = true;
 
+    /// <summary>
+    /// Specifies the color scale interpolation mode used by heatmap charts.
+    /// Defaults to <see cref="HeatmapColorScale.Linear"/>.
+    /// </summary>
+    public HeatmapColorScale HeatmapColorScale { get; set; } = HeatmapColorScale.Linear;
+
     public Dictionary<string, object>? CustomSettings { get; set; }
 
     public void Validate()
@@ -154,6 +160,7 @@ public class ChartConfiguration
             ExportDPI = ExportDPI,
             ExportQuality = ExportQuality,
             AntiAlias = AntiAlias,
+            HeatmapColorScale = HeatmapColorScale,
             CustomSettings = CustomSettings != null ? new Dictionary<string, object>(CustomSettings) : null
         };
     }
