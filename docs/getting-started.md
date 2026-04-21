@@ -376,6 +376,163 @@ catch (InvalidChartDataException ex)
 | `HeatmapChart` | 2D patterns/correlations |
 | `ScatterChart` | Relationship analysis |
 
+---
+
+## Chart Type Reference
+
+Each section below shows the minimal code required to produce a chart plus the key options you can customise.
+
+---
+
+### Line Chart
+
+**Required options**: `ChartType.LineChart`, at least one `ChartSeries` with ≥ 2 `DataPoint`s.
+
+**Optional highlights**: `ShowGrid`, `ShowLegend`, `XAxisLabel`, `YAxisLabel`, multiple series for comparisons.
+
+```csharp
+var chart = new Chart(ChartType.LineChart)
+{
+    Configuration = new ChartConfiguration
+    {
+        Title  = "Weekly Active Users",
+        Width  = 900,
+        Height = 500,
+        XAxisLabel = "Day",
+        YAxisLabel = "Users",
+        ShowGrid   = true,
+        ShowLegend = true
+    }
+};
+
+var series = new ChartSeries("This week", "#4ECDC4");
+series.AddDataPoint(1, 1200);
+series.AddDataPoint(2, 1800);
+series.AddDataPoint(3, 1500);
+series.AddDataPoint(4, 2200);
+series.AddDataPoint(5, 2000);
+chart.AddSeries(series);
+
+var result = engine.RenderChart(chart);
+File.WriteAllBytes("line.png", result.Data as byte[]);
+```
+
+---
+
+### Bar Chart
+
+**Required options**: `ChartType.BarChart`, one series per category (or one series with one `DataPoint` each).
+
+**Optional highlights**: custom `Width`/`Height`, `BackgroundColor`, `AxisColor`.
+
+```csharp
+var chart = new Chart(ChartType.BarChart)
+{
+    Configuration = new ChartConfiguration
+    {
+        Title  = "Quarterly Revenue by Region",
+        Width  = 900,
+        Height = 500
+    }
+};
+
+var labels  = new[] { "North", "South", "East", "West" };
+var revenue = new[] { 82_000, 74_000, 95_000, 61_000 };
+
+for (int i = 0; i < labels.Length; i++)
+{
+    var s = new ChartSeries(labels[i], $"#{(0x44 + i * 0x30):X2}AAFF");
+    s.AddDataPoint(i + 1, revenue[i]);
+    chart.AddSeries(s);
+}
+
+var result = engine.RenderChart(chart);
+File.WriteAllBytes("bar.png", result.Data as byte[]);
+```
+
+---
+
+### Pie Chart
+
+**Required options**: `ChartType.PieChart`, one series per slice, each series containing a single `DataPoint` whose `Value` is the slice magnitude.
+
+**Optional highlights**: square `Width`/`Height` for a circular chart, labels are rendered automatically as percentages.
+
+```csharp
+var chart = new Chart(ChartType.PieChart)
+{
+    Configuration = new ChartConfiguration
+    {
+        Title  = "Browser Market Share",
+        Width  = 600,
+        Height = 600
+    }
+};
+
+var slices = new[]
+{
+    ("Chrome",  65.5),
+    ("Safari",  19.1),
+    ("Firefox",  4.0),
+    ("Edge",     4.2),
+    ("Other",    7.2)
+};
+
+for (int i = 0; i < slices.Length; i++)
+{
+    var s = new ChartSeries(slices[i].Item1, $"#{(0x20 + i * 0x30):X2}9FE8");
+    s.AddDataPoint(i, slices[i].Item2);
+    chart.AddSeries(s);
+}
+
+var result = engine.RenderChart(chart);
+File.WriteAllBytes("pie.png", result.Data as byte[]);
+```
+
+---
+
+### Heatmap Chart
+
+**Required options**: `ChartType.HeatmapChart`, one series whose `DataPoint` list is a row-major flattened 2-D matrix (values are laid out row by row, left to right).
+
+**Optional highlights**: `HeatmapColorScale` — set it on `ChartConfiguration` to choose between `Linear` (default), `Logarithmic` (wide dynamic range / outliers), or `Quantile` (best contrast for skewed distributions).
+
+```csharp
+var chart = new Chart(ChartType.HeatmapChart)
+{
+    Configuration = new ChartConfiguration
+    {
+        Title = "Server Response Time (ms) by Hour & Day",
+        Width = 800,
+        Height = 500,
+        // Use Logarithmic scale to reveal detail across a wide value range:
+        HeatmapColorScale = HeatmapColorScale.Logarithmic
+    }
+};
+
+// 4 rows (servers) × 6 columns (time slots)
+double[,] matrix =
+{
+    {  50,  55, 120, 400, 200,  80 },
+    {  48,  60, 130, 450, 210,  75 },
+    {  52,  58, 115, 380, 195,  82 },
+    {  45,  50, 105, 360, 185,  70 }
+};
+
+var series = new ChartSeries("Response times", "#FF6B6B");
+for (int row = 0; row < matrix.GetLength(0); row++)
+    for (int col = 0; col < matrix.GetLength(1); col++)
+        series.AddDataPoint(row * matrix.GetLength(1) + col, matrix[row, col]);
+
+chart.AddSeries(series);
+
+var result = engine.RenderChart(chart);
+File.WriteAllBytes("heatmap.png", result.Data as byte[]);
+```
+
+---
+
+
 ## Supported Export Formats
 
 - **PNG** - Best for web and presentations
