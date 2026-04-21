@@ -5,6 +5,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharp;
 using SkiaSharpChartEngine.Models;
 using SkiaSharpChartEngine.Services;
 
@@ -31,6 +32,22 @@ public static class InteractivityExtensions
 
         services.AddSingleton<IInteractivityService, InteractivityService>();
         return services;
+    }
+
+    /// <summary>
+    /// Convenience overload of <see cref="GetTooltipAt"/> that accepts the pointer as an
+    /// <see cref="SKPoint"/>, matching the coordinate type used by SkiaSharp touch/mouse events
+    /// in MAUI and Blazor WASM hosts.
+    /// </summary>
+    public static TooltipHitResult GetTooltipAt(
+        this Chart chart,
+        SKPoint point,
+        float canvasWidth, float canvasHeight,
+        TooltipOptions? options = null,
+        ViewportState? viewport = null)
+    {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        return _defaultService.HitTest(chart, point, canvasWidth, canvasHeight, options, viewport);
     }
 
     /// <summary>
