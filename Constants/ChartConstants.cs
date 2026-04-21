@@ -100,7 +100,25 @@ public enum AxisScaleType
 }
 
 /// <summary>
-/// Controls how data values are mapped to colors in a heatmap.
+/// Identifies the logical region of a chart canvas that a screen coordinate falls within.
+/// Returned by <see cref="IInteractivityService.HitTest"/> to enable region-specific
+/// interactions such as axis clicks, legend toggles, and plot-area drill-down.
+/// </summary>
+public enum ChartRegion
+{
+    /// <summary>The coordinate is inside the plot area where data series are drawn.</summary>
+    PlotArea = 0,
+    /// <summary>The coordinate is in the horizontal axis band below the plot area.</summary>
+    XAxis = 1,
+    /// <summary>The coordinate is in the vertical axis band to the left of the plot area.</summary>
+    YAxis = 2,
+    /// <summary>The coordinate is over the chart title area.</summary>
+    Title = 3,
+    /// <summary>The coordinate is over the legend.</summary>
+    Legend = 4,
+    /// <summary>The coordinate is outside all named regions (e.g. chart padding).</summary>
+    Outside = 5
+}
 /// <list type="bullet">
 ///   <item><term>Linear</term><description>Default. Color interpolates linearly between min and max.</description></item>
 ///   <item><term>Logarithmic</term><description>Applies log10 compression before interpolation. Useful when data has outliers or a wide dynamic range.</description></item>

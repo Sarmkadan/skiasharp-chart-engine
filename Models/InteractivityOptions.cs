@@ -4,6 +4,7 @@
 // =============================================================================
 
 using System.ComponentModel.DataAnnotations;
+using SkiaSharpChartEngine.Constants;
 
 namespace SkiaSharpChartEngine.Models;
 
@@ -146,6 +147,12 @@ public class TooltipHitResult
 
     /// <summary>Gets or sets the formatted tooltip string ready for rendering.</summary>
     public string TooltipText { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the logical chart region that the pointer coordinate falls within.
+    /// Always set regardless of whether a data-point hit was found.
+    /// </summary>
+    public ChartRegion Region { get; set; } = ChartRegion.Outside;
 
     /// <summary>Singleton representing a hit-test with no match.</summary>
     public static readonly TooltipHitResult Miss = new() { IsHit = false };
