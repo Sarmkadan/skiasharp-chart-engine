@@ -532,6 +532,107 @@ File.WriteAllBytes("heatmap.png", result.Data as byte[]);
 
 ---
 
+### Scatter Chart
+
+**Required options**: `ChartType.ScatterChart`, at least one `ChartSeries` with data points where both `X` and `Y` carry meaningful values.
+
+**Optional highlights**: multiple series to compare two populations, `ShowGrid = true` helps read coordinates, set a `Subtitle` to describe the axes relationship.
+
+```csharp
+var chart = new Chart(ChartType.ScatterChart)
+{
+    Configuration = new ChartConfiguration
+    {
+        Title    = "Height vs Weight",
+        Subtitle = "Sample of 200 adults",
+        Width    = 800,
+        Height   = 600,
+        XAxisLabel = "Height (cm)",
+        YAxisLabel = "Weight (kg)",
+        ShowGrid   = true,
+        ShowLegend = true
+    }
+};
+
+var rng = new Random(42);
+var males = new ChartSeries("Male", "#4A90D9");
+for (int i = 0; i < 100; i++)
+    males.AddDataPoint(160 + rng.NextDouble() * 30, 65 + rng.NextDouble() * 40);
+chart.AddSeries(males);
+
+var females = new ChartSeries("Female", "#E74C8B");
+for (int i = 0; i < 100; i++)
+    females.AddDataPoint(150 + rng.NextDouble() * 25, 50 + rng.NextDouble() * 35);
+chart.AddSeries(females);
+
+var result = engine.RenderChart(chart);
+File.WriteAllBytes("scatter.png", result.Data as byte[]);
+```
+
+---
+
+### Area Chart
+
+**Required options**: `ChartType.AreaChart`, at least one `ChartSeries` with ≥ 2 `DataPoint`s.
+
+**Optional highlights**: layering multiple semi-transparent series creates a stacked-area feel; use `Subtitle` to add a time range or data source note.
+
+```csharp
+var chart = new Chart(ChartType.AreaChart)
+{
+    Configuration = new ChartConfiguration
+    {
+        Title      = "Monthly Active Users",
+        Subtitle   = "Jan – Jun 2026",
+        Width      = 900,
+        Height     = 500,
+        XAxisLabel = "Month",
+        YAxisLabel = "Users (thousands)",
+        ShowGrid   = true,
+        ShowLegend = true
+    }
+};
+
+var mobile = new ChartSeries("Mobile", "#4ECDC4");
+mobile.AddDataPoint(1, 38);
+mobile.AddDataPoint(2, 42);
+mobile.AddDataPoint(3, 47);
+mobile.AddDataPoint(4, 51);
+mobile.AddDataPoint(5, 56);
+mobile.AddDataPoint(6, 61);
+chart.AddSeries(mobile);
+
+var desktop = new ChartSeries("Desktop", "#FF6B6B");
+desktop.AddDataPoint(1, 22);
+desktop.AddDataPoint(2, 24);
+desktop.AddDataPoint(3, 23);
+desktop.AddDataPoint(4, 25);
+desktop.AddDataPoint(5, 24);
+desktop.AddDataPoint(6, 26);
+chart.AddSeries(desktop);
+
+var result = engine.RenderChart(chart);
+File.WriteAllBytes("area.png", result.Data as byte[]);
+```
+
+---
+
+### Title and Subtitle
+
+Every chart type supports a `Title` (bold, larger font) and optional `Subtitle` (smaller font below the title). The plot area is automatically shifted down to make room for the text.
+
+```csharp
+var config = new ChartConfiguration
+{
+    Title    = "Q2 2026 Revenue",
+    Subtitle = "All figures in USD thousands — unaudited",
+    Width    = 900,
+    Height   = 500
+};
+```
+
+---
+
 
 ## Supported Export Formats
 
