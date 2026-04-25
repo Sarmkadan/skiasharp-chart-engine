@@ -591,6 +591,104 @@ Gets complete output file path.
 
 ---
 
+## SVG Export
+
+### How SVG rendering works
+
+When `ExportFormat.SVG` is selected, `ChartRenderingService` calls `SKSvgCanvas.Create` to obtain an `SKCanvas` backed by an in-memory SVG document. All drawing commands are identical to the raster pipeline — the only difference is the output stream.
+
+The canvas **must** be disposed to flush the SVG closing tags. The service wraps it in a `using` block, so the output is always complete.
+
+### Best practices
+
+| Goal | Recommendation |
+|------|----------------|
+| Smallest file size | Disable `AntiAlias` — it has no effect on SVG output but avoids inserting extra SVG filter elements in some SkiaSharp builds |
+| Crisp text at any zoom | Use the default font stack; avoid embedding raster images inside the chart |
+| Embedding in HTML | Render to a `MemoryStream`, read the UTF-8 bytes, and inline the `<svg>` element directly — no base-64 overhead |
+| Consistent colours | Specify colours as 6-digit hex (`#RRGGBB`); 8-digit ARGB values are supported but some SVG viewers ignore the alpha channel |
+
+### Streaming SVG to an HTTP response
+
+```csharp
+[HttpGet("{id}/svg")]
+public async Task<IActionResult> GetSvg(string id, CancellationToken ct)
+{
+    var chart = await _engine.GetChartAsync(id, ct);
+    if (chart == null) return NotFound();
+
+    var options = new ExportOptions(id, ExportFormat.SVG);
+    var result  = await _engine.ExportChartAsync(chart, options, ct);
+
+    if (!result.IsSuccessful)
+        return StatusCode(500, result.ErrorMessage);
+
+    var svgBytes = await System.IO.File.ReadAllBytesAsync(result.OutputPath!, ct);
+    return File(svgBytes, "image/svg+xml", $"{id}.svg");
+}
+```
+
+### Troubleshooting SVG
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Empty or truncated SVG | Canvas not disposed before reading stream | Ensure `using` wraps the canvas, not just the stream |
+| Text rendered as paths | No system fonts available (container / CI) | Install a font package such as `fonts-liberation` or mount a fonts volume |
+| Very large file (> 1 MB) | Dense scatter/heatmap with many path elements | Reduce data point count or switch to PNG for data-heavy charts |
+
+---
+
+## PDF Export
+
+### How PDF rendering works
+
+PDF export uses SkiaSharp's `SKDocument.CreatePdf` API. A single page whose dimensions match `ChartConfiguration.Width × Height` (in points) is created, the chart is drawn onto the page canvas, and the document is finalised.
+
+> **Note**: PDF export requires the `SkiaSharp.NativeAssets.*` package matching your target platform. Check that it is included in your published output.
+
+### Recommended settings for print-quality PDFs
+
+```csharp
+var config = new ChartConfiguration
+{
+    Width        = 1191,  // A4 landscape at 96 dpi (≈ 297 mm)
+    Height       = 842,   // A4 landscape at 96 dpi (≈ 210 mm)
+    ExportDPI    = 300,   // High-resolution raster fallback
+    ExportQuality = 1.0f, // Maximum quality
+    AntiAlias    = true,
+    BackgroundColor = "#FFFFFF"
+};
+
+var options = new ExportOptions("report", ExportFormat.PDF, "/output/");
+var result  = engine.ExportChart(chart, options);
+```
+
+### Common page sizes (width × height in pixels at 96 dpi)
+
+| Paper | Portrait | Landscape |
+|-------|----------|-----------|
+| A4    | 794 × 1123 | 1123 × 794 |
+| Letter | 816 × 1056 | 1056 × 816 |
+| A3    | 1123 × 1587 | 1587 × 1123 |
+
+### Best practices
+
+- **Embed fonts**: If your deployment environment lacks system fonts (e.g. a Docker container), install a font package or use `SKTypeface.FromFile` to load a bundled TTF before rendering.
+- **White background**: Set `BackgroundColor = "#FFFFFF"` explicitly — PDF viewers may not fill transparent backgrounds.
+- **Avoid transparency**: Semi-transparent colours in series can produce unexpected results in some PDF viewers. Use fully opaque colours for production PDFs.
+- **File size**: PDF files are larger than PNG for the same chart. If size matters, prefer PNG for web delivery and PDF only for print/archive.
+
+### Troubleshooting PDF
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Missing native binaries | Platform-specific SkiaSharp native package not installed | Add `SkiaSharp.NativeAssets.Linux` (or macOS/Win) to the project |
+| Blank page | Canvas or document not disposed before reading | Use `using` blocks for both the `SKDocument` and its page canvas |
+| Garbled text | Unsupported glyph set in default font | Install a Unicode-capable font package on the host |
+| Large file with raster content | High `ExportDPI` combined with wide/tall canvas | Lower DPI to 150 for screen-quality PDFs; 300 only for print |
+
+---
+
 ## Results
 
 ### RenderResult
