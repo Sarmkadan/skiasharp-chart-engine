@@ -1,11 +1,7 @@
 # =============================================================================
-# Author: Vladyslav Zaiets | https://sarmkadan.com
-# CTO & Software Architect
-# =============================================================================
-
-# EditorConfig helps maintain consistent coding styles for multiple developers
-# working on the same project across various editors and IDEs.
+# EditorConfig — consistent coding styles across editors and IDEs
 # https://editorconfig.org
+# =============================================================================
 
 root = true
 
@@ -134,7 +130,7 @@ dotnet_style_null_propagation = true
 dotnet_style_prefer_is_null_check_over_reference_equality_method = true
 
 # File header template
-file_header_template = =============================================================================\nAuthor: Vladyslav Zaiets | https://sarmkadan.com\nCTO & Software Architect\n=============================================================================
+file_header_template = unset
 
 # JSON files
 [*.json]
