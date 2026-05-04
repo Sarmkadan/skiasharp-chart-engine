@@ -48,6 +48,9 @@
     <Compile Remove="Services/IChartRenderingService.cs" />
     <Compile Remove="Services/RenderPipelineService.cs" />
     <Compile Remove="Services/AlertingService.cs" />
+    <Compile Remove="Services/ChartInteractionService.cs" />
+    <Compile Remove="Streaming/ChartStreamingService.cs" />
+    <Compile Remove="Reports/PdfReportGenerator.cs" />
     <Compile Remove="Services/ExportService.cs" />
     <Compile Remove="Services/IExportService.cs" />
     <Compile Remove="ChartEngine.cs" />
