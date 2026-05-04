@@ -617,7 +617,68 @@ public class CacheKeyBenchmarksExample
 }
 ```
 
-## ChartInteractionEventArgs
+## ChartEngineTests
+
+`ChartEngineTests` provides a comprehensive suite of unit tests for the `ChartEngine` class, ensuring reliable performance and correct behavior across various rendering, configuration, and export scenarios. The tests validate edge cases such as null or empty inputs, and confirm that the engine handles valid charts and different formats correctly.
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using Xunit;
+using SkiaSharpChartEngine;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Exceptions;
+
+public class ChartEngineTestsExample
+{
+    [Fact]
+    public void RenderChart_WithValidChart_ReturnsSuccessfulRenderResult()
+    {
+        // Arrange
+        var engine = new ChartEngine();
+        var chart = new Chart { /* Initialize valid chart */ };
+
+        // Act
+        var result = engine.RenderChart(chart);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.True(result.IsSuccess);
+    }
+
+    [Fact]
+    public async Task RenderChartAsync_WithValidChart_ReturnsSuccessfulRenderResult()
+    {
+        // Arrange
+        var engine = new ChartEngine();
+        var chart = new Chart { /* Initialize valid chart */ };
+
+        // Act
+        var result = await engine.RenderChartAsync(chart);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.True(result.IsSuccess);
+    }
+
+    [Fact]
+    public void ExportChart_WithValidChartAndPngFormat_ReturnsSuccessfulResult()
+    {
+        // Arrange
+        var engine = new ChartEngine();
+        var chart = new Chart { /* Initialize valid chart */ };
+        var options = new ExportOptions { Format = "PNG" };
+
+        // Act
+        var result = engine.ExportChart(chart, options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.True(result.IsSuccess);
+    }
+}
+```
+
 
 `ChartInteractionEventArgs` provides the event data for user interactions with chart elements such as clicks, hovers, selections, and context menu gestures. It contains detailed information about the interaction including the pointer position, the chart region affected, and any data points or series that were hit during the interaction.
 
