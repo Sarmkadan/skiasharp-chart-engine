@@ -4,8 +4,10 @@
 // =============================================================================
 
 using System;
+using System.IO;
 using System.ComponentModel.DataAnnotations;
 using SkiaSharpChartEngine.Constants;
+using SkiaSharpChartEngine.Exceptions;
 
 namespace SkiaSharpChartEngine.Models;
 
