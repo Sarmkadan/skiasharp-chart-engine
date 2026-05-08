@@ -21,6 +21,9 @@ A **high-performance, production-ready chart rendering library** for .NET applic
   - [Async Operations](#async-operations)
   - [Template System](#template-system)
   - [Performance & Caching](#performance--caching)
+  - [Interactive Chart Events](#interactive-chart-events)
+  - [Real-Time Streaming Charts](#real-time-streaming-charts)
+  - [PDF Report Generator](#pdf-report-generator)
 - [API Reference](#api-reference)
 - [Configuration Reference](#configuration-reference)
 - [Performance Benchmarks](#performance-benchmarks)
@@ -81,6 +84,26 @@ A **high-performance, production-ready chart rendering library** for .NET applic
 - **Logging** - Microsoft.Extensions.Logging integration
 - **Webhooks** - Event-driven architecture
 - **External APIs** - Built-in client for data fetching
+
+### Interactive Chart Events
+- **Click & Hover** - Raise strongly-typed events on pointer interactions
+- **Selection Management** - Per-chart selection state with toggle/clear support
+- **Hit Testing** - Nearest-point resolution using the interactivity service
+- **Async Support** - Non-blocking event processing with cancellation token
+
+### Real-Time Streaming Charts
+- **Channel-Based Buffering** - Lock-free, bounded `System.Threading.Channels` per chart
+- **Sliding Window** - Configurable window size to keep only the most recent N points
+- **Auto Series Creation** - New series are created on-the-fly when unknown names are published
+- **Async Frame Generation** - `IAsyncEnumerable<StreamFrame>` of rendered PNG frames
+- **Batch Publishing** - Enqueue multiple data points in a single call
+
+### PDF Report Generator
+- **Multi-Section Reports** - Combine headings, body text, and rendered charts on any page
+- **SkiaSharp PDF Canvas** - Pure SkiaSharp PDF backend, no external dependencies
+- **Chart Embedding** - Each chart is rendered at configurable DPI and embedded in-page
+- **Image Fit Modes** - Original, FitWidth, FitHeight, FitPage scaling
+- **Page Numbers & Title Page** - Auto-generated title page and optional footer page numbers
 
 ## Quick Start
 
@@ -414,6 +437,111 @@ var result2 = engine.RenderChart(chart);  // ~1ms (from cache)
 // Update chart invalidates cache
 chart.AddSeries(newSeries);
 var result3 = engine.RenderChart(chart);  // ~500ms (recomputed)
+```
+
+### Interactive Chart Events
+
+```csharp
+// Register the interaction service via DI
+services.AddChartInteractivity();
+services.AddSingleton<IChartInteractionService, ChartInteractionService>();
+
+// Subscribe to events
+interactionService.Clicked += (chart, args) =>
+{
+    if (args.HitDataPoint != null)
+        Console.WriteLine($"Clicked {args.HitSeries!.Name}: x={args.HitDataPoint.X}, y={args.HitDataPoint.Y}");
+};
+
+interactionService.SelectionChanged += (chart, args) =>
+    Console.WriteLine($"Selection now contains {args.TotalSelected} point(s)");
+
+// Process a user click at canvas position (320, 210) on an 800×600 canvas
+var result = interactionService.ProcessInteraction(
+    chart, ChartInteractionType.Click,
+    pointerX: 320f, pointerY: 210f,
+    canvasWidth: 800f, canvasHeight: 600f);
+
+// Toggle the nearest data point in/out of the selection
+interactionService.ToggleSelection(chart, 320f, 210f, 800f, 600f);
+
+// Read the current selection
+var selection = interactionService.GetSelection(chart);
+foreach (var (seriesName, points) in selection)
+    Console.WriteLine($"{seriesName}: {points.Count} selected point(s)");
+```
+
+### Real-Time Streaming Charts
+
+```csharp
+// Register via DI
+services.AddChartStreaming();
+
+// Register a chart for streaming with a 200-point sliding window
+var chart = new Chart("sensor-1") { Type = ChartType.LineChart };
+streamingService.Register(chart, new StreamingChartOptions
+{
+    WindowSize     = 200,
+    FlushIntervalMs = 100  // render up to 10 fps
+});
+
+// Publish individual sensor readings from any thread
+streamingService.Publish("sensor-1", new StreamDataPoint { SeriesName = "Temperature", X = DateTime.UtcNow.ToOADate(), Y = 23.5 });
+
+// Publish a batch
+streamingService.PublishBatch("sensor-1", readings.Select(r =>
+    new StreamDataPoint { SeriesName = "Pressure", X = r.Timestamp.ToOADate(), Y = r.Value }));
+
+// Consume rendered PNG frames as an async sequence (e.g. stream to browser via SSE)
+await foreach (var frame in streamingService.RenderFramesAsync("sensor-1", cancellationToken))
+{
+    Console.WriteLine($"Frame #{frame.FrameNumber} rendered in {frame.RenderTimeMs}ms ({frame.ImageData.Length} bytes)");
+    await SendToClientAsync(frame.ImageData, cancellationToken);
+}
+
+// Clean up when done
+streamingService.Unregister("sensor-1");
+```
+
+### PDF Report Generator
+
+```csharp
+// Register via DI
+services.AddPdfReportGenerator();
+
+// Build report sections
+var sections = new List<ReportSection>
+{
+    new ReportSection
+    {
+        Heading  = "Monthly Revenue",
+        BodyText = "Revenue trend for Q1 2026 across all product lines.",
+        Chart    = revenueLineChart,
+        ImageFit = PdfImageFit.FitWidth
+    },
+    new ReportSection
+    {
+        Heading         = "Regional Breakdown",
+        BodyText        = "Sales distribution by region.",
+        Chart           = regionBarChart,
+        PageBreakBefore = true
+    }
+};
+
+// Customise layout
+var options = new PdfReportOptions
+{
+    Title       = "Q1 2026 Sales Report",
+    Subtitle    = "Confidential – Internal Use Only",
+    AccentColor = "#1E4D8C",
+    ChartDpi    = 150
+};
+
+// Generate in-memory
+byte[] pdfBytes = await pdfGenerator.GenerateAsync(sections, options);
+
+// Or write directly to file
+await pdfGenerator.GenerateToFileAsync("reports/q1-2026.pdf", sections, options);
 ```
 
 ## API Reference
