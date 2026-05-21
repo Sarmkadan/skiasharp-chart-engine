@@ -49,7 +49,7 @@ public class ChartRenderingService : IChartRenderingService
 
             if (cachedData != null)
             {
-                _logger.LogInformation($"Using cached render result for chart {chart.Id}");
+                _logger.LogInformation("Using cached render result for chart {ChartId}", chart.Id);
                 return RenderResult.CreateSuccess(chart.Id, cachedData, 0, ExportFormat.PNG);
             }
 
@@ -58,13 +58,13 @@ public class ChartRenderingService : IChartRenderingService
             _cacheService.Set(cacheKey, imageData);
 
             var renderTime = (long)(DateTime.UtcNow - startTime).TotalMilliseconds;
-            _logger.LogInformation($"Chart {chart.Id} rendered successfully in {renderTime}ms");
+            _logger.LogInformation("Chart {ChartId} rendered successfully in {RenderTimeMs}ms", chart.Id, renderTime);
 
             return RenderResult.CreateSuccess(chart.Id, imageData, renderTime, ExportFormat.PNG);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error rendering chart {chart?.Id}");
+            _logger.LogError(ex, "Error rendering chart {ChartId}", chart?.Id);
             return RenderResult.CreateFailure(chart?.Id ?? "unknown", ex.Message, ex);
         }
     }
@@ -94,13 +94,13 @@ public class ChartRenderingService : IChartRenderingService
             }, cancellationToken);
 
             var renderTime = (long)(DateTime.UtcNow - startTime).TotalMilliseconds;
-            _logger.LogInformation($"Chart {chart.Id} exported to {outputPath} in {renderTime}ms");
+            _logger.LogInformation("Chart {ChartId} exported to {OutputPath} in {RenderTimeMs}ms", chart.Id, outputPath, renderTime);
 
             return RenderResult.CreateSuccess(chart.Id, outputPath, renderTime, ExportFormat.PNG);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error exporting chart {chart?.Id} to file");
+            _logger.LogError(ex, "Error exporting chart {ChartId} to file", chart?.Id);
             return RenderResult.CreateFailure(chart?.Id ?? "unknown", ex.Message, ex);
         }
     }
@@ -133,13 +133,13 @@ public class ChartRenderingService : IChartRenderingService
             }, cancellationToken);
 
             var renderTime = (long)(DateTime.UtcNow - startTime).TotalMilliseconds;
-            _logger.LogInformation($"Chart {chart.Id} exported as {exportOptions.Format} to {fullPath}");
+            _logger.LogInformation("Chart {ChartId} exported as {Format} to {OutputPath}", chart.Id, exportOptions.Format, fullPath);
 
             return RenderResult.CreateSuccess(chart.Id, fullPath, renderTime, exportOptions.Format);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error exporting chart with options");
+            _logger.LogError(ex, "Error exporting chart {ChartId} with options", chart?.Id);
             return RenderResult.CreateFailure(chart?.Id ?? "unknown", ex.Message, ex);
         }
     }
@@ -209,11 +209,11 @@ public class ChartRenderingService : IChartRenderingService
             var imageData = RenderChartToBytes(chart);
             var cacheKey = GenerateCacheKey(chart);
             _cacheService.Set(cacheKey, imageData);
-            _logger.LogInformation($"Prewarmed cache for chart {chart.Id}");
+            _logger.LogInformation("Prewarmed cache for chart {ChartId}", chart.Id);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"Failed to prewarm cache for chart {chart.Id}");
+            _logger.LogWarning(ex, "Failed to prewarm cache for chart {ChartId}", chart.Id);
         }
     }
 
@@ -296,7 +296,7 @@ public class ChartRenderingService : IChartRenderingService
             if (series.DataPoints.Count < 2)
                 continue;
 
-            var path = new SKPath();
+            using var path = new SKPath();
             var firstPoint = true;
 
             foreach (var point in series.DataPoints)
@@ -316,7 +316,6 @@ public class ChartRenderingService : IChartRenderingService
             }
 
             canvas.DrawPath(path, paint);
-            path.Dispose();
         }
     }
 

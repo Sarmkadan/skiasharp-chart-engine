@@ -93,7 +93,7 @@ public class ExportService : IExportService
 
             options.Validate();
 
-            _logger.LogInformation($"Exporting chart {chart.Id} as {options.Format}");
+            _logger.LogInformation("Exporting chart {ChartId} as {Format}", chart.Id, options.Format);
 
             return _renderingService.RenderToFile(chart, options.GetFullPath());
         }
