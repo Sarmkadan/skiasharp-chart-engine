@@ -36,40 +36,45 @@ public class ExportService : IExportService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    /// <summary>
+    /// Exports a chart to the specified format.
+    /// Validation and argument errors propagate as exceptions so the API layer
+    /// can map them to appropriate HTTP status codes (400/422).
+    /// Infrastructure errors (I/O, SkiaSharp) are caught and returned as a
+    /// failed <see cref="RenderResult"/>.
+    /// </summary>
     public async Task<RenderResult> ExportAsync(Chart chart, ExportOptions options, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(chart);
+        ArgumentNullException.ThrowIfNull(options);
+
+        if (!SupportsFormat(options.Format))
+            throw new UnsupportedExportFormatException(options.Format.ToString());
+
+        options.Validate();
+
         try
         {
-            if (chart == null)
-                throw new ArgumentNullException(nameof(chart));
-
-            if (options == null)
-                throw new ArgumentNullException(nameof(options));
-
-            if (!SupportsFormat(options.Format))
-                throw new UnsupportedExportFormatException(options.Format.ToString());
-
-            options.Validate();
-
-            _logger.LogInformation($"Exporting chart {chart.Id} as {options.Format} to {options.GetFullPath()}");
+            _logger.LogInformation("Exporting chart {ChartId} as {Format} to {Path}",
+                chart.Id, options.Format, options.GetFullPath());
 
             var result = await _renderingService.RenderWithExportAsync(chart, options, cancellationToken);
 
             if (result.Success)
             {
-                _logger.LogInformation($"Chart exported successfully: {result.OutputPath}");
+                _logger.LogInformation("Chart exported successfully: {OutputPath}", result.OutputPath);
             }
             else
             {
-                _logger.LogError($"Chart export failed: {result.ErrorMessage}");
+                _logger.LogError("Chart export failed: {ErrorMessage}", result.ErrorMessage);
             }
 
             return result;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not ArgumentException and not UnsupportedExportFormatException)
         {
-            _logger.LogError(ex, "Error during chart export");
-            return RenderResult.CreateFailure(chart?.Id ?? "unknown", ex.Message, ex);
+            _logger.LogError(ex, "Infrastructure error during chart export");
+            return RenderResult.CreateFailure(chart.Id, ex.Message, ex);
         }
     }
 
