@@ -16,7 +16,9 @@ using SkiaSharpChartEngine.Services;
 namespace SkiaSharpChartEngine;
 
 /// <summary>
-/// Main facade class for the SkiaSharp Chart Engine
+/// Provides the main entry point and facade for the SkiaSharp Chart Engine.
+/// This class exposes a unified API for rendering, exporting, and managing
+/// chart definitions, leveraging dependency injection for service resolution.
 /// </summary>
 public class ChartEngine
 {
