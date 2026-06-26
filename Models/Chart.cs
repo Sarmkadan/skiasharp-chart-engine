@@ -12,7 +12,9 @@ using SkiaSharpChartEngine.Exceptions;
 namespace SkiaSharpChartEngine.Models;
 
 /// <summary>
-/// Main Chart model containing all series and configuration
+/// Represents a complete chart model, including its data series, visual configuration,
+/// metadata, and associated tags. This is the primary model used by the <see cref="ChartEngine"/>
+/// for rendering and data processing operations.
 /// </summary>
 public class Chart
 {
