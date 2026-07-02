@@ -17,6 +17,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Register HealthCheckService for health monitoring
+builder.Services.AddSingleton<SkiaSharpChartEngine.Diagnostics.HealthCheckService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
