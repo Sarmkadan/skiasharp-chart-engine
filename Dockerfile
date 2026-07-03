@@ -8,45 +8,15 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
 WORKDIR /src
 
-# Copy project file
+# Copy project file and solution
 COPY ["skiasharp-chart-engine.csproj", "./"]
-
-# Copy solution file to restore dependencies correctly
 COPY ["*.sln", "./"]
-
-# Copy only the main project source code (exclude benchmarks, examples, tests, etc.)
-COPY ["Program.cs", "./"]
-COPY ["GlobalUsings.cs", "./"]
-COPY ["ChartEngine.cs", "./"]
-COPY ["Directory.Build.props", "./"]
-
-# Copy source directories
-COPY ["Constants/", "Constants/"]
-COPY ["Models/", "Models/"]
-COPY ["Services/", "Services/"]
-COPY ["Rendering/", "Rendering/"]
-COPY ["Pipeline/", "Pipeline/"]
-COPY ["Repository/", "Repository/"]
-COPY ["Caching/", "Caching/"]
-COPY ["Configuration/", "Configuration/"]
-COPY ["Exceptions/", "Exceptions/"]
-COPY ["Extensions/", "Extensions/"]
-COPY ["Utilities/", "Utilities/"]
-COPY ["Validation/", "Validation/"]
-COPY ["Events/", "Events/"]
-COPY ["Middleware/", "Middleware/"]
-COPY ["Workers/", "Workers/"]
-COPY ["Formatters/", "Formatters/"]
-COPY ["Serializers/", "Serializers/"]
-COPY ["Integration/", "Integration/"]
-COPY ["API/", "API/"]
-COPY ["Animation/", "Animation/"]
-COPY ["Diagnostics/", "Diagnostics/"]
-COPY ["Reports/", "Reports/"]
-COPY ["Streaming/", "Streaming/"]
 
 # Restore dependencies
 RUN dotnet restore "skiasharp-chart-engine.csproj"
+
+# Copy source code (after restore to leverage Docker cache)
+COPY ["./", "./"]
 
 # Build application
 RUN dotnet build "skiasharp-chart-engine.csproj" -c Release -o /app/build \
