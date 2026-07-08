@@ -142,8 +142,11 @@ public static class ChartValidator
         public IReadOnlyList<string> Errors => _errors.AsReadOnly();
         public IReadOnlyList<string> Warnings => _warnings.AsReadOnly();
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] // Fix: Added for performance optimization
-        public bool IsValid => _errors.Count == 0;
+        public bool IsValid
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] // Fix: Added for performance optimization
+            get => _errors.Count == 0;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] // Fix: Added for performance optimization
         public void AddError(string message)

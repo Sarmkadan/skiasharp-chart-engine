@@ -387,7 +387,7 @@ public class DataAggregatorTests
 
         // Assert
         result.Should().NotBeNull();
-        result!.CalculatedAt.Should().BeGreaterThanOrEqualTo(beforeTime);
+        result!.CalculatedAt.Should().BeOnOrAfter(beforeTime);
     }
 
     // ---------------------------------------------------------------

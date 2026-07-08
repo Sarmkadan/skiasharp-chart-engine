@@ -6,6 +6,7 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
 using SkiaSharpChartEngine.Caching;
+using SkiaSharpChartEngine.Constants;
 using SkiaSharpChartEngine.Models;
 
 namespace SkiaSharpChartEngine.Benchmarks;
