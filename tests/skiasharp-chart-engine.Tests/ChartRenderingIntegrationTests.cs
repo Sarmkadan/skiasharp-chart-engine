@@ -409,8 +409,11 @@ public class ChartRenderingIntegrationTests : IDisposable
             {
                 var chart = new Chart($"parallel-chart-{i}");
                 for (int j = 1; j <= 6; j++)
-                    chart.AddSeries(new ChartSeries($"Series {j}")).DataPoints.Add(
-                        new DataPoint(i, j * 100));
+                {
+                    var series = new ChartSeries($"Series {j}");
+                    series.DataPoints.Add(new DataPoint(i, j * 100));
+                    chart.AddSeries(series);
+                }
                 return chart;
             })
             .ToList();
@@ -424,7 +427,7 @@ public class ChartRenderingIntegrationTests : IDisposable
         var results = await Task.WhenAll(tasks);
 
         // Assert
-        results.Should().AllBe(true);
+        results.Should().OnlyContain(r => r);
     }
 
     [Fact]

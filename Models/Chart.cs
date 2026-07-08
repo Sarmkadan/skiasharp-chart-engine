@@ -41,6 +41,16 @@ public class Chart
         get => _configuration;
     }
 
+    /// <summary>
+    /// Alias for <see cref="ChartConfiguration.Title"/> exposed directly on the chart for
+    /// convenience.
+    /// </summary>
+    public string Title
+    {
+        get => _configuration.Title;
+        set => _configuration.Title = value;
+    }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime? ModifiedAt { get; set; }

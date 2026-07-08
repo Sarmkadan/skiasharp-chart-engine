@@ -29,6 +29,15 @@ public class RenderResult
 
     public long RenderTimeMs { get; set; }
 
+    /// <summary>
+    /// Alias for <see cref="RenderTimeMs"/> used by callers that spell out the unit in full.
+    /// </summary>
+    public long RenderTimeMilliseconds
+    {
+        get => RenderTimeMs;
+        set => RenderTimeMs = value;
+    }
+
     public string? ErrorMessage { get; set; }
 
     public Exception? Exception { get; set; }

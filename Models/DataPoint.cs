@@ -61,6 +61,16 @@ public class DataPoint
         }
     }
 
+    /// <summary>
+    /// Alias for <see cref="Y"/>, provided for aggregation and statistics code
+    /// that treats a data point as a labelled scalar value.
+    /// </summary>
+    public double Value
+    {
+        get => Y;
+        set => Y = value;
+    }
+
     public DataPointState State { get; set; } = DataPointState.Normal;
 
     public double? CustomRadius { get; set; }

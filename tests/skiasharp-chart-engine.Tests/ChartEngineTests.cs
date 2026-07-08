@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using SkiaSharpChartEngine.Constants;
 using SkiaSharpChartEngine.Exceptions;
 using SkiaSharpChartEngine.Models;
 using Xunit;
