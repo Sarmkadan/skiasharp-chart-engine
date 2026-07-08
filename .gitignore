@@ -67,3 +67,4 @@ TestResults/
 
 ## Benchmark artifacts
 BenchmarkDotNet.Artifacts/
+.aider*
