@@ -3,6 +3,8 @@
 // CTO & Software Architect
 // =============================================================================
 
+using SkiaSharpChartEngine.Exceptions;
+
 namespace SkiaSharpChartEngine.Services;
 
 /// <summary>
