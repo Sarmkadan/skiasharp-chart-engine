@@ -34,4 +34,3 @@ These settings can be configured in the `appsettings.json` file.
   }
 }
 ```
-```
