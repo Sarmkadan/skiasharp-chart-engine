@@ -13,7 +13,7 @@ namespace SkiaSharpChartEngine.Utilities;
 /// String formatting and transformation utilities.
 /// Provides methods for formatting numbers, currencies, and chart labels.
 /// </summary>
-public static class StringFormatHelper
+public class StringFormatHelper
 {
     // Shared pool reduces StringBuilder allocations in high-frequency call paths.
     private static readonly ObjectPool<StringBuilder> _sbPool =
