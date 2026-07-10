@@ -11,16 +11,32 @@ using SkiaSharpChartEngine.Models;
 
 namespace SkiaSharpChartEngine.Benchmarks;
 
+/// <summary>
+/// Benchmark class for rendering charts.
+/// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 public class RenderingBenchmarks
 {
+    /// <summary>
+    /// The chart engine instance used for rendering.
+    /// </summary>
     private ChartEngine _engine = null!;
+
+    /// <summary>
+    /// The chart instance used for rendering.
+    /// </summary>
     private Chart _chart = null!;
 
+    /// <summary>
+    /// The number of data points to render.
+    /// </summary>
     [Params(100, 1_000)]
     public int DataPoints { get; set; }
 
+    /// <summary>
+    /// Sets up the chart engine and chart instance for rendering.
+    /// </summary>
     [GlobalSetup]
     public void Setup()
     {
@@ -44,6 +60,10 @@ public class RenderingBenchmarks
         _chart.AddSeries(series);
     }
 
+    /// <summary>
+    /// Renders the chart to a byte array without using the cache.
+    /// </summary>
+    /// <returns>The rendered chart as a byte array.</returns>
     [Benchmark(Description = "RenderToByteArray (Cold - no cache)")]
     public RenderResult Render_Cold()
     {
@@ -60,6 +80,10 @@ public class RenderingBenchmarks
         return _engine.RenderChart(_chart);
     }
 
+    /// <summary>
+    /// Renders the chart to a byte array using the cache.
+    /// </summary>
+    /// <returns>The rendered chart as a byte array.</returns>
     [Benchmark(Description = "RenderToByteArray (Warm - cache hit)")]
     public RenderResult Render_Warm()
     {
