@@ -38,7 +38,6 @@
     <Compile Remove="Integration/**/*.cs" />
     <Compile Remove="Serializers/**/*.cs" />
     <Compile Remove="Utilities/TemplateLibrary.cs" />
-    <Compile Remove="Utilities/PerformanceOptimizer.cs" />
     <Compile Remove="Utilities/DataTransformer.cs" />
     <Compile Remove="Utilities/ChartStatistics.cs" />
     <Compile Remove="Utilities/ChartExporter.cs" />

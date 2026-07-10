@@ -12,6 +12,41 @@ using SkiaSharpChartEngine.Models;
 namespace SkiaSharpChartEngine.Utilities;
 
 /// <summary>
+/// Performance severity levels for optimization recommendations.
+/// </summary>
+public enum Severity
+{
+    Low,
+    Medium,
+    High,
+    Critical
+}
+
+/// <summary>
+/// Optimization recommendation.
+/// </summary>
+public class OptimizationRecommendation
+{
+    public string Category { get; set; }
+    public Severity Severity { get; set; }
+    public string Message { get; set; }
+    public string Action { get; set; }
+}
+
+/// <summary>
+/// Performance analysis result.
+/// </summary>
+public class PerformanceAnalysis
+{
+    public string ChartId { get; set; }
+    public int TotalDataPoints { get; set; }
+    public DateTime AnalyzedAt { get; set; }
+    public List<OptimizationRecommendation> Recommendations { get; set; } = new List<OptimizationRecommendation>();
+
+    public bool HasIssues => Recommendations?.Count > 0;
+}
+
+/// <summary>
 /// Optimizes chart rendering performance through downsampling, simplification, and caching strategies.
 /// Provides recommendations for performance improvements.
 /// </summary>
@@ -68,7 +103,7 @@ public class PerformanceOptimizer
             }
 
             // Check chart dimensions
-            var config = chart.ChartConfiguration;
+            var config = chart.Configuration;
             if (config != null && (config.Width > 4000 || config.Height > 4000))
             {
                 analysis.Recommendations.Add(new OptimizationRecommendation
@@ -147,7 +182,7 @@ public class PerformanceOptimizer
             }
 
             // Add for rendering
-            var config = chart.ChartConfiguration;
+            var config = chart.Configuration;
             if (config != null)
             {
                 var pixelCount = (long)config.Width * config.Height;
@@ -163,36 +198,4 @@ public class PerformanceOptimizer
             return 0;
         }
     }
-}
-
-/// <summary>
-/// Performance analysis result.
-/// </summary>
-public class PerformanceAnalysis
-{
-    public string ChartId { get; set; }
-    public int TotalDataPoints { get; set; }
-    public DateTime AnalyzedAt { get; set; }
-    public List<OptimizationRecommendation> Recommendations { get; set; }
-
-    public bool HasIssues => Recommendations.Count > 0;
-}
-
-/// <summary>
-/// Optimization recommendation.
-/// </summary>
-public class OptimizationRecommendation
-{
-    public string Category { get; set; }
-    public Severity Severity { get; set; }
-    public string Message { get; set; }
-    public string Action { get; set; }
-}
-
-public enum Severity
-{
-    Low,
-    Medium,
-    High,
-    Critical
 }
