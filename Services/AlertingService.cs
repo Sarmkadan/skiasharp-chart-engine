@@ -198,3 +198,184 @@ public class AlertStatistics
     public int InfoAlerts { get; set; }
     public DateTime LastAlertTime { get; set; }
 }
+
+/// <summary>
+/// Extension methods for AlertingService providing additional alert management functionality.
+/// </summary>
+public static class AlertingServiceExtensions
+{
+    /// <summary>
+    /// Checks if there are any active alerts matching the specified severity level.
+    /// </summary>
+    /// <param name="service">The alerting service instance</param>
+    /// <param name="severity">The severity level to check for</param>
+    /// <returns>True if there are active alerts with the specified severity; otherwise false</returns>
+    public static bool HasActiveAlerts(this AlertingService service, AlertSeverity severity)
+    {
+        if (service == null)
+            throw new ArgumentNullException(nameof(service));
+
+        var activeAlerts = service.GetActiveAlerts();
+        return activeAlerts.Any(a => a.Severity == severity);
+    }
+
+    /// <summary>
+    /// Gets the most recent alert by timestamp.
+    /// </summary>
+    /// <param name="service">The alerting service instance</param>
+    /// <returns>The most recent alert, or null if no alerts exist</returns>
+    public static Alert GetMostRecentAlert(this AlertingService service)
+    {
+        if (service == null)
+            throw new ArgumentNullException(nameof(service));
+
+        return service.GetAlertHistory()
+            .OrderByDescending(a => a.Timestamp)
+            .FirstOrDefault();
+    }
+
+    /// <summary>
+    /// Gets all alerts that match the specified condition predicate.
+    /// </summary>
+    /// <param name="service">The alerting service instance</param>
+    /// <param name="predicate">The condition to filter alerts</param>
+    /// <returns>List of alerts matching the predicate</returns>
+    public static List<Alert> GetAlertsWhere(this AlertingService service, Func<Alert, bool> predicate)
+    {
+        if (service == null)
+            throw new ArgumentNullException(nameof(service));
+        if (predicate == null)
+            throw new ArgumentNullException(nameof(predicate));
+
+        return service.GetAlertHistory()
+            .Where(predicate)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Gets the count of active alerts grouped by severity.
+    /// </summary>
+    /// <param name="service">The alerting service instance</param>
+    /// <returns>Dictionary with severity as key and count as value</returns>
+    public static Dictionary<AlertSeverity, int> GetActiveAlertsCountBySeverity(this AlertingService service)
+    {
+        if (service == null)
+            throw new ArgumentNullException(nameof(service));
+
+        var activeAlerts = service.GetActiveAlerts();
+        return Enum.GetValues(typeof(AlertSeverity))
+            .Cast<AlertSeverity>()
+            .ToDictionary(
+                severity => severity,
+                severity => activeAlerts.Count(a => a.Severity == severity)
+            );
+    }
+
+    /// <summary>
+    /// Checks if a specific alert rule is currently active (has triggered alerts that haven't been acknowledged).
+    /// </summary>
+    /// <param name="service">The alerting service instance</param>
+    /// <param name="ruleName">The name of the rule to check</param>
+    /// <returns>True if the rule has active alerts; otherwise false</returns>
+    public static bool IsRuleActive(this AlertingService service, string ruleName)
+    {
+        if (service == null)
+            throw new ArgumentNullException(nameof(service));
+        if (string.IsNullOrWhiteSpace(ruleName))
+            throw new ArgumentException("Rule name cannot be null or empty", nameof(ruleName));
+
+        var activeAlerts = service.GetActiveAlerts();
+        return activeAlerts.Any(a => string.Equals(a.RuleName, ruleName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Gets the first unacknowledged alert with the specified severity level.
+    /// </summary>
+    /// <param name="service">The alerting service instance</param>
+    /// <param name="severity">The severity level to find</param>
+    /// <returns>The first unacknowledged alert with the specified severity, or null if none exists</returns>
+    public static Alert GetFirstUnacknowledgedAlert(this AlertingService service, AlertSeverity severity)
+    {
+        if (service == null)
+            throw new ArgumentNullException(nameof(service));
+
+        return service.GetActiveAlerts()
+            .FirstOrDefault(a => a.Severity == severity);
+    }
+
+    /// <summary>
+    /// Gets the total number of alerts that have been triggered.
+    /// </summary>
+    /// <param name="service">The alerting service instance</param>
+    /// <returns>The total count of all alerts</returns>
+    public static int GetTotalAlertsCount(this AlertingService service)
+    {
+        if (service == null)
+            throw new ArgumentNullException(nameof(service));
+
+        return service.GetAlertHistory()
+            .Count;
+    }
+
+    /// <summary>
+    /// Checks if there are any alerts (active or acknowledged) within the specified time window.
+    /// </summary>
+    /// <param name="service">The alerting service instance</param>
+    /// <param name="timeWindow">The time window to check within</param>
+    /// <returns>True if there are alerts within the time window; otherwise false</returns>
+    public static bool HasAlertsInTimeWindow(this AlertingService service, TimeSpan timeWindow)
+    {
+        if (service == null)
+            throw new ArgumentNullException(nameof(service));
+
+        var recentAlerts = service.GetAlertHistory(timeWindow);
+        return recentAlerts.Count > 0;
+    }
+
+    /// <summary>
+    /// Gets all alerts that have been acknowledged.
+    /// </summary>
+    /// <param name="service">The alerting service instance</param>
+    /// <returns>List of acknowledged alerts</returns>
+    public static List<Alert> GetAcknowledgedAlerts(this AlertingService service)
+    {
+        if (service == null)
+            throw new ArgumentNullException(nameof(service));
+
+        return service.GetAlertHistory()
+            .Where(a => a.Acknowledged)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Gets the percentage of alerts that are still active (not acknowledged).
+    /// </summary>
+    /// <param name="service">The alerting service instance</param>
+    /// <returns>Percentage of active alerts (0-100)</returns>
+    public static double GetActiveAlertsPercentage(this AlertingService service)
+    {
+        if (service == null)
+            throw new ArgumentNullException(nameof(service));
+
+        var stats = service.GetStatistics();
+        if (stats.TotalAlerts == 0)
+            return 0;
+
+        return Math.Round((double)stats.ActiveAlerts / stats.TotalAlerts * 100, 2);
+    }
+
+    /// <summary>
+    /// Gets the most severe active alert.
+    /// </summary>
+    /// <param name="service">The alerting service instance</param>
+    /// <returns>The most severe active alert, or null if no active alerts exist</returns>
+    public static Alert GetMostSevereActiveAlert(this AlertingService service)
+    {
+        if (service == null)
+            throw new ArgumentNullException(nameof(service));
+
+        return service.GetActiveAlerts()
+            .OrderByDescending(a => a.Severity)
+            .FirstOrDefault();
+    }
+}
