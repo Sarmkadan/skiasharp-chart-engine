@@ -13,11 +13,30 @@ using Xunit;
 
 namespace SkiaSharpChartEngine.Tests.Integration;
 
+/// <summary>
+/// Integration tests for chart rendering functionality that verify end-to-end behavior
+/// of the SkiaSharp chart engine with real service dependencies and file system operations.
+/// Tests cover rendering to files, byte arrays, various export formats, caching behavior,
+/// configuration options, multi-series charts, concurrent operations, and edge cases.
+/// </summary>
 public class ChartRenderingIntegrationTests : IDisposable
 {
+    /// <summary>
+    /// Service provider configured with all chart engine services for integration testing.
+    /// </summary>
     private readonly IServiceProvider _serviceProvider;
+
+    /// <summary>
+    /// Temporary directory path used for storing test output files.
+    /// Created in constructor and cleaned up in Dispose method.
+    /// </summary>
     private readonly string _tempOutputDir;
 
+    /// <summary>
+    /// Initializes a new instance of the ChartRenderingIntegrationTests class.
+    /// Sets up a temporary directory for test output files and configures the service provider
+    /// with all required chart engine services including rendering, export, caching, and interactivity.
+    /// </summary>
     public ChartRenderingIntegrationTests()
     {
         _tempOutputDir = Path.Combine(Path.GetTempPath(), "chart-tests-" + Guid.NewGuid());
@@ -34,6 +53,10 @@ public class ChartRenderingIntegrationTests : IDisposable
         _serviceProvider = services.BuildServiceProvider();
     }
 
+    /// <summary>
+    /// Cleans up test resources by deleting the temporary output directory and disposing
+    /// the service provider to release any allocated resources.
+    /// </summary>
     public void Dispose()
     {
         if (Directory.Exists(_tempOutputDir))
@@ -41,6 +64,11 @@ public class ChartRenderingIntegrationTests : IDisposable
         (_serviceProvider as IDisposable)?.Dispose();
     }
 
+    /// <summary>
+    /// Creates a sample line chart with 12 months of sales data for testing purposes.
+    /// Generates random variations in the data points to ensure realistic chart rendering.
+    /// </summary>
+    /// <returns>A configured Chart object with line series containing sales data.</returns>
     private Chart CreateLineChartWithData()
     {
         var chart = new Chart("line-chart-integration");
@@ -61,6 +89,11 @@ public class ChartRenderingIntegrationTests : IDisposable
         return chart;
     }
 
+    /// <summary>
+    /// Creates a sample multi-series chart with three different product lines for testing purposes.
+    /// Each series has distinct colors and different data patterns to verify multi-series rendering.
+    /// </summary>
+    /// <returns>A configured Chart object with three ChartSeries objects representing different products.</returns>
     private Chart CreateMultiSeriesChart()
     {
         var chart = new Chart("multi-series-chart");
@@ -88,6 +121,10 @@ public class ChartRenderingIntegrationTests : IDisposable
     // Basic rendering tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that a simple line chart can be successfully rendered to a PNG file.
+    /// Verifies that the rendering service produces a valid output file with non-zero size.
+    /// </summary>
     [Fact]
     public void CanRenderSimpleLineChartToFile()
     {
@@ -105,6 +142,10 @@ public class ChartRenderingIntegrationTests : IDisposable
         new FileInfo(outputPath).Length.Should().BeGreaterThan(0);
     }
 
+    /// <summary>
+    /// Tests that a chart can be rendered to a byte array in memory.
+    /// Verifies that the rendering service returns a successful result with valid image data.
+    /// </summary>
     [Fact]
     public void CanRenderChartToByteArray()
     {
@@ -121,6 +162,10 @@ public class ChartRenderingIntegrationTests : IDisposable
         result.ImageData.Length.Should().BeGreaterThan(0);
     }
 
+    /// <summary>
+    /// Tests that chart rendering to file works asynchronously.
+    /// Verifies that the async rendering service produces a valid output file.
+    /// </summary>
     [Fact]
     public async Task CanRenderChartAsyncToFile()
     {
@@ -141,6 +186,10 @@ public class ChartRenderingIntegrationTests : IDisposable
     // Export format tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that a chart can be exported to PNG format.
+    /// Verifies that the export service successfully creates a PNG file with valid content.
+    /// </summary>
     [Fact]
     public void CanExportChartAsPng()
     {
@@ -162,6 +211,10 @@ public class ChartRenderingIntegrationTests : IDisposable
         File.Exists(Path.Combine(_tempOutputDir, "export-test.png")).Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that a chart can be exported to SVG format asynchronously.
+    /// Verifies that the async export service creates a valid SVG file containing SVG markup.
+    /// </summary>
     [Fact]
     public async Task CanExportChartAsSvg()
     {
@@ -186,6 +239,10 @@ public class ChartRenderingIntegrationTests : IDisposable
         content.Should().Contain("<svg");
     }
 
+    /// <summary>
+    /// Tests that a chart can be exported to JPEG format asynchronously.
+    /// Verifies that the async export service successfully creates a JPEG file.
+    /// </summary>
     [Fact]
     public async Task CanExportChartAsJpeg()
     {
@@ -207,6 +264,10 @@ public class ChartRenderingIntegrationTests : IDisposable
         File.Exists(Path.Combine(_tempOutputDir, "export-test.jpg")).Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that a chart can be exported to WebP format asynchronously.
+    /// Verifies that the async export service successfully creates a WebP file.
+    /// </summary>
     [Fact]
     public async Task CanExportChartAsWebP()
     {
@@ -232,6 +293,10 @@ public class ChartRenderingIntegrationTests : IDisposable
     // Multi-series chart tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that a multi-series chart with three different data series can be successfully rendered.
+    /// Verifies that multiple series are properly rendered and the output file has sufficient size.
+    /// </summary>
     [Fact]
     public void CanRenderMultiSeriesChart()
     {
@@ -249,6 +314,10 @@ public class ChartRenderingIntegrationTests : IDisposable
         new FileInfo(outputPath).Length.Should().BeGreaterThan(100);
     }
 
+    /// <summary>
+    /// Tests that series visibility can be toggled and produces different rendering results.
+    /// Verifies that hiding a series changes the rendered output compared to showing it.
+    /// </summary>
     [Fact]
     public void CanToggleSeriesVisibility()
     {
@@ -274,6 +343,10 @@ public class ChartRenderingIntegrationTests : IDisposable
     // Caching behavior tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that the rendering cache improves performance on subsequent renders of the same chart.
+    /// Verifies that cached rendering produces faster results than the initial uncached render.
+    /// </summary>
     [Fact]
     public void CachingImprovesPerfomanceOnSecondRender()
     {
@@ -296,6 +369,10 @@ public class ChartRenderingIntegrationTests : IDisposable
         time2.Should().BeLessThan(time1);
     }
 
+    /// <summary>
+    /// Tests that different chart configurations produce different cache keys.
+    /// Verifies that charts with different IDs generate distinct rendered outputs.
+    /// </summary>
     [Fact]
     public void DifferentChartsProduceDifferentCacheKeys()
     {
@@ -317,6 +394,10 @@ public class ChartRenderingIntegrationTests : IDisposable
     // Configuration tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that custom chart configuration can be applied and affects rendering.
+    /// Verifies that changing width, height, background color, and grid color produces valid output.
+    /// </summary>
     [Fact]
     public void CanApplyCustomConfiguration()
     {
@@ -336,6 +417,10 @@ public class ChartRenderingIntegrationTests : IDisposable
         result.ImageData.Length.Should().BeGreaterThan(0);
     }
 
+    /// <summary>
+    /// Tests that grid and legend can be disabled to produce different rendering output.
+    /// Verifies that disabling grid and legend changes the visual appearance of the chart.
+    /// </summary>
     [Fact]
     public void CanDisableGridAndLegend()
     {
@@ -361,6 +446,10 @@ public class ChartRenderingIntegrationTests : IDisposable
     // Data validation tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that rendering fails appropriately when a chart has no data series.
+    /// Verifies that charts without any series produce a failed rendering result.
+    /// </summary>
     [Fact]
     public void RenderingFailsWithMissingData()
     {
@@ -375,6 +464,10 @@ public class ChartRenderingIntegrationTests : IDisposable
         result.Success.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that export fails appropriately when an invalid output path is provided.
+    /// Verifies that attempting to export to a non-existent directory produces a failed result.
+    /// </summary>
     [Fact]
     public void ExportFailsWithInvalidPath()
     {
@@ -461,6 +554,10 @@ public class ChartRenderingIntegrationTests : IDisposable
     // Edge case tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that a chart with a single data point can be successfully rendered.
+    /// Verifies that even minimal chart data produces valid rendering output.
+    /// </summary>
     [Fact]
     public void CanRenderChartWithSingleDataPoint()
     {
@@ -478,6 +575,10 @@ public class ChartRenderingIntegrationTests : IDisposable
         result.Success.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that a chart with a large number of data points (1000) can be successfully rendered.
+    /// Verifies that the rendering engine can handle large datasets without failing.
+    /// </summary>
     [Fact]
     public void CanRenderChartWithLargeNumberOfDataPoints()
     {
@@ -498,6 +599,10 @@ public class ChartRenderingIntegrationTests : IDisposable
         result.Success.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that a chart with negative values can be successfully rendered.
+    /// Verifies that the rendering engine properly handles negative data points in charts.
+    /// </summary>
     [Fact]
     public void CanRenderChartWithNegativeValues()
     {
@@ -520,6 +625,10 @@ public class ChartRenderingIntegrationTests : IDisposable
         result.Success.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that a chart with zero values can be successfully rendered.
+    /// Verifies that charts containing only zero values are handled correctly by the rendering engine.
+    /// </summary>
     [Fact]
     public void CanRenderChartWithZeroValues()
     {
