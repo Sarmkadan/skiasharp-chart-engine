@@ -12,6 +12,11 @@ using Xunit;
 
 namespace SkiaSharpChartEngine.Tests.Services;
 
+/// <summary>
+/// Unit tests for <see cref="ChartRenderingService"/> that verify chart rendering functionality.
+/// Tests cover both async and sync rendering methods, cache behavior, file operations,
+/// and constructor validation for the chart rendering service.
+/// </summary>
 public class ChartRenderingServiceTests
 {
     private readonly Mock<ILogger<ChartRenderingService>> _loggerMock;
@@ -19,6 +24,11 @@ public class ChartRenderingServiceTests
     private readonly Mock<IRenderCacheService> _cacheServiceMock;
     private readonly ChartRenderingService _service;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChartRenderingServiceTests"/> class.
+    /// Sets up mock dependencies for logger, chart data service, and cache service,
+    /// and creates an instance of <see cref="ChartRenderingService"/> for testing.
+    /// </summary>
     public ChartRenderingServiceTests()
     {
         _loggerMock = new Mock<ILogger<ChartRenderingService>>();
@@ -27,6 +37,12 @@ public class ChartRenderingServiceTests
         _service = new ChartRenderingService(_loggerMock.Object, _dataServiceMock.Object, _cacheServiceMock.Object);
     }
 
+    /// <summary>
+    /// Creates a valid chart for testing with default ID "test-chart".
+    /// The chart contains one series with two data points at x-values 1.0 and 2.0.
+    /// </summary>
+    /// <param name="id">Optional chart identifier. Defaults to "test-chart".</param>
+    /// <returns>A configured <see cref="Chart"/> instance ready for rendering tests.</returns>
     private Chart CreateValidChart(string id = "test-chart")
     {
         var chart = new Chart(id);
