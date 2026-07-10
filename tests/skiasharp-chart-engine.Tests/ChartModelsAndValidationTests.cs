@@ -1,7 +1,7 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =============================================================================
+// =====================================================================
 
 using System;
 using System.Collections.Generic;
@@ -13,12 +13,20 @@ using Xunit;
 
 namespace SkiaSharpChartEngine.Tests.Models;
 
+/// <summary>
+/// Contains unit tests for chart models and validation logic in the SkiaSharpChartEngine library.
+/// This test class validates the behavior of DataPoint, ChartSeries, Chart, ChartValidator,
+/// ColorHelper, and their associated extension methods.
+/// </summary>
 public class ChartModelsAndValidationTests
 {
     // -------------------------------------------------------------------------
     // DataPoint model tests
     // -------------------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that setting the X coordinate of a DataPoint to NaN throws an ArgumentException.
+    /// </summary>
     [Fact]
     public void DataPoint_SettingXToNaN_ThrowsArgumentException()
     {
@@ -30,9 +38,12 @@ public class ChartModelsAndValidationTests
 
         // Assert
         act.Should().Throw<ArgumentException>()
-           .WithMessage("*NaN*");
+        .WithMessage("*NaN*");
     }
 
+    /// <summary>
+    /// Tests that setting the Y coordinate of a DataPoint to PositiveInfinity throws an ArgumentException.
+    /// </summary>
     [Fact]
     public void DataPoint_SettingYToPositiveInfinity_ThrowsArgumentException()
     {
@@ -44,9 +55,12 @@ public class ChartModelsAndValidationTests
 
         // Assert
         act.Should().Throw<ArgumentException>()
-           .WithMessage("*Infinity*");
+        .WithMessage("*Infinity*");
     }
 
+    /// <summary>
+    /// Tests that the Clone method produces an independent copy of a DataPoint with the same values.
+    /// </summary>
     [Fact]
     public void DataPoint_Clone_ProducesIndependentCopyWithSameValues()
     {
@@ -70,6 +84,9 @@ public class ChartModelsAndValidationTests
     // ChartSeries model tests
     // -------------------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that adding a data point to a ChartSeries increases its count.
+    /// </summary>
     [Fact]
     public void ChartSeries_AddDataPoint_IncreasesCount()
     {
@@ -84,6 +101,9 @@ public class ChartModelsAndValidationTests
         series.GetDataPointCount().Should().Be(2);
     }
 
+    /// <summary>
+    /// Tests that GetYAxisRange on an empty ChartSeries returns the default range of 0 to 1.
+    /// </summary>
     [Fact]
     public void ChartSeries_GetYAxisRange_EmptySeries_ReturnsDefaultRange()
     {
@@ -98,6 +118,9 @@ public class ChartModelsAndValidationTests
         max.Should().Be(1);
     }
 
+    /// <summary>
+    /// Tests that GetYAxisRange on a ChartSeries with data points returns the actual minimum and maximum Y values.
+    /// </summary>
     [Fact]
     public void ChartSeries_GetYAxisRange_WithPoints_ReturnsActualBounds()
     {
@@ -119,6 +142,9 @@ public class ChartModelsAndValidationTests
     // Chart model tests
     // -------------------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that adding a null series to a Chart throws an ArgumentNullException.
+    /// </summary>
     [Fact]
     public void Chart_AddNullSeries_ThrowsArgumentNullException()
     {
@@ -132,6 +158,9 @@ public class ChartModelsAndValidationTests
         act.Should().Throw<ArgumentNullException>();
     }
 
+    /// <summary>
+    /// Tests that GetDataBounds on an empty Chart returns the default bounds of 0 to 1 for both X and Y axes.
+    /// </summary>
     [Fact]
     public void Chart_GetDataBounds_EmptyChart_ReturnsDefaultBounds()
     {
@@ -148,6 +177,9 @@ public class ChartModelsAndValidationTests
         maxY.Should().Be(1);
     }
 
+    /// <summary>
+    /// Tests that GetDataBounds on a Chart with series data returns the correct minimum and maximum bounds for both axes.
+    /// </summary>
     [Fact]
     public void Chart_GetDataBounds_WithSeriesData_ReturnsCorrectBounds()
     {
@@ -172,6 +204,9 @@ public class ChartModelsAndValidationTests
     // ChartValidator tests
     // -------------------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that ChartValidator.ValidateChart returns invalid when given null input.
+    /// </summary>
     [Fact]
     public void ChartValidator_ValidateChart_NullInput_IsNotValid()
     {
@@ -183,6 +218,9 @@ public class ChartModelsAndValidationTests
         result.Errors.Should().ContainSingle(e => e.Contains("null"));
     }
 
+    /// <summary>
+    /// Tests that ChartValidator.ValidateChart adds an error when a Chart has no series.
+    /// </summary>
     [Fact]
     public void ChartValidator_ValidateChart_NoSeries_AddsSeriesError()
     {
@@ -197,6 +235,9 @@ public class ChartModelsAndValidationTests
         result.Errors.Should().Contain(e => e.Contains("series"));
     }
 
+    /// <summary>
+    /// Tests that ChartValidator.ValidateSeries adds an error when a ChartSeries has an empty name.
+    /// </summary>
     [Fact]
     public void ChartValidator_ValidateSeries_EmptyName_AddsNameError()
     {
@@ -211,6 +252,9 @@ public class ChartModelsAndValidationTests
         result.Errors.Should().Contain(e => e.Contains("empty name"));
     }
 
+    /// <summary>
+    /// Tests that ChartValidator.ValidateConfiguration returns valid for a default configuration.
+    /// </summary>
     [Fact]
     public void ChartValidator_ValidateConfiguration_DefaultConfig_IsValid()
     {
@@ -224,6 +268,9 @@ public class ChartModelsAndValidationTests
         result.IsValid.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that ChartValidator.ValidateDataPoint returns invalid when given a null DataPoint.
+    /// </summary>
     [Fact]
     public void ChartValidator_ValidateDataPoint_NullPoint_IsNotValid()
     {
@@ -239,6 +286,9 @@ public class ChartModelsAndValidationTests
     // ColorHelper tests
     // -------------------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that ColorHelper.HexToRgb converts pure red hex color (#FF0000) to the correct RGB string.
+    /// </summary>
     [Fact]
     public void ColorHelper_HexToRgb_ForPureRed_ReturnsCorrectRgbString()
     {
@@ -249,6 +299,9 @@ public class ChartModelsAndValidationTests
         result.Should().Be("rgb(255, 0, 0)");
     }
 
+    /// <summary>
+    /// Tests that ColorHelper.RgbToHex converts blue RGB values (0, 0, 255) to the correct hex string (#0000FF).
+    /// </summary>
     [Fact]
     public void ColorHelper_RgbToHex_ForBlue_ReturnsUpperCaseHex()
     {
@@ -259,18 +312,27 @@ public class ChartModelsAndValidationTests
         result.Should().Be("#0000FF");
     }
 
+    /// <summary>
+    /// Tests that ColorHelper.IsValidHexColor returns true for a valid six-character hex color string.
+    /// </summary>
     [Fact]
     public void ColorHelper_IsValidHexColor_ValidSixCharHex_ReturnsTrue()
     {
         ColorHelper.IsValidHexColor("#1F77B4").Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that ColorHelper.IsValidHexColor returns false when the hex color string is missing the hash prefix.
+    /// </summary>
     [Fact]
     public void ColorHelper_IsValidHexColor_MissingHash_ReturnsFalse()
     {
         ColorHelper.IsValidHexColor("FF0000").Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that ColorHelper.LightenColor increases the RGB channel values by the specified factor.
+    /// </summary>
     [Fact]
     public void ColorHelper_LightenColor_IncreasesChannelValues()
     {
@@ -288,6 +350,10 @@ public class ChartModelsAndValidationTests
     // DataPointExtensions tests
     // -------------------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that DataPointExtensions.GetDistance calculates the Euclidean distance between two DataPoints correctly.
+    /// This test uses a 3-4-5 right triangle to verify the calculation.
+    /// </summary>
     [Fact]
     public void DataPointExtensions_GetDistance_KnownPoints_ReturnsEuclideanDistance()
     {
@@ -302,6 +368,9 @@ public class ChartModelsAndValidationTests
         distance.Should().BeApproximately(5.0, 0.0001);
     }
 
+    /// <summary>
+    /// Tests that DataPointExtensions.Offset shifts both X and Y coordinates by the specified amounts.
+    /// </summary>
     [Fact]
     public void DataPointExtensions_Offset_ShiftsXAndYBySpecifiedAmount()
     {
@@ -316,6 +385,9 @@ public class ChartModelsAndValidationTests
         shifted.Y.Should().Be(1.0);
     }
 
+    /// <summary>
+    /// Tests that DataPointExtensions.Scale multiplies both X and Y coordinates by the specified factors.
+    /// </summary>
     [Fact]
     public void DataPointExtensions_Scale_MultipliesCoordinates()
     {
