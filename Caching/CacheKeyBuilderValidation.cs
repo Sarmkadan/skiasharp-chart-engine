@@ -16,8 +16,13 @@ public static class CacheKeyBuilderValidation
     /// <summary>
     /// Validates a cache key and returns a list of problems.
     /// </summary>
+    /// <param name="key">The cache key to validate.</param>
+    /// <returns>A list of validation problems; empty if the key is valid.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="key"/> is <see langword="null"/>.</exception>
     public static IReadOnlyList<string> Validate(string? key)
     {
+        ArgumentNullException.ThrowIfNull(key);
+
         var problems = new List<string>();
         if (string.IsNullOrWhiteSpace(key))
         {
@@ -29,23 +34,30 @@ public static class CacheKeyBuilderValidation
         {
             problems.Add("Cache key does not follow the valid format.");
         }
-        
+
         return problems;
     }
 
     /// <summary>
     /// Checks if a cache key is valid.
     /// </summary>
+    /// <param name="key">The cache key to validate.</param>
+    /// <returns><see langword="true"/> if the key is valid; otherwise, <see langword="false"/>.</returns>
     public static bool IsValid(string? key)
     {
+        ArgumentNullException.ThrowIfNull(key);
         return !string.IsNullOrWhiteSpace(key) && CacheKeyBuilder.IsValidCacheKey(key);
     }
 
     /// <summary>
     /// Ensures a cache key is valid, throwing an ArgumentException if not.
     /// </summary>
+    /// <param name="key">The cache key to validate.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is invalid.</exception>
     public static void EnsureValid(string? key)
     {
+        ArgumentNullException.ThrowIfNull(key);
+
         var problems = Validate(key);
         if (problems.Count > 0)
         {
