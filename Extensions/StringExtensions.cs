@@ -16,146 +16,243 @@ namespace SkiaSharpChartEngine.Extensions;
 /// </summary>
 public static class StringExtensions
 {
-    // Convert string to kebab-case (dash-separated lowercase)
+    /// <summary>
+    /// Converts a string to kebab-case (dash-separated lowercase).
+    /// </summary>
+    /// <param name="input">The string to convert.</param>
+    /// <returns>The kebab-case representation, or empty string if input is null or empty.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
     public static string ToKebabCase(this string input)
     {
-        if (string.IsNullOrEmpty(input))
+        ArgumentNullException.ThrowIfNull(input);
+
+        if (input.Length == 0)
             return input;
 
         var pattern = new Regex(@"[A-Z]");
-        var kebab = pattern.Replace(input, m => "-" + m.Value.ToLower());
+        var kebab = pattern.Replace(input, m => "-" + m.Value.ToLowerInvariant());
         return kebab.TrimStart('-');
     }
 
-    // Convert string to snake_case (underscore-separated lowercase)
+    /// <summary>
+    /// Converts a string to snake_case (underscore-separated lowercase).
+    /// </summary>
+    /// <param name="input">The string to convert.</param>
+    /// <returns>The snake_case representation, or empty string if input is null or empty.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
     public static string ToSnakeCase(this string input)
     {
-        if (string.IsNullOrEmpty(input))
+        ArgumentNullException.ThrowIfNull(input);
+
+        if (input.Length == 0)
             return input;
 
         var pattern = new Regex(@"[A-Z]");
-        var snake = pattern.Replace(input, m => "_" + m.Value.ToLower());
+        var snake = pattern.Replace(input, m => "_" + m.Value.ToLowerInvariant());
         return snake.TrimStart('_');
     }
 
-    // Convert string to PascalCase (FirstLetterCapitalized)
+    /// <summary>
+    /// Converts a string to PascalCase (FirstLetterCapitalized).
+    /// </summary>
+    /// <param name="input">The string to convert.</param>
+    /// <returns>The PascalCase representation, or empty string if input is null or empty.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
     public static string ToPascalCase(this string input)
     {
-        if (string.IsNullOrEmpty(input))
+        ArgumentNullException.ThrowIfNull(input);
+
+        if (input.Length == 0)
             return input;
 
-        var cultureInfo = CultureInfo.CurrentCulture;
-        var textInfo = cultureInfo.TextInfo;
+        var textInfo = CultureInfo.InvariantCulture.TextInfo;
 
         // Split on spaces, hyphens, and underscores
         var words = Regex.Split(input, @"[\s\-_]+")
             .Where(w => !string.IsNullOrEmpty(w))
-            .Select(w => textInfo.ToTitleCase(w.ToLower()));
+            .Select(w => textInfo.ToTitleCase(w.ToLowerInvariant()));
 
         return string.Concat(words);
     }
 
-    // Safely parse double with fallback
+    /// <summary>
+    /// Safely parses a string to a double with a fallback value.
+    /// </summary>
+    /// <param name="input">The string to parse.</param>
+    /// <param name="defaultValue">The value to return if parsing fails.</param>
+    /// <returns>The parsed double value or the default value if parsing fails.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
     public static double ToDoubleOrDefault(this string input, double defaultValue = 0)
     {
-        if (double.TryParse(input, CultureInfo.InvariantCulture, out var result))
-            return result;
+        ArgumentNullException.ThrowIfNull(input);
 
-        return defaultValue;
+        return double.TryParse(input, NumberStyles.Any, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : defaultValue;
     }
 
-    // Safely parse integer with fallback
+    /// <summary>
+    /// Safely parses a string to an integer with a fallback value.
+    /// </summary>
+    /// <param name="input">The string to parse.</param>
+    /// <param name="defaultValue">The value to return if parsing fails.</param>
+    /// <returns>The parsed integer value or the default value if parsing fails.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
     public static int ToIntOrDefault(this string input, int defaultValue = 0)
     {
-        if (int.TryParse(input, CultureInfo.InvariantCulture, out var result))
-            return result;
+        ArgumentNullException.ThrowIfNull(input);
 
-        return defaultValue;
+        return int.TryParse(input, NumberStyles.Any, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : defaultValue;
     }
 
-    // Truncate string to maximum length
+    /// <summary>
+    /// Truncates a string to a maximum length with an optional suffix.
+    /// </summary>
+    /// <param name="input">The string to truncate.</param>
+    /// <param name="maxLength">The maximum length of the resulting string.</param>
+    /// <param name="suffix">The suffix to append when truncating. Defaults to "...".</param>
+    /// <returns>The truncated string, or the original string if it's shorter than maxLength.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="maxLength"/> is less than 0.</exception>
     public static string Truncate(this string input, int maxLength, string suffix = "...")
     {
-        if (string.IsNullOrEmpty(input) || input.Length <= maxLength)
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentOutOfRangeException.ThrowIfNegative(maxLength);
+        ArgumentNullException.ThrowIfNull(suffix);
+
+        if (input.Length <= maxLength)
             return input;
+
+        if (suffix.Length >= maxLength)
+            return input.Substring(0, maxLength);
 
         return input.Substring(0, maxLength - suffix.Length) + suffix;
     }
 
-    // Check if string is numeric
+    /// <summary>
+    /// Checks if a string contains only digits.
+    /// </summary>
+    /// <param name="input">The string to check.</param>
+    /// <returns>True if the string contains only digits; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
     public static bool IsNumeric(this string input)
     {
-        return !string.IsNullOrEmpty(input) && input.All(char.IsDigit);
+        ArgumentNullException.ThrowIfNull(input);
+
+        return input.All(char.IsDigit);
     }
 
-    // Check if string is valid hex color
+    /// <summary>
+    /// Checks if a string is a valid hexadecimal color.
+    /// </summary>
+    /// <param name="input">The string to validate.</param>
+    /// <returns>True if the string is a valid hex color; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
     public static bool IsValidHexColor(this string input)
     {
-        if (string.IsNullOrEmpty(input))
-            return false;
+        ArgumentNullException.ThrowIfNull(input);
 
         var hexPattern = new Regex(@"^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$");
         return hexPattern.IsMatch(input);
     }
 
-    // Extract numbers from string
+    /// <summary>
+    /// Extracts all numeric sequences from a string.
+    /// </summary>
+    /// <param name="input">The string to process.</param>
+    /// <returns>A string containing all numeric sequences concatenated together.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
     public static string ExtractNumbers(this string input)
     {
-        if (string.IsNullOrEmpty(input))
-            return string.Empty;
+        ArgumentNullException.ThrowIfNull(input);
 
-        return new Regex(@"[0-9]+").Match(input).Value;
+        return string.Concat(Regex.Matches(input, @"[0-9]+").Cast<Match>().Select(m => m.Value));
     }
 
-    // Remove whitespace
+    /// <summary>
+    /// Removes all whitespace characters from a string.
+    /// </summary>
+    /// <param name="input">The string to process.</param>
+    /// <returns>The string with all whitespace removed.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
     public static string RemoveWhitespace(this string input)
     {
-        if (string.IsNullOrEmpty(input))
-            return input;
+        ArgumentNullException.ThrowIfNull(input);
 
         return Regex.Replace(input, @"\s+", "");
     }
 
-    // Capitalize first letter
+    /// <summary>
+    /// Capitalizes the first letter of a string.
+    /// </n>
+    /// <param name="input">The string to capitalize.</param>
+    /// <returns>The string with the first character capitalized.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="input"/> is empty.</exception>
     public static string CapitalizeFirstLetter(this string input)
     {
-        if (string.IsNullOrEmpty(input))
-            return input;
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentException.ThrowIfNullOrEmpty(input);
 
-        return char.ToUpper(input[0]) + input.Substring(1);
+        return char.ToUpperInvariant(input[0]) + input.Substring(1);
     }
 
-    // Check if string contains any digit
+    /// <summary>
+    /// Checks if a string contains any digit characters.
+    /// </summary>
+    /// <param name="input">The string to check.</param>
+    /// <returns>True if the string contains any digits; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
     public static bool ContainsDigit(this string input)
     {
-        return !string.IsNullOrEmpty(input) && input.Any(char.IsDigit);
+        ArgumentNullException.ThrowIfNull(input);
+
+        return input.Any(char.IsDigit);
     }
 
-    // Repeat string n times
+    /// <summary>
+    /// Repeats a string a specified number of times.
+    /// </summary>
+    /// <param name="input">The string to repeat.</param>
+    /// <param name="count">The number of times to repeat the string.</param>
+    /// <returns>The repeated string, or empty string if count is 0 or less.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
     public static string Repeat(this string input, int count)
     {
-        if (string.IsNullOrEmpty(input) || count <= 0)
-            return string.Empty;
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
 
-        return string.Concat(Enumerable.Repeat(input, count));
+        return count == 0
+            ? string.Empty
+            : string.Concat(Enumerable.Repeat(input, count));
     }
 
-    // Reverse string
+    /// <summary>
+    /// Reverses a string.
+    /// </summary>
+    /// <param name="input">The string to reverse.</param>
+    /// <returns>The reversed string, or empty string if input is null or empty.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
     public static string Reverse(this string input)
     {
-        if (string.IsNullOrEmpty(input))
-            return input;
+        ArgumentNullException.ThrowIfNull(input);
 
         return new string(input.Reverse().ToArray());
     }
 
-    // Check if string is palindrome
+    /// <summary>
+    /// Checks if a string is a palindrome (case-insensitive, ignoring non-alphanumeric characters).
+    /// </summary>
+    /// <param name="input">The string to check.</param>
+    /// <returns>True if the string is a palindrome; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>
     public static bool IsPalindrome(this string input)
     {
-        if (string.IsNullOrEmpty(input))
-            return false;
+        ArgumentNullException.ThrowIfNull(input);
 
-        var clean = Regex.Replace(input.ToLower(), @"[^a-z0-9]", "");
+        var clean = Regex.Replace(input.ToLowerInvariant(), @"[^a-z0-9]", "");
         return clean == clean.Reverse();
     }
 }
