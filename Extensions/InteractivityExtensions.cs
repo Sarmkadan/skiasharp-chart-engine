@@ -12,8 +12,8 @@ using SkiaSharpChartEngine.Services;
 namespace SkiaSharpChartEngine.Extensions;
 
 /// <summary>
-/// Extension methods for registering interactive chart services with the DI container
-/// and for performing tooltip and zoom/pan operations directly on <see cref="Chart"/> instances.
+/// Provides extension methods for registering interactive chart services with the DI container
+/// and for performing tooltip hit-testing, zooming, panning, and viewport resetting on <see cref="Chart"/> instances.
 /// </summary>
 public static class InteractivityExtensions
 {
@@ -28,7 +28,7 @@ public static class InteractivityExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is <c>null</c>.</exception>
     public static IServiceCollection AddChartInteractivity(this IServiceCollection services)
     {
-        if (services == null) throw new ArgumentNullException(nameof(services));
+        ArgumentNullException.ThrowIfNull(services);
 
         services.AddSingleton<IInteractivityService, InteractivityService>();
         return services;
@@ -46,7 +46,7 @@ public static class InteractivityExtensions
         TooltipOptions? options = null,
         ViewportState? viewport = null)
     {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        ArgumentNullException.ThrowIfNull(chart);
         return _defaultService.HitTest(chart, point, canvasWidth, canvasHeight, options, viewport);
     }
 
@@ -73,7 +73,7 @@ public static class InteractivityExtensions
         TooltipOptions? options = null,
         ViewportState? viewport = null)
     {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        ArgumentNullException.ThrowIfNull(chart);
         return _defaultService.HitTest(chart, pointerX, pointerY, canvasWidth, canvasHeight, options, viewport);
     }
 
@@ -99,7 +99,7 @@ public static class InteractivityExtensions
         ViewportState? viewport = null,
         CancellationToken cancellationToken = default)
     {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        ArgumentNullException.ThrowIfNull(chart);
         return _defaultService.HitTestAsync(
             chart, pointerX, pointerY, canvasWidth, canvasHeight, options, viewport, cancellationToken);
     }
@@ -117,6 +117,7 @@ public static class InteractivityExtensions
     /// <param name="factor">Multiplicative zoom factor (must be &gt; 0).</param>
     /// <returns>A new <see cref="ViewportState"/> reflecting the zoom.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="chart"/> or <paramref name="current"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="factor"/> is &lt;= 0.</exception>
     public static ViewportState ZoomAt(
         this Chart chart,
         ViewportState current,
@@ -124,8 +125,10 @@ public static class InteractivityExtensions
         float canvasWidth, float canvasHeight,
         double factor)
     {
-        if (chart   == null) throw new ArgumentNullException(nameof(chart));
-        if (current == null) throw new ArgumentNullException(nameof(current));
+        ArgumentNullException.ThrowIfNull(chart);
+        ArgumentNullException.ThrowIfNull(current);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(factor, 0);
+
         return _defaultService.Zoom(chart, current, anchorX, anchorY, canvasWidth, canvasHeight, factor);
     }
 
@@ -147,8 +150,8 @@ public static class InteractivityExtensions
         float deltaX, float deltaY,
         float canvasWidth, float canvasHeight)
     {
-        if (chart   == null) throw new ArgumentNullException(nameof(chart));
-        if (current == null) throw new ArgumentNullException(nameof(current));
+        ArgumentNullException.ThrowIfNull(chart);
+        ArgumentNullException.ThrowIfNull(current);
         return _defaultService.Pan(chart, current, deltaX, deltaY, canvasWidth, canvasHeight);
     }
 
@@ -161,7 +164,7 @@ public static class InteractivityExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="chart"/> is <c>null</c>.</exception>
     public static ViewportState ResetViewport(this Chart chart)
     {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        ArgumentNullException.ThrowIfNull(chart);
         return _defaultService.ResetViewport(chart);
     }
 
