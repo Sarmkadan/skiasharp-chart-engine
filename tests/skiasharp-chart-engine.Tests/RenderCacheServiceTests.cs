@@ -9,26 +9,47 @@ using Xunit;
 
 namespace SkiaSharpChartEngine.Tests.Services;
 
+/// <summary>
+/// Unit tests for the <see cref="RenderCacheService"/> class.
+/// Tests the caching functionality for rendered chart images including get, set, remove, clear operations,
+/// cache eviction policies, and size management.
+/// </summary>
 public class RenderCacheServiceTests
 {
     private readonly Mock<ILogger<RenderCacheService>> _loggerMock;
     private readonly RenderCacheService _cacheService;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RenderCacheServiceTests"/> class.
+    /// Sets up the mock logger and creates a render cache service with a small cache size for testing.
+    /// </summary>
     public RenderCacheServiceTests()
     {
         _loggerMock = new Mock<ILogger<RenderCacheService>>();
         _cacheService = new RenderCacheService(_loggerMock.Object, 3); // Small cache for testing
     }
 
+    /// <summary>
+    /// Creates test image data for testing purposes.
+    /// </summary>
+    /// <param name="size">The size of the image data in bytes. Defaults to 100.</param>
+    /// <returns>A byte array representing test image data.</returns>
     private byte[] CreateTestImageData(int size = 100)
     {
         return new byte[size];
     }
 
+    /// <summary>
+    /// Contains tests for the <see cref="RenderCacheService.Get"/> method.
+    /// Tests various scenarios including null keys, empty keys, non-existent keys, and existing keys.
+    /// </summary>
     // ---------------------------------------------------------------
     // Get tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Get"/> returns null when provided with a null key.
+    /// </summary>
     [Fact]
     public void Get_WithNullKey_ReturnsNull()
     {
@@ -39,16 +60,22 @@ public class RenderCacheServiceTests
         result.Should().BeNull();
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Get"/> returns null when provided with an empty key.
+    /// </summary>
     [Fact]
     public void Get_WithEmptyKey_ReturnsNull()
     {
         // Act
-        var result = _cacheService.Get("   ");
+        var result = _cacheService.Get(" ");
 
         // Assert
         result.Should().BeNull();
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Get"/> returns null when provided with a non-existent key.
+    /// </summary>
     [Fact]
     public void Get_WithNonExistentKey_ReturnsNull()
     {
@@ -59,6 +86,9 @@ public class RenderCacheServiceTests
         result.Should().BeNull();
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Get"/> returns the stored image data when provided with an existing key.
+    /// </summary>
     [Fact]
     public void Get_WithExistingKey_ReturnsImageData()
     {
@@ -74,6 +104,9 @@ public class RenderCacheServiceTests
         result.Should().Equal(imageData);
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Get"/> increments the access count for cached entries.
+    /// </summary>
     [Fact]
     public void Get_IncrementsAccessCount()
     {
@@ -89,10 +122,17 @@ public class RenderCacheServiceTests
         result2.Should().NotBeNull();
     }
 
+    /// <summary>
+    /// Contains tests for the <see cref="RenderCacheService.Set"/> method.
+    /// Tests various scenarios including null keys, empty keys, null image data, and cache eviction policies.
+    /// </summary>
     // ---------------------------------------------------------------
     // Set tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Set"/> does not crash when provided with a null key.
+    /// </summary>
     [Fact]
     public void Set_WithNullKey_DoesNotCrash()
     {
@@ -103,16 +143,22 @@ public class RenderCacheServiceTests
         act.Should().NotThrow();
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Set"/> does not crash when provided with an empty key.
+    /// </summary>
     [Fact]
     public void Set_WithEmptyKey_DoesNotCrash()
     {
         // Act
-        Action act = () => _cacheService.Set("   ", CreateTestImageData());
+        Action act = () => _cacheService.Set(" ", CreateTestImageData());
 
         // Assert
         act.Should().NotThrow();
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Set"/> does not crash when provided with null image data.
+    /// </summary>
     [Fact]
     public void Set_WithNullImageData_DoesNotCrash()
     {
@@ -123,6 +169,9 @@ public class RenderCacheServiceTests
         act.Should().NotThrow();
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Set"/> stores the entry when provided with valid data.
+    /// </summary>
     [Fact]
     public void Set_WithValidData_StoresEntry()
     {
@@ -137,6 +186,9 @@ public class RenderCacheServiceTests
         result.Should().Equal(imageData);
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Set"/> replaces an existing entry with new data.
+    /// </summary>
     [Fact]
     public void Set_ReplacesExistingEntry()
     {
@@ -153,6 +205,9 @@ public class RenderCacheServiceTests
         result.Should().Equal(data2);
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Set"/> evicts the least recently used entry when the maximum cache size is reached.
+    /// </summary>
     [Fact]
     public void Set_WhenMaxCacheSizeReached_EvictsLRU()
     {
@@ -171,6 +226,9 @@ public class RenderCacheServiceTests
         _cacheService.Get("key4").Should().NotBeNull();
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Set"/> evicts the least accessed entry when there are ties in access patterns.
+    /// </summary>
     [Fact]
     public void Set_EvicsLeastAccessedWhenTied()
     {
@@ -186,6 +244,9 @@ public class RenderCacheServiceTests
         _cacheService.Get("key1").Should().BeNull();
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Set"/> evicts the least used entry when a key has been accessed more than others.
+    /// </summary>
     [Fact]
     public void Set_WhenBucketFull_AndKeyAccessedThenOtherEvicted()
     {
@@ -206,10 +267,17 @@ public class RenderCacheServiceTests
         _cacheService.Get("key4").Should().NotBeNull();
     }
 
+    /// <summary>
+    /// Contains tests for the <see cref="RenderCacheService.Remove"/> method.
+    /// Tests various scenarios including null keys, empty keys, existing keys, and non-existent keys.
+    /// </summary>
     // ---------------------------------------------------------------
     // Remove tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Remove"/> does not crash when provided with a null key.
+    /// </summary>
     [Fact]
     public void Remove_WithNullKey_DoesNotCrash()
     {
@@ -220,16 +288,22 @@ public class RenderCacheServiceTests
         act.Should().NotThrow();
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Remove"/> does not crash when provided with an empty key.
+    /// </summary>
     [Fact]
     public void Remove_WithEmptyKey_DoesNotCrash()
     {
         // Act
-        Action act = () => _cacheService.Remove("   ");
+        Action act = () => _cacheService.Remove(" ");
 
         // Assert
         act.Should().NotThrow();
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Remove"/> removes the entry when provided with an existing key.
+    /// </summary>
     [Fact]
     public void Remove_WithExistingKey_RemovesEntry()
     {
@@ -243,6 +317,9 @@ public class RenderCacheServiceTests
         _cacheService.Get("key1").Should().BeNull();
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Remove"/> does not throw when provided with a non-existent key.
+    /// </summary>
     [Fact]
     public void Remove_WithNonExistentKey_DoesNotThrow()
     {
@@ -253,10 +330,17 @@ public class RenderCacheServiceTests
         act.Should().NotThrow();
     }
 
+    /// <summary>
+    /// Contains tests for the <see cref="RenderCacheService.Clear"/> method.
+    /// Tests that all entries are removed from the cache.
+    /// </summary>
     // ---------------------------------------------------------------
     // Clear tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Clear"/> removes all entries from the cache.
+    /// </summary>
     [Fact]
     public void Clear_RemovesAllEntries()
     {
@@ -275,10 +359,17 @@ public class RenderCacheServiceTests
         _cacheService.GetCacheSize().Should().Be(0);
     }
 
+    /// <summary>
+    /// Contains tests for the <see cref="RenderCacheService.GetCacheSize"/> method.
+    /// Tests various scenarios including empty cache and cache with entries.
+    /// </summary>
     // ---------------------------------------------------------------
     // GetCacheSize tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.GetCacheSize"/> returns zero when the cache is empty.
+    /// </summary>
     [Fact]
     public void GetCacheSize_WithEmptyCache_ReturnsZero()
     {
@@ -289,6 +380,9 @@ public class RenderCacheServiceTests
         size.Should().Be(0);
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.GetCacheSize"/> returns the correct count when the cache contains entries.
+    /// </summary>
     [Fact]
     public void GetCacheSize_WithEntries_ReturnsCorrectCount()
     {
@@ -303,6 +397,9 @@ public class RenderCacheServiceTests
         size.Should().Be(2);
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.GetCacheSize"/> decreases after removing an entry.
+    /// </summary>
     [Fact]
     public void GetCacheSize_AfterRemoval_DecreasesCount()
     {
@@ -320,10 +417,17 @@ public class RenderCacheServiceTests
         sizeAfter.Should().Be(1);
     }
 
+    /// <summary>
+    /// Contains tests for the <see cref="RenderCacheService.Contains"/> method.
+    /// Tests various scenarios including null keys, empty keys, existing keys, and non-existent keys.
+    /// </summary>
     // ---------------------------------------------------------------
     // Contains tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Contains"/> returns false when provided with a null key.
+    /// </summary>
     [Fact]
     public void Contains_WithNullKey_ReturnsFalse()
     {
@@ -334,16 +438,22 @@ public class RenderCacheServiceTests
         result.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Contains"/> returns false when provided with an empty key.
+    /// </summary>
     [Fact]
     public void Contains_WithEmptyKey_ReturnsFalse()
     {
         // Act
-        var result = _cacheService.Contains("   ");
+        var result = _cacheService.Contains(" ");
 
         // Assert
         result.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Contains"/> returns true when provided with an existing key.
+    /// </summary>
     [Fact]
     public void Contains_WithExistingKey_ReturnsTrue()
     {
@@ -357,6 +467,9 @@ public class RenderCacheServiceTests
         result.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.Contains"/> returns false when provided with a non-existent key.
+    /// </summary>
     [Fact]
     public void Contains_WithNonExistentKey_ReturnsFalse()
     {
@@ -367,10 +480,17 @@ public class RenderCacheServiceTests
         result.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Contains tests for the <see cref="RenderCacheService.GetAllKeys"/> method.
+    /// Tests various scenarios including empty cache and cache with entries.
+    /// </summary>
     // ---------------------------------------------------------------
     // GetAllKeys tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.GetAllKeys"/> returns an empty enumerable when the cache is empty.
+    /// </summary>
     [Fact]
     public void GetAllKeys_WithEmptyCache_ReturnsEmptyEnumerable()
     {
@@ -381,6 +501,9 @@ public class RenderCacheServiceTests
         keys.Should().BeEmpty();
     }
 
+    /// <summary>
+    /// Tests that <see cref="RenderCacheService.GetAllKeys"/> returns all keys when the cache contains entries.
+    /// </summary>
     [Fact]
     public void GetAllKeys_WithEntries_ReturnsAllKeys()
     {
@@ -399,10 +522,17 @@ public class RenderCacheServiceTests
         keys.Should().Contain("key3");
     }
 
+    /// <summary>
+    /// Contains tests for the <see cref="RenderCacheService"/> constructor.
+    /// Tests various constructor scenarios including null logger and custom cache sizes.
+    /// </summary>
     // ---------------------------------------------------------------
     // Constructor tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that the <see cref="RenderCacheService"/> constructor throws an <see cref="ArgumentNullException"/> when provided with a null logger.
+    /// </summary>
     [Fact]
     public void Constructor_WithNullLogger_ThrowsArgumentNullException()
     {
@@ -413,6 +543,9 @@ public class RenderCacheServiceTests
         act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
     }
 
+    /// <summary>
+    /// Tests that the <see cref="RenderCacheService"/> constructor uses the default cache size when provided with a null max cache size.
+    /// </summary>
     [Fact]
     public void Constructor_WithNullMaxCacheSize_UsesDefaultSize()
     {
@@ -423,6 +556,9 @@ public class RenderCacheServiceTests
         service.Should().NotBeNull();
     }
 
+    /// <summary>
+    /// Tests that the <see cref="RenderCacheService"/> constructor uses a custom cache size when provided.
+    /// </summary>
     [Fact]
     public void Constructor_WithCustomMaxCacheSize_UsesCustomSize()
     {
