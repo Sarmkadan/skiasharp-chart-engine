@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 
 namespace SkiasharpChartEngine.Tests
@@ -12,8 +13,11 @@ namespace SkiasharpChartEngine.Tests
         /// Executes all test methods within the test class, including asynchronous operations.
         /// </summary>
         /// <param name="tests">The test instance.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="tests"/> is <see langword="null"/>.</exception>
         public static async Task ExecuteAllTestsAsync(this ChartStreamingServiceTests tests)
         {
+            ArgumentNullException.ThrowIfNull(tests);
+
             tests.Register_NewChart_IsRegisteredSuccessfully();
             tests.Publish_UnregisteredChart_ThrowsInvalidOperationException();
             tests.Publish_ValidPoint_IsAppliedToSnapshot();
@@ -29,8 +33,11 @@ namespace SkiasharpChartEngine.Tests
         /// Executes test methods specifically related to data publishing and batch operations.
         /// </summary>
         /// <param name="tests">The test instance.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="tests"/> is <see langword="null"/>.</exception>
         public static void ExecutePublishingTests(this ChartStreamingServiceTests tests)
         {
+            ArgumentNullException.ThrowIfNull(tests);
+
             tests.Publish_UnregisteredChart_ThrowsInvalidOperationException();
             tests.Publish_ValidPoint_IsAppliedToSnapshot();
             tests.PublishBatch_MultiplePoints_AllApplied();
@@ -40,8 +47,11 @@ namespace SkiasharpChartEngine.Tests
         /// Executes test methods related to the lifecycle of the chart (registration and unregistration).
         /// </summary>
         /// <param name="tests">The test instance.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="tests"/> is <see langword="null"/>.</exception>
         public static void ExecuteLifecycleTests(this ChartStreamingServiceTests tests)
         {
+            ArgumentNullException.ThrowIfNull(tests);
+
             tests.Register_NewChart_IsRegisteredSuccessfully();
             tests.Unregister_PublishAfterwards_ThrowsInvalidOperationException();
         }
@@ -50,8 +60,11 @@ namespace SkiasharpChartEngine.Tests
         /// Executes test methods related to chart configuration, such as windowing and series creation.
         /// </summary>
         /// <param name="tests">The test instance.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="tests"/> is <see langword="null"/>.</exception>
         public static void ExecuteConfigurationTests(this ChartStreamingServiceTests tests)
         {
+            ArgumentNullException.ThrowIfNull(tests);
+
             tests.WindowSize_Enforced_OldestPointsDropped();
             tests.AutoCreateSeries_WhenSeriesDoesNotExist_SeriesCreated();
         }
