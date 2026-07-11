@@ -13,12 +13,22 @@ using Xunit;
 
 namespace SkiaSharpChartEngine.Tests.Services;
 
+/// <summary>
+/// Unit tests for the <see cref="ExportService"/> class.
+/// Tests the export functionality including async and sync export methods,
+/// format validation, and constructor validation.
+/// </summary>
 public class ExportServiceTests
 {
     private readonly Mock<IChartRenderingService> _renderingServiceMock;
     private readonly Mock<ILogger<ExportService>> _loggerMock;
     private readonly ExportService _service;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ExportServiceTests"/> class.
+    /// Sets up mocks for <see cref="IChartRenderingService"/> and <see cref="ILogger{ExportService}" />,
+    /// and creates an instance of <see cref="ExportService"/> for testing.
+    /// </summary>
     public ExportServiceTests()
     {
         _renderingServiceMock = new Mock<IChartRenderingService>();
@@ -26,6 +36,10 @@ public class ExportServiceTests
         _service = new ExportService(_renderingServiceMock.Object, _loggerMock.Object);
     }
 
+    /// <summary>
+    /// Creates a valid chart for testing purposes.
+    /// </summary>
+    /// <returns>A chart with one series containing two data points.</returns>
     private Chart CreateValidChart()
     {
         var chart = new Chart("test-chart");
@@ -40,6 +54,10 @@ public class ExportServiceTests
     // ExportAsync tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.ExportAsync(Chart,ExportOptions,CancellationToken)"/> throws <see cref="ArgumentNullException"/>
+    /// when the chart parameter is null.
+    /// </summary>
     [Fact]
     public async Task ExportAsync_WithNullChart_ThrowsArgumentNullException()
     {
@@ -53,6 +71,10 @@ public class ExportServiceTests
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("chart");
     }
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.ExportAsync(Chart,ExportOptions,CancellationToken)"/> throws <see cref="ArgumentNullException"/>
+    /// when the options parameter is null.
+    /// </summary>
     [Fact]
     public async Task ExportAsync_WithNullOptions_ThrowsArgumentNullException()
     {
@@ -66,6 +88,10 @@ public class ExportServiceTests
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("options");
     }
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.ExportAsync(Chart,ExportOptions,CancellationToken)"/> throws <see cref="UnsupportedExportFormatException"/>
+    /// when an unsupported export format is provided.
+    /// </summary>
     [Fact]
     public async Task ExportAsync_WithUnsupportedFormat_ThrowsUnsupportedExportFormatException()
     {
@@ -80,6 +106,10 @@ public class ExportServiceTests
         await act.Should().ThrowAsync<UnsupportedExportFormatException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.ExportAsync(Chart,ExportOptions,CancellationToken)"/> successfully delegates rendering
+    /// and returns a successful result when PNG format is used.
+    /// </summary>
     [Fact]
     public async Task ExportAsync_WithSupportedPngFormat_DelegatesRenderingAndReturnsSuccess()
     {
@@ -98,6 +128,10 @@ public class ExportServiceTests
         _renderingServiceMock.Verify(x => x.RenderWithExportAsync(chart, options, It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.ExportAsync(Chart,ExportOptions,CancellationToken)"/> successfully delegates rendering
+    /// and returns a successful result when SVG format is used.
+    /// </summary>
     [Fact]
     public async Task ExportAsync_WithSupportedSvgFormat_DelegatesRenderingAndReturnsSuccess()
     {
@@ -116,6 +150,10 @@ public class ExportServiceTests
         _renderingServiceMock.Verify(x => x.RenderWithExportAsync(chart, options, It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.ExportAsync(Chart,ExportOptions,CancellationToken)"/> returns a failure result
+    /// when the rendering service returns a failure.
+    /// </summary>
     [Fact]
     public async Task ExportAsync_WhenRenderingServiceReturnsFailure_ReturnsFailureResult()
     {
@@ -134,6 +172,10 @@ public class ExportServiceTests
         result.ErrorMessage.Should().Contain("Rendering failed");
     }
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.ExportAsync(Chart,ExportOptions,CancellationToken)"/> returns a failure result with error message
+    /// when an infrastructure error occurs during rendering.
+    /// </summary>
     [Fact]
     public async Task ExportAsync_WhenInfrastructureErrorOccurs_ReturnsFailureWithErrorMessage()
     {
@@ -151,6 +193,10 @@ public class ExportServiceTests
         result.ErrorMessage.Should().NotBeNullOrEmpty();
     }
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.ExportAsync(Chart,ExportOptions,CancellationToken)"/> respects cancellation token
+    /// and returns a failure result when operation is cancelled.
+    /// </summary>
     [Fact]
     public async Task ExportAsync_WithCancellation_RespectsCancellationToken()
     {
@@ -173,6 +219,10 @@ public class ExportServiceTests
     // Export (sync) tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.Export(Chart,ExportOptions)"/> throws <see cref="ArgumentNullException"/>
+    /// when the chart parameter is null.
+    /// </summary>
     [Fact]
     public void Export_WithNullChart_ThrowsArgumentNullException()
     {
@@ -186,6 +236,10 @@ public class ExportServiceTests
         act.Should().Throw<ArgumentNullException>().WithParameterName("chart");
     }
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.Export(Chart,ExportOptions)"/> throws <see cref="ArgumentNullException"/>
+    /// when the options parameter is null.
+    /// </summary>
     [Fact]
     public void Export_WithNullOptions_ThrowsArgumentNullException()
     {
@@ -199,6 +253,10 @@ public class ExportServiceTests
         act.Should().Throw<ArgumentNullException>().WithParameterName("options");
     }
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.Export(Chart,ExportOptions)"/> throws <see cref="UnsupportedExportFormatException"/>
+    /// when an unsupported export format is provided.
+    /// </summary>
     [Fact]
     public void Export_WithUnsupportedFormat_ThrowsUnsupportedExportFormatException()
     {
@@ -213,6 +271,10 @@ public class ExportServiceTests
         act.Should().Throw<UnsupportedExportFormatException>();
     }
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.Export(Chart,ExportOptions)"/> successfully delegates rendering
+    /// and returns a successful result when valid chart and format are provided.
+    /// </summary>
     [Fact]
     public void Export_WithValidChartAndFormat_DelegatesAndReturnsSuccess()
     {
@@ -231,6 +293,10 @@ public class ExportServiceTests
         _renderingServiceMock.Verify(x => x.RenderToFile(chart, options.GetFullPath()), Times.Once);
     }
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.Export(Chart,ExportOptions)"/> returns a failure result
+    /// when the rendering service throws an exception.
+    /// </summary>
     [Fact]
     public void Export_WhenRenderingServiceThrows_ReturnsFailureResult()
     {
@@ -252,6 +318,9 @@ public class ExportServiceTests
     // SupportsFormat tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.SupportsFormat(ExportFormat)"/> returns true for PNG format.
+    /// </summary>
     [Fact]
     public void SupportsFormat_WithPng_ReturnsTrue()
     {
@@ -262,6 +331,9 @@ public class ExportServiceTests
         result.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.SupportsFormat(ExportFormat)"/> returns true for SVG format.
+    /// </summary>
     [Fact]
     public void SupportsFormat_WithSvg_ReturnsTrue()
     {
@@ -272,6 +344,9 @@ public class ExportServiceTests
         result.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.SupportsFormat(ExportFormat)"/> returns true for JPEG format.
+    /// </summary>
     [Fact]
     public void SupportsFormat_WithJpeg_ReturnsTrue()
     {
@@ -282,6 +357,9 @@ public class ExportServiceTests
         result.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.SupportsFormat(ExportFormat)"/> returns true for WEBP format.
+    /// </summary>
     [Fact]
     public void SupportsFormat_WithWebp_ReturnsTrue()
     {
@@ -292,6 +370,9 @@ public class ExportServiceTests
         result.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.SupportsFormat(ExportFormat)"/> returns false for unsupported format.
+    /// </summary>
     [Fact]
     public void SupportsFormat_WithUnsupportedFormat_ReturnsFalse()
     {
@@ -306,6 +387,9 @@ public class ExportServiceTests
     // GetSupportedFormats tests
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.GetSupportedFormats"/> returns all four supported formats.
+    /// </summary>
     [Fact]
     public void GetSupportedFormats_ReturnsAllFourFormats()
     {
@@ -320,6 +404,9 @@ public class ExportServiceTests
         formats.Should().Contain(ExportFormat.WEBP);
     }
 
+    /// <summary>
+    /// Tests that <see cref="ExportService.GetSupportedFormats"/> returns formats in ascending order.
+    /// </summary>
     [Fact]
     public void GetSupportedFormats_ReturnsOrderedFormats()
     {
@@ -334,6 +421,10 @@ public class ExportServiceTests
     // Constructor validation
     // ---------------------------------------------------------------
 
+    /// <summary>
+    /// Tests that <see cref="ExportService"/> constructor throws <see cref="ArgumentNullException"/>
+    /// when null rendering service is provided.
+    /// </summary>
     [Fact]
     public void Constructor_WithNullRenderingService_ThrowsArgumentNullException()
     {
@@ -344,6 +435,10 @@ public class ExportServiceTests
         act.Should().Throw<ArgumentNullException>().WithParameterName("renderingService");
     }
 
+    /// <summary>
+    /// Tests that <see cref="ExportService"/> constructor throws <see cref="ArgumentNullException"/>
+    /// when null logger is provided.
+    /// </summary>
     [Fact]
     public void Constructor_WithNullLogger_ThrowsArgumentNullException()
     {
