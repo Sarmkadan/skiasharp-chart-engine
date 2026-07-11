@@ -3,6 +3,7 @@
 // CTO & Software Architect
 //
 // Extension methods for ChartEngine providing convenient high-level operations
+// and provide higher-level convenience APIs.
 // =============================================================================
 
 using System;
@@ -22,25 +23,23 @@ public static class ChartEngineExtensions
     /// <summary>
     /// Renders a chart and saves the result directly to a file with automatic format detection.
     /// </summary>
-    /// <param name="engine">The chart engine instance</param>
-    /// <param name="chart">The chart to render</param>
-    /// <param name="outputPath">Full path where the chart image will be saved</param>
-    /// <param name="cancellationToken">Optional cancellation token</param>
-    /// <returns>The render result containing success status and file information</returns>
+    /// <param name="engine">The chart engine instance.</param>
+    /// <param name="chart">The chart to render.</param>
+    /// <param name="outputPath">Full path where the chart image will be saved.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>The render result containing success status and file information.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="engine"/> or <paramref name="chart"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="outputPath"/> is null or whitespace.</exception>
+    /// <exception cref="InvalidOperationException">Failed to render chart or copy the file.</exception>
     public static async Task<RenderResult> RenderAndSaveChartAsync(
         this ChartEngine engine,
         Chart chart,
         string outputPath,
         CancellationToken cancellationToken = default)
     {
-        if (engine == null)
-            throw new ArgumentNullException(nameof(engine));
-
-        if (chart == null)
-            throw new ArgumentNullException(nameof(chart));
-
-        if (string.IsNullOrWhiteSpace(outputPath))
-            throw new ArgumentException("Output path cannot be null or empty", nameof(outputPath));
+        ArgumentNullException.ThrowIfNull(engine);
+        ArgumentNullException.ThrowIfNull(chart);
+        ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
 
         var format = DetectFormatFromPath(outputPath);
         var options = new ExportOptions(Path.GetFileNameWithoutExtension(outputPath), format)
@@ -63,38 +62,43 @@ public static class ChartEngineExtensions
                     result.RenderTimeMs,
                     format);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                return RenderResult.CreateFailure(
-                    chart.Id,
-                    $"Failed to copy file to {outputPath}: {ex.Message}",
+                throw new InvalidOperationException(
+                    $"Failed to copy rendered chart to {outputPath}: {ex.Message}",
                     ex);
             }
         }
 
-        return result;
+        if (result.Exception != null)
+        {
+            throw new InvalidOperationException(
+                $"Failed to render chart: {result.ErrorMessage}",
+                result.Exception);
+        }
+
+        throw new InvalidOperationException(
+            $"Chart rendering failed: {result.ErrorMessage}");
     }
 
     /// <summary>
     /// Renders a chart and saves the result directly to a file with automatic format detection.
     /// </summary>
-    /// <param name="engine">The chart engine instance</param>
-    /// <param name="chart">The chart to render</param>
-    /// <param name="outputPath">Full path where the chart image will be saved</param>
-    /// <returns>The render result containing success status and file information</returns>
+    /// <param name="engine">The chart engine instance.</param>
+    /// <param name="chart">The chart to render.</param>
+    /// <param name="outputPath">Full path where the chart image will be saved.</param>
+    /// <returns>The render result containing success status and file information.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="engine"/> or <paramref name="chart"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="outputPath"/> is null or whitespace.</exception>
+    /// <exception cref="InvalidOperationException">Failed to render chart or copy the file.</exception>
     public static RenderResult RenderAndSaveChart(
         this ChartEngine engine,
         Chart chart,
         string outputPath)
     {
-        if (engine == null)
-            throw new ArgumentNullException(nameof(engine));
-
-        if (chart == null)
-            throw new ArgumentNullException(nameof(chart));
-
-        if (string.IsNullOrWhiteSpace(outputPath))
-            throw new ArgumentException("Output path cannot be null or empty", nameof(outputPath));
+        ArgumentNullException.ThrowIfNull(engine);
+        ArgumentNullException.ThrowIfNull(chart);
+        ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
 
         var format = DetectFormatFromPath(outputPath);
         var options = new ExportOptions(Path.GetFileNameWithoutExtension(outputPath), format)
@@ -117,34 +121,41 @@ public static class ChartEngineExtensions
                     result.RenderTimeMs,
                     format);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                return RenderResult.CreateFailure(
-                    chart.Id,
-                    $"Failed to copy file to {outputPath}: {ex.Message}",
+                throw new InvalidOperationException(
+                    $"Failed to copy rendered chart to {outputPath}: {ex.Message}",
                     ex);
             }
         }
 
-        return result;
+        if (result.Exception != null)
+        {
+            throw new InvalidOperationException(
+                $"Failed to render chart: {result.ErrorMessage}",
+                result.Exception);
+        }
+
+        throw new InvalidOperationException(
+            $"Chart rendering failed: {result.ErrorMessage}");
     }
 
     /// <summary>
     /// Creates a new chart with the specified type and immediately saves it to the repository.
     /// </summary>
-    /// <param name="engine">The chart engine instance</param>
-    /// <param name="chartType">The type of chart to create</param>
-    /// <param name="chartId">Optional chart ID (generates GUID if null)</param>
-    /// <param name="cancellationToken">Optional cancellation token</param>
-    /// <returns>The saved chart with its ID populated</returns>
+    /// <param name="engine">The chart engine instance.</param>
+    /// <param name="chartType">The type of chart to create.</param>
+    /// <param name="chartId">Optional chart ID (generates GUID if null).</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>The saved chart with its ID populated.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="engine"/> is <see langword="null"/>.</exception>
     public static async Task<Chart> CreateAndSaveChartAsync(
         this ChartEngine engine,
         ChartType chartType,
         string? chartId = null,
         CancellationToken cancellationToken = default)
     {
-        if (engine == null)
-            throw new ArgumentNullException(nameof(engine));
+        ArgumentNullException.ThrowIfNull(engine);
 
         var chart = new Chart(chartId ?? Guid.NewGuid().ToString())
         {
@@ -160,17 +171,17 @@ public static class ChartEngineExtensions
     /// <summary>
     /// Creates a new chart with the specified type and immediately saves it to the repository.
     /// </summary>
-    /// <param name="engine">The chart engine instance</param>
-    /// <param name="chartType">The type of chart to create</param>
-    /// <param name="chartId">Optional chart ID (generates GUID if null)</param>
-    /// <returns>The saved chart with its ID populated</returns>
+    /// <param name="engine">The chart engine instance.</param>
+    /// <param name="chartType">The type of chart to create.</param>
+    /// <param name="chartId">Optional chart ID (generates GUID if null).</param>
+    /// <returns>The saved chart with its ID populated.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="engine"/> is <see langword="null"/>.</exception>
     public static Chart CreateAndSaveChart(
         this ChartEngine engine,
         ChartType chartType,
         string? chartId = null)
     {
-        if (engine == null)
-            throw new ArgumentNullException(nameof(engine));
+        ArgumentNullException.ThrowIfNull(engine);
 
         var chart = new Chart(chartId ?? Guid.NewGuid().ToString())
         {
@@ -186,20 +197,19 @@ public static class ChartEngineExtensions
     /// <summary>
     /// Renders a chart to a memory stream instead of returning raw bytes.
     /// </summary>
-    /// <param name="engine">The chart engine instance</param>
-    /// <param name="chart">The chart to render</param>
-    /// <param name="cancellationToken">Optional cancellation token</param>
-    /// <returns>Memory stream containing the rendered chart image</returns>
+    /// <param name="engine">The chart engine instance.</param>
+    /// <param name="chart">The chart to render.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>Memory stream containing the rendered chart image.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="engine"/> or <paramref name="chart"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">Failed to render chart or image data is missing.</exception>
     public static async Task<MemoryStream> RenderToStreamAsync(
         this ChartEngine engine,
         Chart chart,
         CancellationToken cancellationToken = default)
     {
-        if (engine == null)
-            throw new ArgumentNullException(nameof(engine));
-
-        if (chart == null)
-            throw new ArgumentNullException(nameof(chart));
+        ArgumentNullException.ThrowIfNull(engine);
+        ArgumentNullException.ThrowIfNull(chart);
 
         var result = await engine.RenderChartAsync(chart, cancellationToken);
 
@@ -210,30 +220,27 @@ public static class ChartEngineExtensions
                 result.Exception);
         }
 
-        if (result.ImageData == null)
+        return result.ImageData switch
         {
-            throw new InvalidOperationException("Render result contains no image data");
-        }
-
-        var stream = new MemoryStream(result.ImageData);
-        return stream;
+            null => throw new InvalidOperationException("Render result contains no image data"),
+            byte[] data => new MemoryStream(data)
+        };
     }
 
     /// <summary>
     /// Renders a chart to a memory stream instead of returning raw bytes.
     /// </summary>
-    /// <param name="engine">The chart engine instance</param>
-    /// <param name="chart">The chart to render</param>
-    /// <returns>Memory stream containing the rendered chart image</returns>
+    /// <param name="engine">The chart engine instance.</param>
+    /// <param name="chart">The chart to render.</param>
+    /// <returns>Memory stream containing the rendered chart image.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="engine"/> or <paramref name="chart"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">Failed to render chart or image data is missing.</exception>
     public static MemoryStream RenderToStream(
         this ChartEngine engine,
         Chart chart)
     {
-        if (engine == null)
-            throw new ArgumentNullException(nameof(engine));
-
-        if (chart == null)
-            throw new ArgumentNullException(nameof(chart));
+        ArgumentNullException.ThrowIfNull(engine);
+        ArgumentNullException.ThrowIfNull(chart);
 
         var result = engine.RenderChart(chart);
 
@@ -244,24 +251,24 @@ public static class ChartEngineExtensions
                 result.Exception);
         }
 
-        if (result.ImageData == null)
+        return result.ImageData switch
         {
-            throw new InvalidOperationException("Render result contains no image data");
-        }
-
-        var stream = new MemoryStream(result.ImageData);
-        return stream;
+            null => throw new InvalidOperationException("Render result contains no image data"),
+            byte[] data => new MemoryStream(data)
+        };
     }
 
     /// <summary>
     /// Quick render method that creates a chart from a simple data series and renders it.
     /// </summary>
-    /// <param name="engine">The chart engine instance</param>
-    /// <param name="seriesData">Array of Y-values for the series</param>
-    /// <param name="chartType">Type of chart to create</param>
-    /// <param name="title">Chart title</param>
-    /// <param name="cancellationToken">Optional cancellation token</param>
-    /// <returns>Render result with the generated chart</returns>
+    /// <param name="engine">The chart engine instance.</param>
+    /// <param name="seriesData">Array of Y-values for the series.</param>
+    /// <param name="chartType">Type of chart to create.</param>
+    /// <param name="title">Chart title.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>Render result with the generated chart.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="engine"/> or <paramref name="seriesData"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="seriesData"/> is empty.</exception>
     public static async Task<RenderResult> QuickRenderAsync(
         this ChartEngine engine,
         double[] seriesData,
@@ -269,16 +276,19 @@ public static class ChartEngineExtensions
         string? title = null,
         CancellationToken cancellationToken = default)
     {
-        if (engine == null)
-            throw new ArgumentNullException(nameof(engine));
+        ArgumentNullException.ThrowIfNull(engine);
+        ArgumentNullException.ThrowIfNull(seriesData);
 
-        if (seriesData == null || seriesData.Length == 0)
-            throw new ArgumentException("Series data cannot be null or empty", nameof(seriesData));
+        if (seriesData.Length == 0)
+        {
+            throw new ArgumentException("Series data cannot be empty", nameof(seriesData));
+        }
 
         var chart = new Chart(Guid.NewGuid().ToString())
         {
             Type = chartType,
-            Title = title ?? $"Quick Chart - {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}"
+            Title = title ?? $"Quick Chart - {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}",
+            CreatedAt = DateTime.UtcNow
         };
 
         var series = new ChartSeries("Series 1")
@@ -296,8 +306,15 @@ public static class ChartEngineExtensions
         return await engine.RenderChartAsync(chart, cancellationToken);
     }
 
+    /// <summary>
+    /// Detects the export format from a file path based on its extension.
+    /// </summary>
+    /// <param name="filePath">The file path to analyze.</param>
+    /// <returns>The detected export format.</returns>
     private static ExportFormat DetectFormatFromPath(string filePath)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
+
         var extension = Path.GetExtension(filePath)?.TrimStart('.')?.ToLowerInvariant();
 
         return extension switch
