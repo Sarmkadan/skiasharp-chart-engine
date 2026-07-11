@@ -34,7 +34,7 @@ public static class TransitionServiceExtensions
     /// </param>
     /// <returns>The same <see cref="IServiceCollection"/> for further chaining.</returns>
     public static IServiceCollection AddChartTransitions(
-        this IServiceCollection    services,
+        this IServiceCollection services,
         Action<TransitionOptions>? configureOptions = null)
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -63,9 +63,9 @@ public static class TransitionServiceExtensions
     /// </param>
     /// <returns>The same <see cref="IServiceCollection"/> for further chaining.</returns>
     public static IServiceCollection AddSkiaSharpChartEngineWithTransitions(
-        this IServiceCollection    services,
-        Action<ChartEngineOptions>? configureEngine      = null,
-        Action<TransitionOptions>?  configureTransitions = null)
+        this IServiceCollection services,
+        Action<ChartEngineOptions>? configureEngine = null,
+        Action<TransitionOptions>? configureTransitions = null)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -107,14 +107,22 @@ public static class TransitionServiceExtensions
     /// <param name="durationMs">Total transition duration in milliseconds. Must be positive.</param>
     /// <param name="easing">Easing applied to the transition.</param>
     /// <returns>A new two-keyframe <see cref="TransitionTimeline"/>.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="from"/> or <paramref name="to"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="durationMs"/> is less than or equal to zero.
+    /// </exception>
     public static TransitionTimeline TransitionTo(
-        this Chart        from,
-        Chart             to,
-        double            durationMs,
-        TransitionEasing  easing = TransitionEasing.EaseInOutCubic)
+        this Chart from,
+        Chart to,
+        double durationMs,
+        TransitionEasing easing = TransitionEasing.EaseInOutCubic)
     {
         ArgumentNullException.ThrowIfNull(from);
         ArgumentNullException.ThrowIfNull(to);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(durationMs, 0);
+
         return TransitionTimeline.Between(from, to, durationMs, easing);
     }
 
@@ -129,6 +137,9 @@ public static class TransitionServiceExtensions
     /// <returns>
     /// A new <see cref="TransitionOptions"/> initialised from <paramref name="settings"/>.
     /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="settings"/> is <see langword="null"/>.
+    /// </exception>
     public static TransitionOptions ToTransitionOptions(this AnimationSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
@@ -153,9 +164,12 @@ public static class TransitionServiceExtensions
     /// Easing for the single segment. Defaults to <see cref="TransitionEasing.EaseInOutCubic"/>.
     /// </param>
     /// <returns>A configured two-keyframe <see cref="TransitionTimeline"/>.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="from"/> or <paramref name="to"/> is <see langword="null"/>.
+    /// </exception>
     public static TransitionTimeline ToAnimatedTimeline(
-        this Chart       from,
-        Chart            to,
+        this Chart from,
+        Chart to,
         TransitionEasing easing = TransitionEasing.EaseInOutCubic)
     {
         ArgumentNullException.ThrowIfNull(from);
