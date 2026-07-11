@@ -1,7 +1,7 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =====================================================================
+// ===================================================================
 
 using System;
 using Microsoft.Extensions.Logging;
@@ -9,31 +9,29 @@ using Microsoft.Extensions.Logging;
 namespace SkiaSharpChartEngine.Middleware;
 
 /// <summary>
-/// Extension methods for RateLimitingMiddleware to provide additional functionality
+/// Extension methods for <see cref="RateLimitingMiddleware"/> to provide additional functionality
 /// </summary>
 public static class RateLimitingMiddlewareExtensions
 {
     /// <summary>
-    /// Creates a new RateLimitingMiddleware instance with the specified logger and policy
+    /// Creates a new <see cref="RateLimitingMiddleware"/> instance with the specified logger and policy
     /// </summary>
-    /// <param name="logger">The logger instance</param>
+    /// <param name="logger">The logger instance. Cannot be null.</param>
     /// <param name="policy">Optional rate limit policy configuration</param>
-    /// <returns>A new RateLimitingMiddleware instance</returns>
+    /// <returns>A new <see cref="RateLimitingMiddleware"/> instance</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="logger"/> is null.</exception>
     public static RateLimitingMiddleware WithLogger(this ILogger<RateLimitingMiddleware> logger, RateLimitPolicy? policy = null)
     {
-        if (logger == null)
-        {
-            throw new ArgumentNullException(nameof(logger));
-        }
+        ArgumentNullException.ThrowIfNull(logger);
 
         return new RateLimitingMiddleware(logger, policy);
     }
 
     /// <summary>
-    /// Creates a new RateLimitingMiddleware instance with a default console logger
+    /// Creates a new <see cref="RateLimitingMiddleware"/> instance with a default console logger
     /// </summary>
     /// <param name="policy">Optional rate limit policy configuration</param>
-    /// <returns>A new RateLimitingMiddleware instance with console logging</returns>
+    /// <returns>A new <see cref="RateLimitingMiddleware"/> instance with console logging</returns>
     public static RateLimitingMiddleware WithConsoleLogger(RateLimitPolicy? policy = null)
     {
         var loggerFactory = LoggerFactory.Create(builder =>
@@ -47,10 +45,10 @@ public static class RateLimitingMiddlewareExtensions
     }
 
     /// <summary>
-    /// Creates a new RateLimitingMiddleware instance with a null logger (no logging)
+    /// Creates a new <see cref="RateLimitingMiddleware"/> instance with a null logger (no logging)
     /// </summary>
     /// <param name="policy">Optional rate limit policy configuration</param>
-    /// <returns>A new RateLimitingMiddleware instance with no logging</returns>
+    /// <returns>A new <see cref="RateLimitingMiddleware"/> instance with no logging</returns>
     public static RateLimitingMiddleware WithNoLogging(RateLimitPolicy? policy = null)
     {
         var logger = new NullLogger<RateLimitingMiddleware>();
@@ -60,15 +58,13 @@ public static class RateLimitingMiddlewareExtensions
     /// <summary>
     /// Gets the current rate limit information for a client without consuming tokens
     /// </summary>
-    /// <param name="middleware">The middleware instance</param>
-    /// <param name="clientIdentifier">The client identifier</param>
-    /// <returns>RateLimitInfo if client exists, null otherwise</returns>
-    public static RateLimitInfo? GetCurrentRateLimitInfo(this RateLimitingMiddleware middleware, string clientIdentifier)
+    /// <param name="middleware">The middleware instance. Cannot be null.</param>
+    /// <param name="clientIdentifier">The client identifier. If null or empty, treated as "anonymous".</param>
+    /// <returns><see cref="RateLimitInfo"/> if client exists, null otherwise</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="middleware"/> is null.</exception>
+    public static RateLimitInfo? GetCurrentRateLimitInfo(this RateLimitingMiddleware middleware, string? clientIdentifier)
     {
-        if (middleware == null)
-        {
-            throw new ArgumentNullException(nameof(middleware));
-        }
+        ArgumentNullException.ThrowIfNull(middleware);
 
         return middleware.GetRateLimitInfo(clientIdentifier);
     }
@@ -76,16 +72,14 @@ public static class RateLimitingMiddlewareExtensions
     /// <summary>
     /// Checks if a request from the given client should be rate limited
     /// </summary>
-    /// <param name="middleware">The middleware instance</param>
-    /// <param name="clientIdentifier">The client identifier</param>
+    /// <param name="middleware">The middleware instance. Cannot be null.</param>
+    /// <param name="clientIdentifier">The client identifier. If null or empty, treated as "anonymous".</param>
     /// <param name="rateLimitInfo">Output parameter containing rate limit information</param>
     /// <returns>True if request is allowed, false if rate limit exceeded</returns>
-    public static bool CheckRateLimit(this RateLimitingMiddleware middleware, string clientIdentifier, out RateLimitInfo? rateLimitInfo)
+    /// <exception cref="ArgumentNullException"><paramref name="middleware"/> is null.</exception>
+    public static bool CheckRateLimit(this RateLimitingMiddleware middleware, string? clientIdentifier, out RateLimitInfo? rateLimitInfo)
     {
-        if (middleware == null)
-        {
-            throw new ArgumentNullException(nameof(middleware));
-        }
+        ArgumentNullException.ThrowIfNull(middleware);
 
         return middleware.AllowRequest(clientIdentifier, out rateLimitInfo);
     }
@@ -93,14 +87,12 @@ public static class RateLimitingMiddlewareExtensions
     /// <summary>
     /// Resets the rate limit for a specific client
     /// </summary>
-    /// <param name="middleware">The middleware instance</param>
-    /// <param name="clientIdentifier">The client identifier to reset</param>
-    public static void ResetClient(this RateLimitingMiddleware middleware, string clientIdentifier)
+    /// <param name="middleware">The middleware instance. Cannot be null.</param>
+    /// <param name="clientIdentifier">The client identifier to reset. If null or empty, treated as "anonymous".</param>
+    /// <exception cref="ArgumentNullException"><paramref name="middleware"/> is null.</exception>
+    public static void ResetClient(this RateLimitingMiddleware middleware, string? clientIdentifier)
     {
-        if (middleware == null)
-        {
-            throw new ArgumentNullException(nameof(middleware));
-        }
+        ArgumentNullException.ThrowIfNull(middleware);
 
         middleware.ResetClientLimit(clientIdentifier);
     }
