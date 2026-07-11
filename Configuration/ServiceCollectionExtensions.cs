@@ -15,12 +15,15 @@ namespace SkiaSharpChartEngine.Configuration;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Add all SkiaSharp Chart Engine services to the DI container
+    /// Adds all SkiaSharp Chart Engine services to the dependency injection container.
     /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
+    /// <param name="configureOptions">Optional action to configure <see cref="ChartEngineOptions"/>.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddSkiaSharpChartEngine(this IServiceCollection services, Action<ChartEngineOptions>? configureOptions = null)
     {
-        if (services == null)
-            throw new ArgumentNullException(nameof(services));
+        ArgumentNullException.ThrowIfNull(services);
 
         var options = new ChartEngineOptions();
         configureOptions?.Invoke(options);
@@ -29,8 +32,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IChartRepository, ChartRepository>();
 
         // Add services
-        services.AddSingleton(typeof(IRenderCacheService), _ => new RenderCacheService(
-            _.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RenderCacheService>>(),
+        services.AddSingleton<IRenderCacheService>(provider => new RenderCacheService(
+            provider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RenderCacheService>>(),
             options.CacheSize
         ));
 
@@ -43,12 +46,14 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Add minimal required services for basic chart operations
+    /// Adds minimal required services for basic chart operations.
     /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="services"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddSkiaSharpChartEngineMinimal(this IServiceCollection services)
     {
-        if (services == null)
-            throw new ArgumentNullException(nameof(services));
+        ArgumentNullException.ThrowIfNull(services);
 
         services.AddSingleton<IChartDataService, ChartDataService>();
         services.AddSingleton<IConfigurationService, ConfigurationService>();
