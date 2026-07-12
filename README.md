@@ -1,3 +1,4 @@
+
 ## RenderMetricsExtensions
 
 `RenderMetricsExtensions` provides utility methods to analyze and compare rendering performance metrics. These extensions help evaluate rendering speed and efficiency by calculating metrics such as megabytes per second and data points per second.
@@ -46,3 +47,43 @@ public class RenderMetricsDemo
     }
 }
 ```
+
+## RateLimitingMiddlewareExtensions
+
+`RateLimitingMiddlewareExtensions` provides utility methods to configure and manage rate limiting in ASP.NET Core applications. It allows you to enable or disable rate limiting, set up logging, and reset client rate limit information.
+
+### Usage example
+
+```csharp
+using Microsoft.AspNetCore.Builder;
+using SkiasharpChartEngine.Middleware;
+
+public class RateLimitingDemo
+{
+    public static void Main(string[] args)
+    {
+        // Create a new instance of RateLimitingMiddleware
+        var rateLimitingMiddleware = RateLimitingMiddlewareExtensions.WithConsoleLogger();
+
+        // Check if rate limiting is enabled
+        bool isEnabled = rateLimitingMiddleware.IsEnabled;
+
+        // Log a message
+        rateLimitingMiddleware.Log(new { Message = "Rate limiting log message" });
+
+        // Begin a scope
+        using (var scope = rateLimitingMiddleware.BeginScope(new { }))
+        {
+            // ...
+        }
+
+        // Reset client rate limit information
+        rateLimitingMiddleware.ResetClient("clientId");
+
+        // Check rate limit
+        bool isWithinLimit = rateLimitingMiddleware.CheckRateLimit("clientId");
+
+        // Get current rate limit information
+        RateLimitInfo? rateLimitInfo = RateLimitingMiddlewareExtensions.GetCurrentRateLimitInfo();
+    }
+}
