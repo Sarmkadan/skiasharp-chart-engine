@@ -87,3 +87,57 @@ public class RateLimitingDemo
         RateLimitInfo? rateLimitInfo = RateLimitingMiddlewareExtensions.GetCurrentRateLimitInfo();
     }
 }
+```
+
+## PerformanceMonitoringMiddlewareExtensions
+
+`PerformanceMonitoringMiddlewareExtensions` provides utility methods to monitor and analyze performance statistics for operations within an application. This extension enables tracking performance metrics such as execution time and success rates.
+
+### Usage example
+
+```csharp
+using System;
+using SkiasharpChartEngine.Middleware;
+
+public class PerformanceMonitoringDemo
+{
+    public static void Main(string[] args)
+    {
+        // Start monitoring performance
+        using (var context = PerformanceMonitoringMiddlewareExtensions.StartMonitoring())
+        {
+            try
+            {
+                // Simulate some operation
+                System.Threading.Thread.Sleep(100);
+            }
+            catch (Exception ex)
+            {
+                // Handle exception
+            }
+            finally
+            {
+                // End monitoring and get performance statistics
+                var statistics = PerformanceMonitoringMiddlewareExtensions.EndMonitoring(context);
+
+                // Check if the operation was slow
+                bool wasSlow = PerformanceMonitoringMiddlewareExtensions.WasSlowOperation(statistics);
+
+                // Get performance report
+                string report = PerformanceMonitoringMiddlewareExtensions.GetPerformanceReport(statistics);
+                Console.WriteLine(report);
+
+                // Get all operation statistics
+                var allStatistics = PerformanceMonitoringMiddlewareExtensions.GetAllOperationStatistics();
+                Console.WriteLine($"Operations: {string.Join(", ", allStatistics.Keys)}");
+
+                // Check if the operation was successful
+                bool isSuccessful = PerformanceMonitoringMiddlewareExtensions.IsOperationSuccessful(statistics);
+
+                // Get the slowest operations
+                var slowestOperations = PerformanceMonitoringMiddlewareExtensions.GetSlowestOperations();
+                Console.WriteLine($"Slowest operations: {string.Join(", ", slowestOperations.Select(s => s.OperationName))}");
+            }
+        }
+    }
+}
