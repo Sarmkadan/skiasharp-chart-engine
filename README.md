@@ -86,6 +86,7 @@ public class ChartDemo
         Console.WriteLine("All chart operations completed successfully.");
     }
 }
+```
 
 ## ApiResponseExtensions
 
@@ -118,6 +119,7 @@ public class ApiResponseDemo
         ApiResponse<List<string>> responseWithError = standardResponse.WithError("myError");
     }
 }
+```
 
 ## TooltipOptionsExtensions
 
@@ -158,3 +160,70 @@ public class TooltipDemo
         TooltipOptions customizedTooltip = TooltipOptionsExtensions.WithBackgroundColor(clonedTooltip, "#CCCCCC");
     }
 }
+```
+
+## ErrorHandlingMiddlewareExtensions
+
+`ErrorHandlingMiddlewareExtensions` supplies a collection of helper methods for configuring error‑handling middleware with different logging strategies and for processing exceptions into standardized error responses. You can choose a logger (console, custom, or none), capture logs for testing, and map exceptions to appropriate HTTP status codes.
+
+### Usage example
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using SkiasharpChartEngine.Middleware;
+
+public class Startup
+{
+    public void Configure(IApplicationBuilder app)
+    {
+        // Add the error‑handling middleware using the built‑in console logger
+        var errorMiddleware = ErrorHandlingMiddlewareExtensions.WithConsoleLogger();
+        app.UseMiddleware<ErrorHandlingMiddleware>(errorMiddleware);
+
+        // Example of manually handling an exception inside the pipeline
+        app.Use(async (context, next) =>
+        {
+            try
+            {
+                await next();
+            }
+            catch (Exception ex)
+            {
+                // Create a standardized error response from the exception
+                var errorResponse = await ErrorHandlingMiddlewareExtensions.CreateErrorResponseAsync(ex);
+                context.Response.StatusCode = errorResponse.StatusCode;
+                await context.Response.WriteAsync(errorResponse.Message);
+            }
+        });
+    }
+}
+
+// Stand‑alone usage of the static helpers
+public class ErrorHandlingDemo
+{
+    public static async Task DemoAsync()
+    {
+        var exception = new InvalidOperationException("Invalid operation");
+
+        // Map the exception to an HTTP status code and message
+        var (statusCode, message) = ErrorHandlingMiddlewareExtensions.MapException(exception);
+        Console.WriteLine($"Mapped status: {statusCode}, message: {message}");
+
+        // Process the exception (e.g., log it) using the default middleware configuration
+        await ErrorHandlingMiddlewareExtensions.ProcessExceptionAsync(exception);
+
+        // Create an error response that can be returned from an API endpoint
+        var errorResponse = await ErrorHandlingMiddlewareExtensions.CreateErrorResponseAsync(exception);
+        Console.WriteLine($"Error response: {errorResponse.StatusCode} - {errorResponse.Message}");
+
+        // Capture logs for testing purposes
+        using var provider = new ErrorHandlingMiddlewareExtensions.CapturingLoggerProvider();
+        var logger = provider.CreateLogger("Demo");
+        logger.LogError("A captured error message");
+    }
+}
+```
+
+These snippets demonstrate how to plug the middleware into an ASP.NET Core pipeline, how to convert exceptions into `ErrorResponse` objects, and how to use the built‑in logging helpers.
