@@ -1,3 +1,4 @@
+// entire file content ...
 ## RenderMetricsExtensions
 
 `RenderMetricsExtensions` provides utility methods to analyze and compare rendering performance metrics. These extensions help evaluate rendering speed and efficiency by calculating metrics such as megabytes per second and data points per second.
@@ -220,4 +221,91 @@ public class ChartEngineDemo
     }
 }
 ```
+
+## CreateChartRequest
+
+`CreateChartRequest` is a class that represents a request to create a new chart. It contains properties for specifying the chart's title, type, configuration, series, and other settings.
+
+### Usage example
+
+```csharp
+using SkiasharpChartEngine.Models;
+
+public class CreateChartRequestDemo
+{
+    public static void Main(string[] args)
+    {
+        // Create a new CreateChartRequest instance
+        var request = new CreateChartRequest
+        {
+            Title = "My Chart",
+            ChartType = ChartType.Bar,
+            Configuration = new ChartConfiguration
+            {
+                Width = 800,
+                Height = 600,
+                Dpi = 96
+            },
+            Series = new List<ChartSeries>
+            {
+                new ChartSeries
+                {
+                    Name = "Series 1",
+                    DataPoints = new List<DataPoint>
+                    {
+                        new DataPoint { X = 1, Y = 10 },
+                        new DataPoint { X = 2, Y = 20 },
+                        new DataPoint { X = 3, Y = 30 }
+                    }
+                }
+            }
+        };
+
+        // Validate the request
+        bool isValid = request.IsValid;
+
+        // Create the chart
+        var chart = ChartEngine.CreateChart(request);
+    }
+}
+```
+
+## ChartEngine
+
+`ChartEngine` is a class that provides a centralized interface for creating, rendering, and managing charts. It offers methods for creating new charts, rendering existing charts, exporting charts to various formats, and managing chart configurations.
+
+### Usage example
+
+```csharp
+using SkiasharpChartEngine.Models;
+
+public class ChartEngineDemo
+{
+    public static void Main(string[] args)
+    {
+        // Create a new chart engine instance
+        var chartEngine = new ChartEngine();
+
+        // Create a new chart
+        var chart = chartEngine.CreateChart();
+
+        // Render the chart
+        var renderResult = chartEngine.RenderChart(chart);
+
+        // Export the chart to a PNG file
+        var exportResult = chartEngine.ExportChart(chart, ExportFormat.Png);
+
+        // Save the chart to a file
+        var saveResult = chartEngine.SaveChart(chart, "chart.png");
+
+        // Get the chart configuration
+        var configuration = chartEngine.GetDefaultConfiguration();
+
+        // Update the chart configuration
+        chartEngine.UpdateChartConfiguration(configuration);
+
+        // Delete the chart
+        chartEngine.DeleteChart(chart);
+    }
+}
 ```
