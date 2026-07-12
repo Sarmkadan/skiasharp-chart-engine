@@ -170,4 +170,86 @@ public class ChartControllerExample
 }
 ```
 
-// ... (rest of the file remains the same)
+## ExportController
+
+`ExportController` is a REST API controller that handles chart export operations, providing endpoints for rendering charts to various formats and managing batch exports. It supports single chart rendering and batch processing of multiple charts with detailed result tracking.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using SkiaSharpChartEngine.API.Controllers;
+using SkiaSharpChartEngine.API.Responses;
+using SkiaSharpChartEngine.Models;
+
+public class ExportControllerExample
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize controller (typically injected via DI in real applications)
+        var exportController = new ExportController(
+            new ChartEngine(), // Chart engine for rendering
+            new Microsoft.Extensions.Logging.Abstractions.NullLogger<ExportController>()
+        );
+
+        // Get supported export formats
+        var formatsResponse = exportController.GetSupportedFormats();
+        Console.WriteLine("Supported formats:");
+        foreach (var format in formatsResponse.Data!)
+        {
+            Console.WriteLine($"  - {format.Format}: {format.MimeType} ({format.FileExtension})");
+        }
+
+        // Render a single chart
+        var renderResponse = await exportController.RenderChartAsync(
+            new RenderChartRequest
+            {
+                ChartId = "chart-123",
+                Width = 1024,
+                Height = 768,
+                Format = ExportFormat.PNG,
+                Dpi = 96f
+            }
+        );
+
+        if (renderResponse.Success)
+        {
+            Console.WriteLine($"Chart rendered successfully! Size: {renderResponse.Data?.Length} bytes");
+            // Save to file
+            await File.WriteAllBytesAsync("chart.png", renderResponse.Data!);
+        }
+        else
+        {
+            Console.WriteLine($"Failed to render chart: {renderResponse.Message}");
+        }
+
+        // Batch render multiple charts
+        var batchResponse = await exportController.BatchRenderAsync(
+            new BatchRenderRequest
+            {
+                ChartIds = new List<string> { "chart-123", "chart-456", "chart-789" },
+                RenderSettings = new RenderChartRequest
+                {
+                    Width = 800,
+                    Height = 600,
+                    Format = ExportFormat.PNG,
+                    Dpi = 96f
+                }
+            }
+        );
+
+        if (batchResponse.Success)
+        {
+            Console.WriteLine($"Batch render completed: {batchResponse.Data?.SuccessfulRenders}/{batchResponse.Data?.TotalCharts} successful");
+            foreach (var result in batchResponse.Data?.RenderResults ?? new List<IndividualRenderResult>())
+            {
+                Console.WriteLine($"  Chart {result.ChartId}: {(result.Success ? "Success" : "Failed")} - {result.Message}");
+            }
+        }
+        else
+        {
+            Console.WriteLine($"Batch render failed: {batchResponse.Message}");
+        }
+    }
+}
+```
