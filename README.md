@@ -42,4 +42,27 @@ public class DataAggregatorExtensionsDemo
 }
 ```
 
+## ApiResponse
+
+`ApiResponse` is a generic class used to represent a response from the API. It contains information about the status of the response, including the HTTP status code, success flag, and any error message. It also includes a generic type `T` to represent the data returned in the response.
+
+```csharp
+using SkiasharpChartEngine.API.Responses;
+
+public class ApiResponseExample
+{
+    public static void Main(string[] args)
+    {
+        var response = ApiResponse<int>.Ok(42);
+        Console.WriteLine($"Status Code: {response.StatusCode}");
+        Console.WriteLine($"Success: {response.Success}");
+        Console.WriteLine($"Data: {response.Data}");
+        Console.WriteLine($"Message: {response.Message}");
+        Console.WriteLine($"Timestamp: {response.Timestamp}");
+        Console.WriteLine($"TraceId: {response.TraceId}");
+    }
+}
+```
+
 // ... (rest of the file remains the same)
+```
