@@ -226,4 +226,53 @@ public class ErrorHandlingDemo
 }
 ```
 
-These snippets demonstrate how to plug the middleware into an ASP.NET Core pipeline, how to convert exceptions into `ErrorResponse` objects, and how to use the built‑in logging helpers.
+## DataAggregatorTestsExtensions
+
+`DataAggregatorTestsExtensions` provides a fluent set of test helpers for the `DataAggregatorTests` type.  
+It lets you configure a test instance with specific data points, then assert that aggregation produces the expected count, values, statistics, grouping behavior, and proper handling of null data points. The class also includes factory methods for creating sequential or random `DataPoint` collections used in tests.
+
+### Usage example
+
+```csharp
+using System.Collections.Generic;
+using SkiasharpChartEngine.Models;               // DataPoint
+using SkiasharpChartEngine.Tests;                // DataAggregatorTests, DataAggregatorTestsExtensions
+
+public class DataAggregatorTestsDemo
+{
+    public void Run()
+    {
+        // Create a test instance and configure it with sequential data points
+        var test = new DataAggregatorTests()
+            .WithDataPoints(DataAggregatorTestsExtensions.CreateSequentialDataPoints(1, 10));
+
+        // Verify that the aggregator reports the correct count
+        test.ShouldAggregateToCount(expectedCount: 10);
+
+        // Verify that the aggregated values match the original sequence
+        test.ShouldAggregateToValues(expectedValues: new List<double> { 1,2,3,4,5,6,7,8,9,10 });
+
+        // Verify calculated statistics (e.g., average)
+        test.ShouldCalculateStatistics(expectedAverage: 5.5);
+
+        // Verify grouping by label works as expected
+        test.ShouldGroupByLabel(expectedGroupCount: 1);
+
+        // Verify that the aggregator gracefully handles null data points
+        var nullTest = new DataAggregatorTests()
+            .WithDataPoints(DataAggregatorTestsExtensions.CreateRandomDataPoints(5));
+        nullTest.ShouldHandleNullDataPoints();
+
+        // You can also chain the WithDataPoints overload that accepts a collection directly
+        var anotherTest = new DataAggregatorTests()
+            .WithDataPoints(new List<DataPoint>
+            {
+                new DataPoint { X = 0, Y = 0 },
+                new DataPoint { X = 1, Y = 1 }
+            });
+        anotherTest.ShouldAggregateToCount(2);
+    }
+}
+```
+
+These extensions make test code concise and expressive while ensuring that the data aggregation logic is thoroughly validated.```````
