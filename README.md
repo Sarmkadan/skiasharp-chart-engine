@@ -1,311 +1,45 @@
 // entire file content ...
-## RenderMetricsExtensions
 
-`RenderMetricsExtensions` provides utility methods to analyze and compare rendering performance metrics. These extensions help evaluate rendering speed and efficiency by calculating metrics such as megabytes per second and data points per second.
+// ... (rest of the file remains the same)
 
-### Usage example
+## OptimizationRecommendation
 
-```csharp
-using System;
-using SkiasharpChartEngine.Models;
-
-public class RenderMetricsDemo
-{
-    public static void Main(string[] args)
-    {
-        // Sample render metrics
-        RenderMetrics metrics = new RenderMetrics
-        {
-            TotalBytesRendered = 1024 * 1024 * 5, // 5 MB
-            TotalDataPointsRendered = 10000,
-            TotalRenderTimeMilliseconds = 2000 // 2 seconds
-        };
-
-        // Calculate render speed metrics
-        double mbps = RenderMetricsExtensions.GetMegabytesPerSecond(metrics);
-        double dps = RenderMetricsExtensions.GetDataPointsPerSecond(metrics);
-
-        Console.WriteLine($"Render speed: {mbps:F2} MB/s, {dps:F0} data points/s");
-
-        // Check if the render is fast
-        bool isFast = RenderMetricsExtensions.IsFastRender(mbps, dps);
-        Console.WriteLine($"Is fast render: {isFast}");
-
-        // Compare to a baseline
-        RenderMetrics baseline = new RenderMetrics
-        {
-            TotalBytesRendered = 1024 * 1024 * 3, // 3 MB
-            TotalDataPointsRendered = 5000,
-            TotalRenderTimeMilliseconds = 1500 // 1.5 seconds
-        };
-        string comparison = RenderMetricsExtensions.CompareToBaseline(metrics, baseline);
-        Console.WriteLine($"Comparison to baseline: {comparison}");
-
-        // Detailed string representation
-        string detailed = RenderMetricsExtensions.ToDetailedString(metrics);
-        Console.WriteLine(detailed);
-    }
-}
-```
-
-## RateLimitingMiddlewareExtensions
-
-`RateLimitingMiddlewareExtensions` provides utility methods to configure and manage rate limiting in ASP.NET Core applications. It allows you to enable or disable rate limiting, set up logging, and reset client rate limit information.
+`OptimizationRecommendation` represents a suggested optimization for improving chart performance. It provides information about the category of optimization, severity of the issue, and recommended actions. 
 
 ### Usage example
 
 ```csharp
-using Microsoft.AspNetCore.Builder;
-using SkiasharpChartEngine.Middleware;
+using SkiasharpChartEngine.Utilities;
 
-public class RateLimitingDemo
+public class OptimizationRecommendationDemo
 {
     public static void Main(string[] args)
     {
-        // Create a new instance of RateLimitingMiddleware
-        var rateLimitingMiddleware = RateLimitingMiddlewareExtensions.WithConsoleLogger();
+        // Create a performance optimizer instance
+        var performanceOptimizer = new PerformanceOptimizer();
 
-        // Check if rate limiting is enabled
-        bool isEnabled = rateLimitingMiddleware.IsEnabled;
+        // Analyze a chart
+        var analysis = performanceOptimizer.AnalyzeChart(new Chart());
 
-        // Log a message
-        rateLimitingMiddleware.Log(new { Message = "Rate limiting log message" });
+        // Get optimization recommendations
+        var recommendations = analysis.Recommendations;
 
-        // Begin a scope
-        using (var scope = rateLimitingMiddleware.BeginScope(new { }))
+        // Iterate through recommendations
+        foreach (var recommendation in recommendations)
         {
-            // ...
-        }
+            Console.WriteLine($"Category: {recommendation.Category}, Severity: {recommendation.Severity}, Message: {recommendation.Message}, Action: {recommendation.Action}");
 
-        // Reset client rate limit information
-        rateLimitingMiddleware.ResetClient("clientId");
-
-        // Check rate limit
-        bool isWithinLimit = rateLimitingMiddleware.CheckRateLimit("clientId");
-
-        // Get current rate limit information
-        RateLimitInfo? rateLimitInfo = RateLimitingMiddlewareExtensions.GetCurrentRateLimitInfo();
-    }
-}
-```
-
-## PerformanceMonitoringMiddlewareExtensions
-
-`PerformanceMonitoringMiddlewareExtensions` provides utility methods to monitor and analyze performance statistics for operations within an application. This extension enables tracking performance metrics such as execution time and success rates.
-
-### Usage example
-
-```csharp
-using System;
-using SkiasharpChartEngine.Middleware;
-
-public class PerformanceMonitoringDemo
-{
-    public static void Main(string[] args)
-    {
-        // Start monitoring performance
-        using (var context = PerformanceMonitoringMiddlewareExtensions.StartMonitoring())
-        {
-            try
+            // Check if downsampling is recommended
+            if (recommendation.Downsample != null)
             {
-                // Simulate some operation
-                System.Threading.Thread.Sleep(100);
+                Console.WriteLine($"Downsample data points: {recommendation.Downsample.Count}");
             }
-            catch (Exception ex)
-            {
-                // Handle exception
-            }
-            finally
-            {
-                // End monitoring and get performance statistics
-                var statistics = PerformanceMonitoringMiddlewareExtensions.EndMonitoring(context);
 
-                // Check if the operation was slow
-                bool wasSlow = PerformanceMonitoringMiddlewareExtensions.WasSlowOperation(statistics);
-
-                // Get performance report
-                string report = PerformanceMonitoringMiddlewareExtensions.GetPerformanceReport(statistics);
-                Console.WriteLine(report);
-
-                // Get all operation statistics
-                var allStatistics = PerformanceMonitoringMiddlewareExtensions.GetAllOperationStatistics();
-                Console.WriteLine($"Operations: {string.Join(", ", allStatistics.Keys)}");
-
-                // Check if the operation was successful
-                bool isSuccessful = PerformanceMonitoringMiddlewareExtensions.IsOperationSuccessful(statistics);
-
-                // Get the slowest operations
-                var slowestOperations = PerformanceMonitoringMiddlewareExtensions.GetSlowestOperations();
-                Console.WriteLine($"Slowest operations: {string.Join(", ", slowestOperations.Select(s => s.OperationName))}");
-            }
+            // Estimate memory usage
+            Console.WriteLine($"Estimated memory usage: {recommendation.EstimateMemoryUsage} bytes");
         }
     }
 }
 ```
 
-## TransitionTimelineExtensions
-
-`TransitionTimelineExtensions` provides utility methods to manipulate and analyze animation transition timelines. It enables adding keyframes, appending transitions, adjusting timing, extracting segment durations, and reversing animation sequences.
-
-### Usage example
-
-```csharp
-using SkiasharpChartEngine.Animation;
-using SkiasharpChartEngine.Models;
-
-public class TransitionTimelineDemo
-{
-    public static void Main(string[] args)
-    {
-        // Create a transition timeline
-        var timeline = new TransitionTimeline();
-        
-        // Add keyframes at specific times
-        timeline = timeline.AddKeyframeAt(new Chart(), 0, 0.5, 1.0)
-                          .AddKeyframeAt(new Chart(), 1000, 0.75, 0.9);
-        
-        // Append a transition at 2000ms
-        timeline = timeline.AppendTransitionAt(2000, "ease-in-out");
-        
-        // Shift all timeline elements forward by 500ms
-        timeline = timeline.ShiftTime(500);
-        
-        // Get durations of each segment
-        double[] durations = timeline.GetSegmentDurations();
-        
-        // Reverse the timeline sequence
-        timeline = timeline.Reverse();
-        
-        // Output segment durations
-        Console.WriteLine($"Segment durations: {string.Join(", ", durations)}");
-    }
-}
-```
-
-## ChartEngine
-
-`ChartEngine` is a class that provides a centralized interface for creating, rendering, and managing charts. It offers methods for creating new charts, rendering existing charts, exporting charts to various formats, and managing chart configurations.
-
-### Usage example
-
-```csharp
-using SkiasharpChartEngine.Models;
-
-public class ChartEngineDemo
-{
-    public static void Main(string[] args)
-    {
-        // Create a new chart engine instance
-        var chartEngine = new ChartEngine();
-
-        // Create a new chart
-        var chart = chartEngine.CreateChart();
-
-        // Render the chart
-        var renderResult = chartEngine.RenderChart(chart);
-
-        // Export the chart to a PNG file
-        var exportResult = chartEngine.ExportChart(chart, ExportFormat.Png);
-
-        // Save the chart to a file
-        var saveResult = chartEngine.SaveChart(chart, "chart.png");
-
-        // Get the chart configuration
-        var configuration = chartEngine.GetDefaultConfiguration();
-
-        // Update the chart configuration
-        chartEngine.UpdateChartConfiguration(configuration);
-
-        // Delete the chart
-        chartEngine.DeleteChart(chart);
-    }
-}
-```
-
-## CreateChartRequest
-
-`CreateChartRequest` is a class that represents a request to create a new chart. It contains properties for specifying the chart's title, type, configuration, series, and other settings.
-
-### Usage example
-
-```csharp
-using SkiasharpChartEngine.Models;
-
-public class CreateChartRequestDemo
-{
-    public static void Main(string[] args)
-    {
-        // Create a new CreateChartRequest instance
-        var request = new CreateChartRequest
-        {
-            Title = "My Chart",
-            ChartType = ChartType.Bar,
-            Configuration = new ChartConfiguration
-            {
-                Width = 800,
-                Height = 600,
-                Dpi = 96
-            },
-            Series = new List<ChartSeries>
-            {
-                new ChartSeries
-                {
-                    Name = "Series 1",
-                    DataPoints = new List<DataPoint>
-                    {
-                        new DataPoint { X = 1, Y = 10 },
-                        new DataPoint { X = 2, Y = 20 },
-                        new DataPoint { X = 3, Y = 30 }
-                    }
-                }
-            }
-        };
-
-        // Validate the request
-        bool isValid = request.IsValid;
-
-        // Create the chart
-        var chart = ChartEngine.CreateChart(request);
-    }
-}
-```
-
-## ChartEngine
-
-`ChartEngine` is a class that provides a centralized interface for creating, rendering, and managing charts. It offers methods for creating new charts, rendering existing charts, exporting charts to various formats, and managing chart configurations.
-
-### Usage example
-
-```csharp
-using SkiasharpChartEngine.Models;
-
-public class ChartEngineDemo
-{
-    public static void Main(string[] args)
-    {
-        // Create a new chart engine instance
-        var chartEngine = new ChartEngine();
-
-        // Create a new chart
-        var chart = chartEngine.CreateChart();
-
-        // Render the chart
-        var renderResult = chartEngine.RenderChart(chart);
-
-        // Export the chart to a PNG file
-        var exportResult = chartEngine.ExportChart(chart, ExportFormat.Png);
-
-        // Save the chart to a file
-        var saveResult = chartEngine.SaveChart(chart, "chart.png");
-
-        // Get the chart configuration
-        var configuration = chartEngine.GetDefaultConfiguration();
-
-        // Update the chart configuration
-        chartEngine.UpdateChartConfiguration(configuration);
-
-        // Delete the chart
-        chartEngine.DeleteChart(chart);
-    }
-}
-```
+// ... (rest of the file remains the same)
