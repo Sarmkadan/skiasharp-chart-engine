@@ -180,3 +180,44 @@ public class TransitionTimelineDemo
     }
 }
 ```
+
+## ChartEngine
+
+`ChartEngine` is a class that provides a centralized interface for creating, rendering, and managing charts. It offers methods for creating new charts, rendering existing charts, exporting charts to various formats, and managing chart configurations.
+
+### Usage example
+
+```csharp
+using SkiasharpChartEngine.Models;
+
+public class ChartEngineDemo
+{
+    public static void Main(string[] args)
+    {
+        // Create a new chart engine instance
+        var chartEngine = new ChartEngine();
+
+        // Create a new chart
+        var chart = chartEngine.CreateChart();
+
+        // Render the chart
+        var renderResult = chartEngine.RenderChart(chart);
+
+        // Export the chart to a PNG file
+        var exportResult = chartEngine.ExportChart(chart, ExportFormat.Png);
+
+        // Save the chart to a file
+        var saveResult = chartEngine.SaveChart(chart, "chart.png");
+
+        // Get the chart configuration
+        var configuration = chartEngine.GetDefaultConfiguration();
+
+        // Update the chart configuration
+        chartEngine.UpdateChartConfiguration(configuration);
+
+        // Delete the chart
+        chartEngine.DeleteChart(chart);
+    }
+}
+```
+```
