@@ -86,6 +86,38 @@ public class ChartDemo
         Console.WriteLine("All chart operations completed successfully.");
     }
 }
+
+## ApiResponseExtensions
+
+`ApiResponseExtensions` provides a set of extension methods for working with API responses. It allows you to add a trace ID to a response, add an error to a response, convert a list of items to a standard response, and convert a list of items to a paginated response. 
+
+Here's an example of how to use `ApiResponseExtensions`:
+
+```csharp
+using System;
+using System.Collections.Generic;
+using SkiasharpChartEngine.API.Responses;
+
+public class ApiResponseDemo
+{
+    public static void Main(string[] args)
+    {
+        // Create a list of items
+        List<string> items = new List<string> { "Item1", "Item2", "Item3" };
+
+        // Convert the list to a standard response
+        ApiResponse<List<string>> standardResponse = items.ToStandardResponse();
+
+        // Convert the list to a paginated response
+        PaginatedResponse<string> paginatedResponse = items.ToPaginatedResponse();
+
+        // Add a trace ID to the response
+        ApiResponse<List<string>> responseWithTraceId = standardResponse.WithTraceId("myTraceId");
+
+        // Add an error to the response
+        ApiResponse<List<string>> responseWithError = standardResponse.WithError("myError");
+    }
+}
 ```
 
-The example demonstrates each public member of `ChartEngineExtensions` in a realistic scenario, showing both the asynchronous and synchronous overloads. Adjust the parameters (file paths, dimensions, etc.) to fit your specific needs.
+The example demonstrates each public member of `ApiResponseExtensions` in a realistic scenario.
