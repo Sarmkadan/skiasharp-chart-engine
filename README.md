@@ -277,6 +277,7 @@ public class DataAggregatorTestsDemo
 
 These extensions make test code concise and expressive while ensuring that the data aggregation logic is thoroughly validated.
 
+
 ## ChartInteractionServiceTestsExtensions
 
 `ChartInteractionServiceTestsExtensions` provides a collection of fluent extension methods for testing chart interaction scenarios with the `ChartInteractionService`. It includes factory methods for creating charts and tooltip hit results, as well as assertion helpers for validating interaction results. These extensions simplify testing of chart interactivity features like tooltip display, hit detection, and user interaction handling.
@@ -354,3 +355,40 @@ public class ChartInteractionTestsDemo
 ```
 
 These extensions make chart interaction tests concise and readable while ensuring comprehensive coverage of interactivity scenarios.
+
+## ExportOptionsExtensions
+
+`ExportOptionsExtensions` provides fluent extension methods for configuring and managing `ExportOptions` objects. It simplifies setting common export parameters like DPI, quality, and file format, as well as providing factory methods for common export scenarios and helper methods to determine the target format type.
+
+### Usage example
+
+```csharp
+using System;
+using SkiasharpChartEngine.Models;
+
+public class ExportDemo
+{
+    public static void Main(string[] args)
+    {
+        // 1️⃣ Create pre-configured options using factory methods
+        ExportOptions options = ExportOptionsExtensions.ForHighQualityPNG("chart_report");
+
+        // 2️⃣ Fluent API to modify options
+        options = options.WithDPI(300).WithQuality(0.95f).WithOutputDirectory("./exports");
+
+        // 3️⃣ Check format and generate full file path
+        if (options.IsRasterFormat())
+        {
+            string fullPath = options.GetFullPathWithSuffix("v1");
+            Console.WriteLine($"Raster export path: {fullPath}");
+        }
+
+        // 4️⃣ Switch to vector format
+        options = options.WithFormat(ExportFormat.SVG);
+        if (options.IsVectorFormat())
+        {
+            Console.WriteLine("Format changed to vector (SVG).");
+        }
+    }
+}
+```
