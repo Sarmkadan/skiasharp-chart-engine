@@ -61,6 +61,7 @@ public class ChartEngine
     {
         var services = new ServiceCollection();
         services.AddLogging();
+        services.AddSkiaSharpChartEngine();
         configureServices(services);
 
         var provider = services.BuildServiceProvider();
@@ -69,11 +70,11 @@ public class ChartEngine
 
     public async Task<RenderResult> RenderChartAsync(Chart chart, CancellationToken cancellationToken = default)
     {
+        if (chart == null)
+            throw new ArgumentNullException(nameof(chart));
+
         try
         {
-            if (chart == null)
-                throw new ArgumentNullException(nameof(chart));
-
             _dataService.ValidateChart(chart);
             return await _renderingService.RenderToByteArrayAsync(chart, cancellationToken);
         }
@@ -86,14 +87,14 @@ public class ChartEngine
 
     public async Task<RenderResult> ExportChartAsync(Chart chart, ExportOptions options, CancellationToken cancellationToken = default)
     {
+        if (chart == null)
+            throw new ArgumentNullException(nameof(chart));
+
+        if (options == null)
+            throw new ArgumentNullException(nameof(options));
+
         try
         {
-            if (chart == null)
-                throw new ArgumentNullException(nameof(chart));
-
-            if (options == null)
-                throw new ArgumentNullException(nameof(options));
-
             return await _exportService.ExportAsync(chart, options, cancellationToken);
         }
         catch (Exception ex)
@@ -105,11 +106,11 @@ public class ChartEngine
 
     public RenderResult RenderChart(Chart chart)
     {
+        if (chart == null)
+            throw new ArgumentNullException(nameof(chart));
+
         try
         {
-            if (chart == null)
-                throw new ArgumentNullException(nameof(chart));
-
             _dataService.ValidateChart(chart);
             return _renderingService.RenderToByteArray(chart);
         }
@@ -122,14 +123,14 @@ public class ChartEngine
 
     public RenderResult ExportChart(Chart chart, ExportOptions options)
     {
+        if (chart == null)
+            throw new ArgumentNullException(nameof(chart));
+
+        if (options == null)
+            throw new ArgumentNullException(nameof(options));
+
         try
         {
-            if (chart == null)
-                throw new ArgumentNullException(nameof(chart));
-
-            if (options == null)
-                throw new ArgumentNullException(nameof(options));
-
             return _exportService.Export(chart, options);
         }
         catch (Exception ex)

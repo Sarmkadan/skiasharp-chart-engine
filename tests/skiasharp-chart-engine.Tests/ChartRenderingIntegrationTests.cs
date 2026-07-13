@@ -474,11 +474,15 @@ public class ChartRenderingIntegrationTests : IDisposable
         // Arrange
         var exportService = _serviceProvider.GetRequiredService<IExportService>();
         var chart = CreateLineChartWithData();
+        // A plain non-existent directory is auto-created by the export pipeline (and would
+        // succeed here since tests run with permissions to create arbitrary directories), so
+        // it does not exercise a real failure. A path containing a NUL byte is rejected by the
+        // filesystem regardless of privileges, which is what this test needs to verify.
         var options = new ExportOptions
         {
             Format = ExportFormat.PNG,
             DirectoryPath = "/invalid/nonexistent/path",
-            FileName = "test.png"
+            FileName = "test\0invalid.png"
         };
 
         // Act

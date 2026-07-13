@@ -282,15 +282,17 @@ public class ExportServiceTests
         var chart = CreateValidChart();
         var options = new ExportOptions { Format = ExportFormat.PNG, DirectoryPath = "/tmp", FileName = "chart.png" };
         var expectedResult = RenderResult.CreateSuccess(chart.Id, "/tmp/chart.png", 100, ExportFormat.PNG);
-        _renderingServiceMock.Setup(x => x.RenderToFile(chart, options.GetFullPath()))
-            .Returns(expectedResult);
+        // Export must go through the format-aware RenderWithExportAsync path (not RenderToFile,
+        // which always produces PNG bytes regardless of the requested format).
+        _renderingServiceMock.Setup(x => x.RenderWithExportAsync(chart, options, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedResult);
 
         // Act
         var result = _service.Export(chart, options);
 
         // Assert
         result.Success.Should().BeTrue();
-        _renderingServiceMock.Verify(x => x.RenderToFile(chart, options.GetFullPath()), Times.Once);
+        _renderingServiceMock.Verify(x => x.RenderWithExportAsync(chart, options, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     /// <summary>
@@ -303,7 +305,7 @@ public class ExportServiceTests
         // Arrange
         var chart = CreateValidChart();
         var options = new ExportOptions { Format = ExportFormat.PNG, DirectoryPath = "/tmp", FileName = "chart.png" };
-        _renderingServiceMock.Setup(x => x.RenderToFile(chart, options.GetFullPath()))
+        _renderingServiceMock.Setup(x => x.RenderWithExportAsync(chart, options, It.IsAny<CancellationToken>()))
             .Throws(new InvalidOperationException("Rendering failed"));
 
         // Act
@@ -414,7 +416,7 @@ public class ExportServiceTests
         var formats = new List<ExportFormat>(_service.GetSupportedFormats());
 
         // Assert - formats are sorted by name
-        formats.Should().BeInAscendingOrder(f => f.ToString());
+        formats.Select(f => f.ToString()).Should().BeInAscendingOrder();
     }
 
     // ---------------------------------------------------------------
