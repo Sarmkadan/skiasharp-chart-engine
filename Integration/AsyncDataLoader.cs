@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -150,7 +151,7 @@ public class AsyncDataLoader
 
                 for (int col = 1; col < values.Count; col++)
                 {
-                    if (float.TryParse(values[col], out var value))
+                    if (float.TryParse(values[col], NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
                     {
                         chart.Series[col - 1].DataPoints.Add(new DataPoint
                         {
@@ -229,7 +230,7 @@ public class AsyncDataLoader
             var parts = ParseCsvLine(line);
             if (parts.Count >= 2)
             {
-                if (float.TryParse(parts[1], out var value))
+                if (float.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
                 {
                     dataPoints.Add(new DataPoint
                     {

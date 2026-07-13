@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -104,12 +105,37 @@ public class DataController
             if (dataPoints == null || dataPoints.Count == 0)
                 return ApiResponse<List<DataPoint>>.Failure("Data points cannot be empty");
 
+            if (bucketSize <= 0)
+                return ApiResponse<List<DataPoint>>.Failure("Bucket size must be positive");
+
             _logger.LogInformation("Aggregating {Count} data points using {AggregationType}", dataPoints.Count, aggregationType);
 
-            // Simulate aggregation operation
             await Task.Delay(20, cancellationToken);
 
-            var aggregatedData = new List<DataPoint>(dataPoints); // Simplified - would actually aggregate
+            var aggregatedData = new List<DataPoint>();
+            for (int i = 0; i < dataPoints.Count; i += bucketSize)
+            {
+                var bucket = dataPoints.Skip(i).Take(bucketSize).ToList();
+                if (bucket.Count == 0)
+                    continue;
+
+                var values = bucket.Select(dp => dp.Value).ToList();
+                var aggregatedValue = aggregationType?.ToLowerInvariant() switch
+                {
+                    "sum" => values.Sum(),
+                    "min" => values.Min(),
+                    "max" => values.Max(),
+                    "median" => values.OrderBy(v => v).ElementAt(values.Count / 2),
+                    _ => values.Average(),
+                };
+
+                aggregatedData.Add(new DataPoint
+                {
+                    Label = bucket[0].Label,
+                    Value = aggregatedValue
+                });
+            }
+
             return ApiResponse<List<DataPoint>>.Success(aggregatedData);
         }
         catch (Exception ex)
@@ -146,13 +172,47 @@ public class DataController
     {
         try
         {
+            ArgumentNullException.ThrowIfNull(dataPoints);
+
             if (dataPoints.Count == 0)
                 return ApiResponse<List<DataPoint>>.Failure("Data points cannot be empty");
+
+            if (targetCount <= 0)
+                return ApiResponse<List<DataPoint>>.Failure("Target count must be positive");
 
             await Task.Delay(15, cancellationToken);
 
             _logger.LogInformation("Resampling {Count} points to {TargetCount}", dataPoints.Count, targetCount);
-            return ApiResponse<List<DataPoint>>.Success(dataPoints.Take(targetCount).ToList());
+
+            var resampled = new List<DataPoint>(targetCount);
+            if (dataPoints.Count == 1 || targetCount == 1)
+            {
+                for (int i = 0; i < targetCount; i++)
+                    resampled.Add(dataPoints[Math.Min(i, dataPoints.Count - 1)]);
+            }
+            else
+            {
+                var lastIndex = dataPoints.Count - 1;
+                for (int i = 0; i < targetCount; i++)
+                {
+                    var position = i * (double)lastIndex / (targetCount - 1);
+                    var lowerIndex = (int)Math.Floor(position);
+                    var upperIndex = Math.Min(lowerIndex + 1, lastIndex);
+                    var fraction = position - lowerIndex;
+
+                    var lower = dataPoints[lowerIndex];
+                    var upper = dataPoints[upperIndex];
+                    var interpolatedValue = lower.Value + (upper.Value - lower.Value) * fraction;
+
+                    resampled.Add(new DataPoint
+                    {
+                        Label = fraction < 0.5 ? lower.Label : upper.Label,
+                        Value = interpolatedValue
+                    });
+                }
+            }
+
+            return ApiResponse<List<DataPoint>>.Success(resampled);
         }
         catch (Exception ex)
         {
