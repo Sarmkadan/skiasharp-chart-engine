@@ -46,4 +46,22 @@ public class TemplateControllerExample
 }
 ```
 
+## ChartEngineException
+
+`ChartEngineException` is a custom exception class that represents an error that occurred during chart engine operations. It provides a way to handle and propagate errors in a meaningful way.
+
+```csharp
+try
+{
+    // Code that may throw an exception
+}
+catch (ChartEngineException ex)
+{
+    Console.WriteLine($"Error code: {ex.ErrorCode}");
+    Console.WriteLine($"Error message: {ex.Message}");
+}
+
+// Example of throwing a ChartEngineException
+throw new ChartEngineException("Invalid chart data", new InvalidChartDataException("Invalid data points"));
 ```
+
