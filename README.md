@@ -455,6 +455,79 @@ public class StringFormatBenchmarksExample
 }
 ```
 
+## CacheKeyBenchmarks
+
+`CacheKeyBenchmarks` is a benchmark suite that measures the performance of cache key generation operations used throughout the SkiaSharp chart engine. It focuses on hot paths for cache key assembly including SHA-256 hashing, frozen-dictionary lookups, and composite key construction.
+
+The benchmarks cover:
+- **BuildRenderKey**: Generates a render cache key for chart images with dimensions and format
+- **BuildSeriesKey**: Creates a cache key for chart series based on chart and series names
+- **BuildAxisKey**: Builds a cache key for axis configuration with min/max values and tick count
+- **BuildConfigurationKey_Line**: Generates configuration keys for line charts using frozen dictionary lookups
+- **BuildConfigurationKey_Bar**: Generates configuration keys for bar charts using frozen dictionary lookups
+- **BuildCompositeKey**: Assembles composite cache keys from multiple parameters (no LINQ)
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Benchmarks;
+using SkiaSharpChartEngine.Constants;
+
+public class CacheKeyBenchmarksExample
+{
+    public static void Main()
+    {
+        // BuildRenderKey example - generate a key for a 1920x1080 PNG chart
+        string renderKey = CacheKeyBuilder.BuildRenderKey(
+            chartId: "sales-dashboard-2024",
+            width: 1920,
+            height: 1080,
+            scale: 1.0f,
+            format: "PNG"
+        );
+        Console.WriteLine($"Render key: {renderKey}");
+        // Example output: Render key: 9a3b4c5d6e7f8g9h0i1j2k3l4m5n6o7p8
+
+        // BuildSeriesKey example - create a key for a specific series in a chart
+        string seriesKey = CacheKeyBuilder.BuildSeriesKey(
+            chartId: "quarterly-revenue-chart",
+            seriesName: "Q3 2024 Sales Performance"
+        );
+        Console.WriteLine($"Series key: {seriesKey}");
+        // Example output: Series key: 2p3q4r5s6t7u8v9w0x1y2z3a4b5c6d7e8
+
+        // BuildAxisKey example - generate a key for axis configuration
+        string axisKey = CacheKeyBuilder.BuildAxisKey(
+            minValue: 0f,
+            maxValue: 1000f,
+            tickCount: 10
+        );
+        Console.WriteLine($"Axis key: {axisKey}");
+        // Example output: Axis key: 3a4b5c6d7e8f9g0h1i2j3k4l5m6n7
+
+        // BuildConfigurationKey for LineChart - get configuration key from ChartType enum
+        string lineConfigKey = CacheKeyBuilder.BuildConfigurationKey(ChartType.LineChart);
+        Console.WriteLine($"Line chart config key: {lineConfigKey}");
+        // Example output: Line chart config key: 4b5c6d7e8f9g0h1i2j3k4l5m6n7o8
+
+        // BuildConfigurationKey for BarChart - get configuration key from ChartType enum
+        string barConfigKey = CacheKeyBuilder.BuildConfigurationKey(ChartType.BarChart);
+        Console.WriteLine($"Bar chart config key: {barConfigKey}");
+        // Example output: Bar chart config key: 5c6d7e8f9g0h1i2j3k4l5m6n7o8p9
+
+        // BuildCompositeKey example - assemble a composite key from multiple parameters
+        string compositeKey = CacheKeyBuilder.BuildCompositeKey(
+            chartId: "monthly-report-2024",
+            width: 800,
+            height: 600,
+            format: "PNG",
+            version: "v2.1.0"
+        );
+        Console.WriteLine($"Composite key: {compositeKey}");
+        // Example output: Composite key: 6d7e8f9g0h1i2j3k4l5m6n7o8p9q0
+    }
+}
+```
+
 ## ChartInteractionEventArgs
 
 `ChartInteractionEventArgs` provides the event data for user interactions with chart elements such as clicks, hovers, selections, and context menu gestures. It contains detailed information about the interaction including the pointer position, the chart region affected, and any data points or series that were hit during the interaction.
