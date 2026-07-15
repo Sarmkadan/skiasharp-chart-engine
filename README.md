@@ -103,4 +103,94 @@ public class AnimationFrameGeneratorExample
 }
 ```
 
+## ChartEventPublisher
+
+`ChartEventPublisher` implements the publish-subscribe pattern for chart events in the SkiaSharp chart engine. It allows components to subscribe to various chart events (creation, update, deletion, rendering, export, and errors) and notifies all registered subscribers when these events occur. The publisher provides thread-safe subscription management and asynchronous event broadcasting with comprehensive logging.
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Events;
+
+public class ChartEventPublisherExample
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize event publisher with logger
+        var logger = new NullLogger<ChartEventPublisher>();
+        var eventPublisher = new ChartEventPublisher(logger);
+
+        // Check initial subscriber count
+        Console.WriteLine($"Initial subscriber count: {eventPublisher.GetSubscriberCount()}");
+
+        // Create a subscriber implementation
+        var chartLogger = new ChartEventLoggerSubscriber();
+
+        // Subscribe to events
+        eventPublisher.Subscribe(chartLogger);
+        Console.WriteLine($"After subscribe - Subscriber count: {eventPublisher.GetSubscriberCount()}");
+
+        // Publish various chart events
+        await eventPublisher.PublishChartCreatedAsync(
+            new ChartCreatedEvent(Guid.NewGuid(), DateTime.UtcNow, "line-chart-001"));
+
+        await eventPublisher.PublishChartUpdatedAsync(
+            new ChartUpdatedEvent(Guid.NewGuid(), DateTime.UtcNow, "line-chart-001", "Updated title"));
+
+        await eventPublisher.PublishChartRenderedAsync(
+            new ChartRenderedEvent(Guid.NewGuid(), DateTime.UtcNow, "line-chart-001", 800, 600));
+
+        await eventPublisher.PublishChartExportedAsync(
+            new ChartExportedEvent(Guid.NewGuid(), DateTime.UtcNow, "line-chart-001", "chart.png"));
+
+        await eventPublisher.PublishErrorAsync(
+            new ChartErrorEvent(Guid.NewGuid(), DateTime.UtcNow, "Failed to render chart", new Exception("Rendering error")));
+
+        // Unsubscribe
+        eventPublisher.Unsubscribe(chartLogger);
+        Console.WriteLine($"After unsubscribe - Subscriber count: {eventPublisher.GetSubscriberCount()}");
+    }
+}
+
+// Example subscriber implementation
+public class ChartEventLoggerSubscriber : IChartEventSubscriber
+{
+    public async Task OnChartCreatedAsync(ChartCreatedEvent @event)
+    {
+        Console.WriteLine($"[ChartCreated] Chart: {@event.ChartId}, Timestamp: {@event.Timestamp}");
+        await Task.CompletedTask;
+    }
+
+    public async Task OnChartUpdatedAsync(ChartUpdatedEvent @event)
+    {
+        Console.WriteLine($"[ChartUpdated] Chart: {@event.ChartId}, Title: {@event.NewTitle}");
+        await Task.CompletedTask;
+    }
+
+    public async Task OnChartDeletedAsync(ChartDeletedEvent @event)
+    {
+        Console.WriteLine($"[ChartDeleted] Chart: {@event.ChartId}");
+        await Task.CompletedTask;
+    }
+
+    public async Task OnChartRenderedAsync(ChartRenderedEvent @event)
+    {
+        Console.WriteLine($"[ChartRendered] Chart: {@event.ChartId}, Size: {@event.Width}x{@event.Height}");
+        await Task.CompletedTask;
+    }
+
+    public async Task OnChartExportedAsync(ChartExportedEvent @event)
+    {
+        Console.WriteLine($"[ChartExported] Chart: {@event.ChartId}, File: {@event.FilePath}");
+        await Task.CompletedTask;
+    }
+
+    public async Task OnErrorAsync(ChartErrorEvent @event)
+    {
+        Console.WriteLine($"[Error] Chart: {@event.ChartId}, Message: {@event.Message}");
+        await Task.CompletedTask;
+    }
+}
 ```
