@@ -194,3 +194,120 @@ public class ChartEventLoggerSubscriber : IChartEventSubscriber
     }
 }
 ```
+
+## IChartEventSubscriber
+
+`IChartEventSubscriber` is an interface that defines the contract for receiving chart events from the `ChartEventPublisher`. It provides a standardized way for components to react to various chart lifecycle events such as creation, updates, deletions, rendering, exports, and errors. Implementations of this interface can be registered with the event publisher to receive asynchronous notifications about chart events.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using SkiaSharpChartEngine.Events;
+
+public class CustomChartEventSubscriber : IChartEventSubscriber
+{
+    public string EventId { get; } = Guid.NewGuid().ToString();
+    public DateTime Timestamp { get; } = DateTime.UtcNow;
+    public string? SourceName { get; set; } = "CustomChartMonitor";
+    public Dictionary<string, object> Metadata { get; } = new Dictionary<string, object>();
+
+    public virtual string GetEventName()
+    {
+        return "CustomChartEvent";
+    }
+
+    public Task OnChartCreatedAsync(ChartCreatedEvent @event)
+    {
+        Console.WriteLine($"[CustomSubscriber] Chart created: {@event.ChartId}");
+        Console.WriteLine($"  Event ID: {EventId}");
+        Console.WriteLine($"  Timestamp: {Timestamp}");
+        Console.WriteLine($"  Source: {SourceName}");
+        
+        Metadata["chartType"] = @event.ChartId.Contains("line") ? "line" : "other";
+        Metadata["eventSource"] = SourceName;
+        
+        return Task.CompletedTask;
+    }
+
+    public Task OnChartUpdatedAsync(ChartUpdatedEvent @event)
+    {
+        Console.WriteLine($"[CustomSubscriber] Chart updated: {@event.ChartId}");
+        Console.WriteLine($"  New title: {@event.NewTitle}");
+        Console.WriteLine($"  Modified fields: {string.Join(", ", @event.ModifiedFields ?? Array.Empty<string>())}");
+        return Task.CompletedTask;
+    }
+
+    public Task OnChartDeletedAsync(ChartDeletedEvent @event)
+    {
+        Console.WriteLine($"[CustomSubscriber] Chart deleted: {@event.ChartId}");
+        Console.WriteLine($"  Deleted by: {@event.DeletedBy}");
+        return Task.CompletedTask;
+    }
+
+    public Task OnChartRenderedAsync(ChartRenderedEvent @event)
+    {
+        Console.WriteLine($"[CustomSubscriber] Chart rendered: {@event.ChartId}");
+        Console.WriteLine($"  Dimensions: {@event.Width}x{@event.Height}");
+        Console.WriteLine($"  Previous update: {@event.PreviousUpdateTime?.ToString("o") ?? "never"}");
+        return Task.CompletedTask;
+    }
+
+    public Task OnChartExportedAsync(ChartExportedEvent @event)
+    {
+        Console.WriteLine($"[CustomSubscriber] Chart exported: {@event.ChartId}");
+        Console.WriteLine($"  File path: {@event.FilePath}");
+        return Task.CompletedTask;
+    }
+
+    public Task OnErrorAsync(ChartErrorEvent @event)
+    {
+        Console.WriteLine($"[CustomSubscriber] Chart error: {@event.ChartId}");
+        Console.WriteLine($"  Error message: {@event.Message}");
+        return Task.CompletedTask;
+    }
+}
+
+// Usage example
+public class Program
+{
+    public static async Task Main(string[] args)
+    {
+        // Create a custom subscriber
+        var subscriber = new CustomChartEventSubscriber();
+        
+        Console.WriteLine($"Subscriber created with EventId: {subscriber.EventId}");
+        Console.WriteLine($"Supported events: ChartCreated, ChartUpdated, ChartDeleted, ChartRendered, ChartExported, Error");
+        
+        // Simulate receiving events
+        var createdEvent = new ChartCreatedEvent(
+            Guid.NewGuid(),
+            DateTime.UtcNow,
+            "line-chart-001"
+        );
+        
+        await subscriber.OnChartCreatedAsync(createdEvent);
+        
+        var updatedEvent = new ChartUpdatedEvent(
+            Guid.NewGuid(),
+            DateTime.UtcNow,
+            "bar-chart-002",
+            "Updated Bar Chart",
+            new[] { "Title", "DataPoints" },
+            DateTime.UtcNow.AddMinutes(-5)
+        );
+        
+        await subscriber.OnChartUpdatedAsync(updatedEvent);
+        
+        var renderedEvent = new ChartRenderedEvent(
+            Guid.NewGuid(),
+            DateTime.UtcNow,
+            "pie-chart-003",
+            1024,
+            768
+        );
+        
+        await subscriber.OnChartRenderedAsync(renderedEvent);
+    }
+}
+```
