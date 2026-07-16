@@ -1007,6 +1007,100 @@ public class ChartDataServiceExample
 }
 ```
 
+## ExportServiceTests
+
+`ExportServiceTests` provides a comprehensive suite of unit tests for the `ExportService` class, which handles chart export functionality including both synchronous and asynchronous export operations. The tests validate null argument validation, unsupported format handling, successful rendering delegation, error handling for infrastructure issues, cancellation support, and constructor dependency validation for the export service.
+
+The test suite covers:
+- **Async export methods**: Validating `ExportAsync` with null checks, unsupported formats, successful rendering delegation, failure scenarios, infrastructure errors, and cancellation support
+- **Sync export methods**: Testing `Export` with null argument validation and successful rendering delegation
+- **Format support**: Verifying `SupportsFormat` returns true for supported formats (PNG, SVG, JPEG, WEBP) and false for unsupported formats
+- **Supported formats list**: Ensuring `GetSupportedFormats` returns all four supported formats in ascending order
+- **Constructor validation**: Ensuring proper dependency injection validation for rendering service and logger
+
+```csharp
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
+public class ExportServiceTestsExample
+{
+    public static void Main()
+    {
+        // Initialize ExportService with dependencies
+        var logger = new NullLogger<ExportService>();
+        var renderingService = new ChartRenderingService(
+            logger,
+            new ChartDataService(logger),
+            new RenderCacheService()
+        );
+        var exportService = new ExportService(renderingService, logger);
+
+        // Create a test chart with data
+        var chart = new Chart("sales-chart");
+        var series = new ChartSeries("Revenue");
+        series.AddDataPoint(1.0, 1000.0);
+        series.AddDataPoint(2.0, 1500.0);
+        series.AddDataPoint(3.0, 1200.0);
+        chart.AddSeries(series);
+
+        // Example 1: Check if PNG format is supported
+        bool supportsPng = exportService.SupportsFormat(ExportFormat.PNG);
+        Console.WriteLine($"PNG format supported: {supportsPng}");
+        // Output: PNG format supported: True
+
+        // Example 2: Get all supported formats
+        var supportedFormats = exportService.GetSupportedFormats();
+        Console.WriteLine($"Supported formats: {string.Join(", ", supportedFormats)}");
+        // Output: Supported formats: JPEG, PNG, SVG, WEBP
+
+        // Example 3: Export chart to file (async)
+        var exportOptions = new ExportOptions
+        {
+            Format = ExportFormat.PNG,
+            DirectoryPath = Path.GetTempPath(),
+            FileName = "chart-export.png"
+        };
+        
+        var asyncResult = await exportService.ExportAsync(chart, exportOptions);
+        Console.WriteLine($"Async export success: {asyncResult.Success}");
+        Console.WriteLine($"Error message: {asyncResult.ErrorMessage ?? "None"}");
+        
+        // Example 4: Export chart to file (sync)
+        var syncResult = exportService.Export(chart, exportOptions);
+        Console.WriteLine($"Sync export success: {syncResult.Success}");
+        
+        // Example 5: Export to SVG format
+        var svgOptions = new ExportOptions
+        {
+            Format = ExportFormat.SVG,
+            DirectoryPath = Path.GetTempPath(),
+            FileName = "chart-export.svg"
+        };
+        
+        var svgResult = await exportService.ExportAsync(chart, svgOptions);
+        Console.WriteLine($"SVG export success: {svgResult.Success}");
+        
+        // Example 6: Handle unsupported format
+        try
+        {
+            var invalidOptions = new ExportOptions { Format = (ExportFormat)999 };
+            var invalidResult = exportService.Export(chart, invalidOptions);
+            Console.WriteLine("ERROR: Should have thrown UnsupportedExportFormatException");
+        }
+        catch (UnsupportedExportFormatException ex)
+        {
+            Console.WriteLine($"✓ Correctly threw UnsupportedExportFormatException: {ex.Message}");
+        }
+    }
+}
+```
+
 ## ChartInteractionServiceTests
 
 `ChartInteractionServiceTests` provides a comprehensive suite of unit tests for the `ChartInteractionService` class, which handles user interactions with chart elements such as clicks, hovers, selections, and context menu gestures. The tests validate edge cases including null inputs, missed interactions, and proper event raising, ensuring the service correctly processes user interactions and maintains selection state.
