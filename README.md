@@ -699,6 +699,68 @@ var fullSizeSection = new ReportSection
 };
 ```
 
+## ColorPalette
+
+`ColorPalette` is a utility class for managing and cycling through color schemes for chart series. It provides predefined palettes for common charting scenarios (default, vibrant, pastel, monochrome, ocean) and allows custom palette creation. The palette automatically wraps around when accessing colors beyond its length, making it ideal for cycling through series colors in multi-series charts.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Models;
+
+public class ColorPaletteExample
+{
+    public static void Main()
+    {
+        // Example 1: Create a custom color palette
+        var customPalette = new ColorPalette("Custom", new[] { "#FF5733", "#33FF57", "#3357FF", "#F3FF33" });
+        Console.WriteLine($"Custom palette created with {customPalette.GetColorCount()} colors");
+        
+        // Example 2: Add colors dynamically
+        customPalette.AddColor("#FF33F3");
+        customPalette.AddColor("#33FFF3");
+        Console.WriteLine($"Added 2 more colors, total: {customPalette.GetColorCount()}");
+        
+        // Example 3: Get colors by index (wraps around automatically)
+        Console.WriteLine($"Color at index 0: {customPalette.GetColorAtIndex(0)}");
+        Console.WriteLine($"Color at index 5: {customPalette.GetColorAtIndex(5)}"); // Wraps to index 0
+        
+        // Example 4: Use predefined palettes
+        var defaultPalette = ColorPalette.CreateDefaultPalette();
+        Console.WriteLine($"Default palette: {defaultPalette.Name} with {defaultPalette.GetColorCount()} colors");
+        
+        var vibrantPalette = ColorPalette.CreateVibrantPalette();
+        Console.WriteLine($"Vibrant palette: {vibrantPalette.Name} with {vibrantPalette.GetColorCount()} colors");
+        
+        var pastelPalette = ColorPalette.CreatePastelPalette();
+        Console.WriteLine($"Pastel palette: {pastelPalette.Name} with {pastelPalette.GetColorCount()} colors");
+        
+        var monochromePalette = ColorPalette.CreateMonochromePalette();
+        Console.WriteLine($"Monochrome palette: {monochromePalette.Name} with {monochromePalette.GetColorCount()} colors");
+        
+        var oceanPalette = ColorPalette.CreateOceanPalette();
+        Console.WriteLine($"Ocean palette: {oceanPalette.Name} with {oceanPalette.GetColorCount()} colors");
+        
+        // Example 5: Cycle through colors using color index
+        int colorIndex = 0;
+        Console.WriteLine("Cycling through colors:");
+        for (int i = 0; i < 8; i++)
+        {
+            Console.WriteLine($"  Series {i + 1}: {customPalette.GetNextColor(ref colorIndex)}");
+        }
+        
+        // Example 6: Access all colors
+        Console.WriteLine($"\nAll colors in custom palette:");
+        foreach (var color in customPalette.Colors)
+        {
+            Console.WriteLine($"  {color}");
+        }
+        
+        // Example 7: ToString representation
+        Console.WriteLine($"\nPalette info: {customPalette}");
+    }
+}
+```
+
 ## QuickStartExample
 
 `QuickStartExample` provides a collection of practical examples demonstrating common usage patterns for the SkiaSharp chart engine. It showcases how to create various chart types, configure chart properties, render charts to images, export charts to files, validate chart configurations, work with color palettes, and perform asynchronous rendering operations.
