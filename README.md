@@ -1896,6 +1896,147 @@ public class ChartModelsAndValidationTestsExample
 }
 ```
 
+## Chart
+
+The `Chart` class is the primary model in the SkiaSharp Chart Engine, representing a complete chart with its data series, visual configuration, metadata, and associated tags. Charts are the central data structure used throughout the rendering pipeline and can be created standalone or loaded from various data sources including JSON, CSV, or database records.
+
+Charts support multiple chart types (line, bar, pie, etc.), multiple data series per chart, and comprehensive metadata for tracking creation/modification history, authorship, and categorization through tags.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using SkiaSharpChartEngine.Models;
+
+public class ChartExample
+{
+    public static void Main()
+    {
+        // Example 1: Create a basic line chart with sample data
+        var lineChart = new Chart("sales-performance-2024")
+        {
+            Type = ChartType.LineChart,
+            Title = "Quarterly Sales Performance"
+        };
+        
+        var revenueSeries = new ChartSeries("Revenue")
+        {
+            LineWidth = 2.5f,
+            Color = "#2E86C1"
+        };
+        revenueSeries.AddDataPoint(1.0, 100000.0);
+        revenueSeries.AddDataPoint(2.0, 125000.0);
+        revenueSeries.AddDataPoint(3.0, 150000.0);
+        revenueSeries.AddDataPoint(4.0, 175000.0);
+        lineChart.AddSeries(revenueSeries);
+        
+        Console.WriteLine($"Created chart: {lineChart.Title}");
+        Console.WriteLine($"Chart ID: {lineChart.Id}");
+        Console.WriteLine($"Chart Type: {lineChart.Type}");
+        Console.WriteLine($"Series Count: {lineChart.GetSeriesCount()}");
+        Console.WriteLine($"Total Data Points: {lineChart.GetTotalDataPoints()}");
+        
+        // Example 2: Create a bar chart with multiple series
+        var barChart = new Chart("product-comparison", ChartType.BarChart)
+        {
+            Title = "Product Comparison by Region"
+        };
+        
+        var northAmerica = new ChartSeries("North America")
+        {
+            Color = "#27AE60",
+            BarWidth = 0.8f
+        };
+        northAmerica.AddDataPoint(1.0, 120000.0);
+        northAmerica.AddDataPoint(2.0, 135000.0);
+        
+        var europe = new ChartSeries("Europe")
+        {
+            Color = "#E74C3C",
+            BarWidth = 0.8f
+        };
+        europe.AddDataPoint(1.0, 95000.0);
+        europe.AddDataPoint(2.0, 110000.0);
+        
+        barChart.AddSeries(northAmerica);
+        barChart.AddSeries(europe);
+        
+        Console.WriteLine($"\nBar chart created with {barChart.GetSeriesCount()} series");
+        
+        // Example 3: Access chart metadata and tags
+        var chartWithMetadata = new Chart("dashboard-template")
+        {
+            Type = ChartType.LineChart,
+            CreatedBy = "system",
+            IsTemplate = true
+        };
+        chartWithMetadata.Tags = new Dictionary<string, object>
+        {
+            ["category"] = "financial",
+            ["frequency"] = "monthly",
+            ["version"] = "1.0.0"
+        };
+        
+        Console.WriteLine($"\nChart metadata:");
+        Console.WriteLine($"  Created: {chartWithMetadata.CreatedAt}");
+        Console.WriteLine($"  Created By: {chartWithMetadata.CreatedBy}");
+        Console.WriteLine($"  Is Template: {chartWithMetadata.IsTemplate}");
+        Console.WriteLine($"  Tags: {chartWithMetadata.Tags?.Count ?? 0} items");
+        
+        // Example 4: Manage series programmatically
+        var dynamicChart = new Chart("dynamic-data");
+        
+        // Add multiple series
+        for (int i = 0; i < 3; i++)
+        {
+            var series = new ChartSeries($"Series {i + 1}")
+            {
+                Color = $"#{(i * 50 + 100):X2}{(i * 100 + 50):X2}{(i * 150 + 200):X2}"
+            };
+            
+            // Add 5 data points
+            for (int j = 0; j < 5; j++)
+            {
+                series.AddDataPoint(j + 1, Random.Shared.Next(50, 200) * (i + 1));
+            }
+            
+            dynamicChart.AddSeries(series);
+        }
+        
+        Console.WriteLine($"\nDynamic chart created with {dynamicChart.GetSeriesCount()} series");
+        Console.WriteLine($"Total data points: {dynamicChart.GetTotalDataPoints()}");
+        
+        // Example 5: Get chart data bounds for axis scaling
+        var (minX, maxX, minY, maxY) = dynamicChart.GetDataBounds();
+        Console.WriteLine($"\nChart data bounds:");
+        Console.WriteLine($"  X range: [{minX:F2}, {maxX:F2}]");
+        Console.WriteLine($"  Y range: [{minY:F2}, {maxY:F2}]");
+        
+        // Example 6: Find and remove a specific series
+        var targetSeries = dynamicChart.GetSeriesByName("Series 2");
+        if (targetSeries != null)
+        {
+            dynamicChart.RemoveSeriesByName("Series 2");
+            Console.WriteLine($"\nRemoved 'Series 2', remaining series: {dynamicChart.GetSeriesCount()}");
+        }
+        
+        // Example 7: Validate chart before rendering
+        bool isValid = dynamicChart.ValidateForRendering();
+        Console.WriteLine($"Chart validation: {(isValid ? "Valid" : "Invalid")}");
+        
+        // Example 8: Clone a chart for modification
+        var clonedChart = dynamicChart.Clone();
+        Console.WriteLine($"\nCloned chart - Original: {dynamicChart.GetTotalDataPoints()} points, Clone: {clonedChart.GetTotalDataPoints()} points");
+        
+        // Example 9: Clear all series
+        var emptyChart = new Chart("empty-chart");
+        Console.WriteLine($"\nEmpty chart series count: {emptyChart.GetSeriesCount()}");
+        
+        // Example 10: String representation
+        Console.WriteLine($"\nChart ToString: {lineChart}");
+    }
+}
+```
+
 ## ChartDataServiceTests
 
 `ChartDataServiceTests` provides a comprehensive suite of unit tests for the `ChartDataService` class, which validates chart configurations, transforms and normalizes chart data, filters data points, and calculates axis ranges. The tests cover validation scenarios (null charts, empty series, invalid line widths), data transformation operations, normalization to [0, 1] intervals, and axis range calculations for both linear and logarithmic scales.
