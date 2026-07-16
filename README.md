@@ -1996,6 +1996,64 @@ public class AnimationSettingsExample
 }
 ```
 
+## DataPoint
+
+`DataPoint` represents a single data point in a chart series. It contains the X/Y coordinates for rendering, optional label text, color styling, and extensible metadata. Data points support various states (normal, highlighted, hidden) and can be customized with custom radii and additional properties through the `Metadata` dictionary.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using SkiaSharpChartEngine.Models;
+
+public class DataPointExample
+{
+    public static void Main()
+    {
+        // Example 1: Create a basic data point
+        var point1 = new DataPoint(1.0, 100.0);
+        Console.WriteLine($"Basic point: {point1}");
+        // Output: Basic point: DataPoint(X=1, Y=100, Label=)
+
+        // Example 2: Create a data point with label and custom color
+        var point2 = new DataPoint(2.0, 150.0, "Q2 2024", "#2E86C1");
+        Console.WriteLine($"Styled point: {point2}");
+        Console.WriteLine($"Color: {point2.Color}");
+        // Output: Styled point: DataPoint(X=2, Y=150, Label=Q2 2024)
+        // Output: Color: #2E86C1
+
+        // Example 3: Create a data point with custom radius and metadata
+        var point3 = new DataPoint(3.0, 200.0)
+        {
+            State = DataPointState.Highlighted,
+            CustomRadius = 8.0,
+            Metadata = new Dictionary<string, object>
+            {
+                ["unit"] = "USD",
+                ["precision"] = 2,
+                ["region"] = "North America"
+            },
+            Timestamp = DateTime.UtcNow
+        };
+        
+        Console.WriteLine($"Point with metadata: X={point3.X}, Y={point3.Y}");
+        Console.WriteLine($"State: {point3.State}");
+        Console.WriteLine($"Custom radius: {point3.CustomRadius}");
+        Console.WriteLine($"Metadata count: {point3.Metadata?.Count}");
+        Console.WriteLine($"Timestamp: {point3.Timestamp?.ToString("o")}");
+        
+        // Example 4: Clone a data point for reuse
+        var clonedPoint = point3.Clone();
+        Console.WriteLine($"Cloned point is different instance: {point3 != clonedPoint}");
+        Console.WriteLine($"Cloned metadata is independent: {point3.Metadata != clonedPoint.Metadata}");
+        
+        // Example 5: Use Value property (alias for Y)
+        var point4 = new DataPoint(4.0, 250.0);
+        Console.WriteLine($"Using Value property: {point4.Value}");
+        // Output: Using Value property: 250
+    }
+}
+```
+
 ## ChartModelsAndValidationTests
 
 `ChartModelsAndValidationTests` is a comprehensive unit test suite that validates the behavior of core chart models and validation logic in the SkiaSharpChartEngine library. This test class ensures the correctness of fundamental components including `DataPoint`, `ChartSeries`, `Chart`, `ChartValidator`, `ColorHelper`, and their associated extension methods.
