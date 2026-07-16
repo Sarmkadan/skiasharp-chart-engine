@@ -1985,6 +1985,80 @@ public class DataPointExtensionsExample
 
 The middleware supports multiple content types (JSON, form data, CSV, XML) and provides configurable validation rules including maximum payload size limits and required field validation.
 
+## ErrorHandlingMiddleware
+
+`ErrorHandlingMiddleware` is a global error handling middleware that catches exceptions and formats them consistently for API responses. It maps different exception types to appropriate HTTP status codes, logs errors appropriately, and wraps them in a standardized `ErrorResponse` format. This middleware ensures consistent error handling across the chart engine API.
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Middleware;
+using SkiaSharpChartEngine.Exceptions;
+
+public class ErrorHandlingMiddlewareExample
+{
+    public static void Main(string[] args)
+    {
+        // Initialize error handling middleware with logger
+        var logger = new NullLogger<ErrorHandlingMiddleware>();
+        var errorHandler = new ErrorHandlingMiddleware(logger);
+
+        try
+        {
+            // Simulate an operation that might throw an exception
+            ProcessChartOperation();
+        }
+        catch (Exception ex)
+        {
+            // Invoke the error handling middleware
+            await errorHandler.InvokeAsync(ex);
+        }
+    }
+
+    private static void ProcessChartOperation()
+    {
+        // This method might throw various exceptions
+        throw new ArgumentNullException("chartData", "Chart data cannot be null");
+    }
+}
+
+// Example of handling the MiddlewareException that gets thrown
+public class ErrorHandler
+{
+    private readonly ILogger<ErrorHandler> _logger;
+
+    public ErrorHandler(ILogger<ErrorHandler> logger)
+    {
+        _logger = logger;
+    }
+
+    public async Task HandleErrorAsync(Exception exception)
+    {
+        if (exception is MiddlewareException middlewareEx)
+        {
+            // Access the formatted error response
+            var errorResponse = middlewareEx.ErrorResponse;
+
+            Console.WriteLine($"Error occurred: {errorResponse.StatusCode} - {errorResponse.Message}");
+            Console.WriteLine($"Details: {errorResponse.Details}");
+            Console.WriteLine($"Exception Type: {errorResponse.ExceptionType}");
+            Console.WriteLine($"Timestamp: {errorResponse.Timestamp}");
+            Console.WriteLine($"Trace ID: {errorResponse.TraceId ?? "N/A"}");
+
+            // Log the error appropriately
+            _logger.LogError(exception, "Chart engine error handled: {StatusCode} - {Message}",
+                errorResponse.StatusCode, errorResponse.Message);
+        }
+        else
+        {
+            // Handle non-middleware exceptions
+            _logger.LogError(exception, "Unhandled exception");
+        }
+    }
+}
+```
+
 ```csharp
 using System;
 using System.Collections.Generic;
