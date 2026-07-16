@@ -739,17 +739,102 @@ public class PdfReportGeneratorTestsExample
 }
 ```
 
+## MathHelperTests
+
+`MathHelperTests` is a comprehensive unit test suite that validates the mathematical utility methods in the `MathHelper` class. These utilities provide essential chart rendering calculations including data normalization, statistical analysis, and value clamping operations. The tests cover edge cases, boundary conditions, and ensure mathematical correctness for chart visualization scenarios.
+
+The test suite covers:
+- **GetMinMax**: Validates minimum and maximum value extraction from collections
+- **Normalize**: Tests normalization of values to [0, 1] range with special handling for equal bounds
+- **Lerp**: Verifies linear interpolation with boundary clamping
+- **StandardDeviation**: Ensures correct statistical calculations for data dispersion
+- **GenerateAxisTicks**: Validates axis tick generation for chart rendering
+- **Clamp**: Tests value clamping to specified minimum and maximum bounds
+
+```csharp
+using System;
+using System.Collections.Generic;
+using SkiaSharpChartEngine.Utilities;
+
+public class MathHelperTestsExample
+{
+    public static void Main()
+    {
+        // Example 1: GetMinMax with a collection of values
+        var values = new List<double> { 10.5, 25.3, 15.7, 30.1, 8.2 };
+        var (min, max) = MathHelper.GetMinMax(values);
+        Console.WriteLine($"Min: {min:F2}, Max: {max:F2}");
+        // Output: Min: 8.20, Max: 30.10
+
+        // Example 2: Normalize values to [0, 1] range
+        var dataPoints = new List<(double X, double Y)>
+        {
+            (1.0, 100.0),
+            (2.0, 200.0),
+            (3.0, 150.0)
+        };
+        
+        // Normalize X values
+        MathHelper.Normalize(dataPoints, p => p.X);
+        Console.WriteLine($"Normalized X - Min: {dataPoints[0].X:F4}, Max: {dataPoints[2].X:F4}");
+        // Output: Normalized X - Min: 0.0000, Max: 1.0000
+        
+        // Normalize Y values
+        MathHelper.Normalize(dataPoints, p => p.Y);
+        Console.WriteLine($"Normalized Y - Min: {dataPoints[0].Y:F4}, Max: {dataPoints[1].Y:F4}");
+        // Output: Normalized Y - Min: 0.0000, Max: 1.0000
+
+        // Example 3: Linear interpolation (Lerp) with boundary clamping
+        double start = 10.0;
+        double end = 50.0;
+        
+        // Interpolate at midpoint (t = 0.5)
+        double midpoint = MathHelper.Lerp(start, end, 0.5);
+        Console.WriteLine($"Lerp midpoint: {midpoint:F2}");
+        // Output: Lerp midpoint: 30.00
+        
+        // Interpolate with t > 1 (clamps to end value)
+        double clamped = MathHelper.Lerp(start, end, 1.5);
+        Console.WriteLine($"Lerp with t > 1: {clamped:F2}");
+        // Output: Lerp with t > 1: 50.00
+        
+        // Interpolate with t = 0 (returns start value)
+        double startValue = MathHelper.Lerp(start, end, 0.0);
+        Console.WriteLine($"Lerp with t = 0: {startValue:F2}");
+        // Output: Lerp with t = 0: 10.00
+
+        // Example 4: Calculate standard deviation for statistical analysis
+        var measurements = new List<double> { 9.8, 10.2, 9.9, 10.1, 10.0 };
+        double stdDev = MathHelper.StandardDeviation(measurements);
+        Console.WriteLine($"Standard deviation: {stdDev:F4}");
+        // Output: Standard deviation: 0.1414
+
+        // Example 5: Generate axis ticks for chart rendering
+        var ticks = MathHelper.GenerateAxisTicks(0.0, 100.0, 11);
+        Console.WriteLine($"Generated {ticks.Count} axis ticks");
+        Console.WriteLine($"First tick: {ticks[0]:F2}, Last tick: {ticks[^1]:F2}");
+        // Output: Generated 11 axis ticks
+        // Output: First tick: 0.00, Last tick: 100.00
+
+        // Example 6: Clamp values to ensure they stay within valid ranges
+        double valueAboveMax = 150.0;
+        double clampedValue = MathHelper.Clamp(valueAboveMax, 0.0, 100.0);
+        Console.WriteLine($"Clamped value above max: {clampedValue:F2}");
+        // Output: Clamped value above max: 100.00
+        
+        double valueBelowMin = -10.0;
+        double clampedValue2 = MathHelper.Clamp(valueBelowMin, 0.0, 100.0);
+        Console.WriteLine($"Clamped value below min: {clampedValue2:F2}");
+        // Output: Clamped value below min: 0.00
+    }
+}
+```
+
 ## ChartModelsAndValidationTests
 
 `ChartModelsAndValidationTests` is a comprehensive unit test suite that validates the behavior of core chart models and validation logic in the SkiaSharpChartEngine library. This test class ensures the correctness of fundamental components including `DataPoint`, `ChartSeries`, `Chart`, `ChartValidator`, `ColorHelper`, and their associated extension methods.
 
 The tests cover:
-- **DataPoint validation**: Ensuring X and Y coordinates cannot be NaN or infinite values
-- **DataPoint operations**: Cloning and coordinate transformations (offset, scale)
-- **ChartSeries functionality**: Adding data points and calculating Y-axis ranges
-- **Chart validation**: Checking for null inputs, empty series, and series naming
-- **Color utilities**: Hex/RGB conversion and color manipulation
-- **Distance calculations**: Euclidean distance between data points
 
 ```csharp
 using System;
