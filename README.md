@@ -1985,6 +1985,84 @@ public class DataPointExtensionsExample
 
 The middleware supports multiple content types (JSON, form data, CSV, XML) and provides configurable validation rules including maximum payload size limits and required field validation.
 
+## LoggingMiddleware
+
+`LoggingMiddleware` is a middleware component that logs HTTP request and response details for debugging and monitoring purposes. It captures comprehensive information about each request including the HTTP method, path, query parameters, headers, request body, response status, response body, and execution timing. The middleware uses a unique trace identifier for each request to correlate logs across different components.
+
+The middleware provides several logging methods:
+- `LogRequest`: Logs basic request information
+- `LogResponse`: Logs response information including status code and duration
+- `LogRequestBody`: Logs the request body content
+- `LogError`: Logs error details with stack traces
+
+Example usage in an ASP.NET Core application:
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using SkiaSharpChartEngine.Middleware;
+using SkiaSharpChartEngine.Models;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+        
+        // Add logging services
+        builder.Logging.AddConsole();
+        
+        var app = builder.Build();
+        
+        // Use LoggingMiddleware before other middleware
+        app.UseMiddleware<LoggingMiddleware>();
+        
+        // Example endpoint that uses the logging context
+        app.MapGet("/api/charts/{id}", async (string id, HttpContext context) =>
+        {
+            // Access logging context populated by LoggingMiddleware
+            var traceId = context.Items["TraceId"] as string;
+            var method = context.Items["Method"] as string;
+            var path = context.Items["Path"] as string;
+            
+            Console.WriteLine($"Processing request: {method} {path} (Trace: {traceId})");
+            
+            // Your chart rendering logic here
+            return Results.Ok(new { ChartId = id, Status = "rendered" });
+        });
+        
+        app.Run();
+    }
+}
+
+// Example of using LoggingMiddleware with custom configuration
+var loggerFactory = LoggerFactory.Create(builder =>
+{
+    builder.AddConsole();
+    builder.AddDebug();
+});
+
+var loggingMiddleware = new LoggingMiddleware(
+    async (context, next) => await next(context),
+    loggerFactory.CreateLogger<LoggingMiddleware>()
+);
+
+// The middleware automatically captures:
+// - TraceId: Unique identifier for the request
+// - Method: HTTP method (GET, POST, etc.)
+// - Path: Request path
+// - QueryString: Query parameters
+// - Headers: Request headers
+// - RemoteIpAddress: Client IP address
+// - Stopwatch: Execution timing
+// - LoggingContext: Additional context data
+```
+
 ## ErrorHandlingMiddleware
 
 `ErrorHandlingMiddleware` is a global error handling middleware that catches exceptions and formats them consistently for API responses. It maps different exception types to appropriate HTTP status codes, logs errors appropriately, and wraps them in a standardized `ErrorResponse` format. This middleware ensures consistent error handling across the chart engine API.
