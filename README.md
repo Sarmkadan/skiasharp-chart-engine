@@ -1289,6 +1289,46 @@ public class Chart
 }
 ```
 
+## ChartConfiguration
+
+`ChartConfiguration` is a configuration class that defines the visual appearance and layout of charts rendered by the SkiaSharp chart engine. It controls chart margins, colors, axis labels, grid visibility, legend display, and scaling options for both X and Y axes. This configuration allows for consistent styling across multiple charts and easy customization of chart aesthetics.
+
+```csharp
+using SkiaSharpChartEngine.Models;
+
+// Create a chart configuration with custom styling
+var config = new ChartConfiguration
+{
+    Subtitle = "Quarterly Performance Report",
+    XAxisLabel = "Quarter",
+    YAxisLabel = "Revenue ($)",
+    BackgroundColor = "#FFFFFF",
+    GridColor = "#E0E0E0",
+    AxisColor = "#333333",
+    TextColor = "#333333",
+    MarginTop = 40,
+    MarginBottom = 60,
+    MarginLeft = 60,
+    MarginRight = 40,
+    ShowLegend = true,
+    ShowGrid = true,
+    ShowAxisLabels = true,
+    ShowDataPointLabels = true,
+    XAxisScaleType = AxisScaleType.Linear,
+    YAxisScaleType = AxisScaleType.Linear,
+    XAxisMin = 0.5,
+    XAxisMax = 4.5,
+    YAxisMin = 0,
+    YAxisMax = 200000
+};
+
+// Use the configuration when creating a chart
+var chart = new Chart("sales-chart")
+{
+    Configuration = config
+};
+```
+
 ## InteractivityExtensions
 
 `InteractivityExtensions` provides extension methods for adding interactive features to charts, including tooltip hit-testing, zooming, panning, and viewport management. These methods allow you to implement rich user interactions like hover tooltips, zoom/pan gestures, and reset functionality in your chart applications.
