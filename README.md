@@ -4682,5 +4682,103 @@ public class ChartRenderingIntegrationTestsExample
         await testEngine.CanExportMultipleChartsInParallel();
     }
 }
-```
+## AlertingService
+
+`AlertingService` monitors chart rendering operations and system conditions, triggering alerts when issues are detected. It maintains a registry of alert rules, tracks active alerts, and provides methods for acknowledging, querying, and clearing alerts. The service supports severity-based filtering and maintains a history of past alerts for auditing and analysis.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Services;
+
+public class AlertingServiceExample
+{
+    public static async Task Main()
+    {
+        // Initialize alerting service with logger
+        var logger = new NullLogger<AlertingService>();
+        var alertingService = new AlertingService(logger);
+
+        // Example 1: Register a custom alert rule
+        alertingService.RegisterRule(
+            name: "HighMemoryUsage",
+            condition: () => Environment.WorkingSet64 > 1024 * 1024 * 1024, // > 1GB
+            message: "High memory usage detected",
+            severity: AlertSeverity.Warning
+        );
+
+        // Example 2: Check all registered rules
+        await alertingService.CheckAsync();
+
+        // Example 3: Get active alerts
+        var activeAlerts = alertingService.GetActiveAlerts();
+        Console.WriteLine($"Active alerts: {activeAlerts.Count}");
+
+        // Example 4: Acknowledge an alert
+        if (activeAlerts.Count > 0)
+        {
+            bool acknowledged = alertingService.AcknowledgeAlert(activeAlerts[0].Id);
+            Console.WriteLine($"Alert acknowledged: {acknowledged}");
+        }
+
+        // Example 5: Get alerts by severity
+        var warningAlerts = alertingService.GetAlertsBySeverity(AlertSeverity.Warning);
+        Console.WriteLine($"Warning alerts: {warningAlerts.Count}");
+
+        // Example 6: Clear acknowledged alerts
+        int clearedCount = alertingService.ClearAcknowledgedAlerts();
+        Console.WriteLine($"Cleared {clearedCount} acknowledged alerts");
+
+        // Example 7: Get alert history
+        var alertHistory = alertingService.GetAlertHistory();
+        Console.WriteLine($"Alert history entries: {alertHistory.Count}");
+
+        // Example 8: Get alert statistics
+        var statistics = alertingService.GetStatistics();
+        Console.WriteLine($"Total alerts: {statistics.TotalAlerts}");
+        Console.WriteLine($"Active alerts: {statistics.ActiveAlerts}");
+        Console.WriteLine($"Critical alerts: {statistics.CriticalAlerts}");
+        Console.WriteLine($"Warning alerts: {statistics.WarningAlerts}");
+        Console.WriteLine($"Info alerts: {statistics.InfoAlerts}");
+    }
+}
+
+// Example Alert class usage
+public class AlertMonitor
+{
+    private readonly AlertingService _alertingService;
+    private readonly ILogger _logger;
+
+    public AlertMonitor(AlertingService alertingService, ILogger<AlertMonitor> logger)
+    {
+        _alertingService = alertingService;
+        _logger = logger;
+        
+        // Subscribe to alert events
+        _alertingService.AlertTriggered += OnAlertTriggered;
+        _alertingService.AlertAcknowledged += OnAlertAcknowledged;
+        _alertingService.AlertCleared += OnAlertCleared;
+    }
+
+    private void OnAlertTriggered(object sender, AlertEventArgs e)
+    {
+        _logger.LogWarning("ALERT TRIGGERED: [{Severity}] {Name} - {Message}", 
+            e.Alert.Severity, e.Alert.Name, e.Alert.Message);
+    }
+
+    private void OnAlertAcknowledged(object sender, AlertEventArgs e)
+    {
+        _logger.LogInformation("ALERT ACKNOWLEDGED: {AlertId} by {AcknowledgedBy}", 
+            e.Alert.Id, e.Alert.AcknowledgedBy);
+    }
+
+    private void OnAlertCleared(object sender, AlertEventArgs e)
+    {
+        _logger.LogInformation("ALERT CLEARED: {AlertId}", e.Alert.Id);
+    }
+}
 ```
