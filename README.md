@@ -263,6 +263,61 @@ public class LoggingInterceptor : IPipelineInterceptor
 }
 ```
 
+## ChartSeries
+
+`ChartSeries` represents a data series in a chart. It contains configuration properties for visual appearance (line width, color, visibility), axis range constraints, descriptive metadata, and data points. Chart series are the building blocks for multi-series charts and support various chart types including line, bar, pie, and more.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Models;
+
+public class ChartSeriesExample
+{
+    public static void Main()
+    {
+        // Create a line series with custom styling
+        var revenueSeries = new ChartSeries("Revenue")
+        {
+            SeriesType = ChartType.LineChart,
+            LineWidth = 2.5f,
+            Color = "#2E86C1",
+            IsVisible = true,
+            Description = "Quarterly revenue performance",
+            ZIndex = 1
+        };
+        
+        // Add data points to the series
+        revenueSeries.AddDataPoint(1.0, 100000.0);
+        revenueSeries.AddDataPoint(2.0, 125000.0);
+        revenueSeries.AddDataPoint(3.0, 150000.0);
+        revenueSeries.AddDataPoint(4.0, 175000.0);
+        
+        // Set Y-axis range constraints
+        revenueSeries.YAxisMin = 0;
+        revenueSeries.YAxisMax = 200000;
+        
+        // Add custom properties for extended functionality
+        revenueSeries.CustomProperties = new Dictionary<string, object>
+        {
+            ["unit"] = "USD",
+            ["precision"] = 2
+        };
+        
+        Console.WriteLine($"Series created: {revenueSeries.Name}");
+        Console.WriteLine($"Data points: {revenueSeries.GetDataPointCount()}");
+        Console.WriteLine($"Y-axis range: [{revenueSeries.GetYAxisRange().min}, {revenueSeries.GetYAxisRange().max}]");
+        
+        // Clone a series for reuse with different data
+        var clonedSeries = revenueSeries.Clone();
+        clonedSeries.Name = "Revenue (Clone)";
+        clonedSeries.AddDataPoint(5.0, 200000.0);
+        
+        Console.WriteLine($"Cloned series: {clonedSeries.Name}");
+        Console.WriteLine($"Cloned data points: {clonedSeries.GetDataPointCount()}");
+    }
+}
+```
+
 ## AnimationFrameGenerator
 
 ```csharp
