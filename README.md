@@ -1985,6 +1985,65 @@ public class DataPointExtensionsExample
 
 The middleware supports multiple content types (JSON, form data, CSV, XML) and provides configurable validation rules including maximum payload size limits and required field validation.
 
+## RateLimitingMiddleware
+
+`RateLimitingMiddleware` is a token bucket-based rate limiting middleware that prevents abuse by limiting the number of requests individual clients can make within a specified time window. It uses a sliding window approach with configurable token refill rates to provide fair rate limiting while allowing bursts of activity.
+
+The middleware tracks request counts per client using a token bucket algorithm, where each client gets a bucket of tokens that refill at regular intervals. When a client exceeds their token limit, subsequent requests are rejected until tokens become available again.
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Middleware;
+
+public class RateLimitingMiddlewareExample
+{
+    public static void Main()
+    {
+        // Initialize rate limiting middleware with logger
+        var logger = new NullLogger<RateLimitingMiddleware>();
+        
+        // Create rate limit policy with 100 requests per minute
+        var policy = new RateLimitPolicy
+        {
+            MaxTokens = 100,
+            RefillIntervalSeconds = 60
+        };
+        
+        var rateLimiter = new RateLimitingMiddleware(logger, policy);
+        
+        // Example 1: Check if a request should be allowed
+        string clientId = "user-123";
+        bool isAllowed = rateLimiter.AllowRequest(clientId, out var rateLimitInfo);
+        
+        Console.WriteLine($"Request allowed: {isAllowed}");
+        Console.WriteLine($"Available tokens: {rateLimitInfo?.AvailableTokens}/{rateLimitInfo?.MaxTokens}");
+        Console.WriteLine($"Reset in: {rateLimitInfo?.SecondsUntilReset} seconds");
+        
+        // Example 2: Get current rate limit information
+        var currentInfo = rateLimiter.GetRateLimitInfo(clientId);
+        Console.WriteLine($"Current tokens: {currentInfo?.AvailableTokens}/{currentInfo?.MaxTokens}");
+        
+        // Example 3: Manually reset rate limit for a client (useful in testing)
+        rateLimiter.ResetClientLimit(clientId);
+        Console.WriteLine("Rate limit reset for client");
+        
+        // Example 4: Using with custom identifier extractor
+        var policyWithExtractor = new RateLimitPolicy
+        {
+            MaxTokens = 50,
+            RefillIntervalSeconds = 30,
+            CustomIdentifierExtractor = () => Environment.UserName
+        };
+        
+        var customRateLimiter = new RateLimitingMiddleware(logger, policyWithExtractor);
+        bool customAllowed = customRateLimiter.AllowRequest("any-client", out _);
+        Console.WriteLine($"Custom identifier extractor request allowed: {customAllowed}");
+    }
+}
+```
+
 ## LoggingMiddleware
 
 `LoggingMiddleware` is a middleware component that logs HTTP request and response details for debugging and monitoring purposes. It captures comprehensive information about each request including the HTTP method, path, query parameters, headers, request body, response status, response body, and execution timing. The middleware uses a unique trace identifier for each request to correlate logs across different components.
