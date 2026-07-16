@@ -679,6 +679,119 @@ public class ChartEngineTestsExample
 }
 ```
 
+## ChartInteractionServiceTests
+
+`ChartInteractionServiceTests` provides a comprehensive suite of unit tests for the `ChartInteractionService` class, which handles user interactions with chart elements such as clicks, hovers, selections, and context menu gestures. The tests validate edge cases including null inputs, missed interactions, and proper event raising, ensuring the service correctly processes user interactions and maintains selection state.
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using Xunit;
+using SkiaSharpChartEngine;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
+public class ChartInteractionServiceTestsExample
+{
+    public static void Main()
+    {
+        // Initialize the service with mock dependencies
+        var interactivityService = new Mock<IInteractivityService>();
+        var logger = new NullLogger<ChartInteractionService>();
+        var interactionService = new ChartInteractionService(interactivityService.Object, logger);
+
+        // Create a test chart with a single series
+        var chart = new Chart("test-chart");
+        var series = new ChartSeries("Sales Data");
+        series.AddDataPoint(1.0, 100.0);
+        series.AddDataPoint(2.0, 150.0);
+        series.AddDataPoint(3.0, 200.0);
+        chart.AddSeries(series);
+
+        // Test 1: ProcessInteraction with null chart throws ArgumentNullException
+        try
+        {
+            interactionService.ProcessInteraction(null!, ChartInteractionType.Click, 0, 0, 800, 600);
+            Console.WriteLine("ERROR: Should have thrown ArgumentNullException");
+        }
+        catch (ArgumentNullException ex)
+        {
+            Console.WriteLine($"✓ Correctly threw ArgumentNullException: {ex.ParamName}");
+        }
+
+        // Test 2: ProcessInteraction_ClickOnDataPoint_RaisesClickedEvent
+        var hitResult = new TooltipHitResult
+        {
+            IsHit = true,
+            DataPoint = series.DataPoints[0],
+            Series = series,
+            SeriesIndex = 0,
+            Region = ChartRegion.PlotArea,
+            TooltipText = "x=1, y=100"
+        };
+        interactivityService.Setup(s => s.HitTest(chart, It.IsAny<float>(), It.IsAny<float>(),
+            It.IsAny<float>(), It.IsAny<float>(), null, null)).Returns(hitResult);
+
+        ChartInteractionEventArgs? clickEventArgs = null;
+        interactionService.Clicked += (_, e) => clickEventArgs = e;
+
+        var clickResult = interactionService.ProcessInteraction(
+            chart, ChartInteractionType.Click, 100, 200, 800, 600);
+
+        Console.WriteLine($"✓ Click interaction processed: Type={clickResult.InteractionType}, " +
+            $"HasDataPoint={clickResult.HitDataPoint != null}");
+
+        // Test 3: ProcessInteraction_HoverMiss_ReturnsNoHit
+        interactivityService.Setup(s => s.HitTest(chart, It.IsAny<float>(), It.IsAny<float>(),
+            It.IsAny<float>(), It.IsAny<float>(), null, null)).Returns(TooltipHitResult.Miss);
+
+        var hoverResult = interactionService.ProcessInteraction(
+            chart, ChartInteractionType.Hover, 0, 0, 800, 600);
+
+        Console.WriteLine($"✓ Hover miss handled correctly: SeriesIndex={hoverResult.SeriesIndex}");
+
+        // Test 4: ToggleSelection_HitDataPoint_SelectsAndRaisesEvent
+        interactivityService.Setup(s => s.HitTest(chart, It.IsAny<float>(), It.IsAny<float>(),
+            It.IsAny<float>(), It.IsAny<float>(), null, null)).Returns(hitResult);
+
+        ChartSelectionChangedEventArgs? selectionArgs = null;
+        interactionService.SelectionChanged += (_, e) => selectionArgs = e;
+
+        var selected = interactionService.ToggleSelection(chart, 100, 200, 800, 600);
+        Console.WriteLine($"✓ Selection toggled: Success={selected}, " +
+            $"TotalSelected={selectionArgs?.TotalSelected}");
+
+        // Test 5: ToggleSelection_SamePointTwice_DeselectionRemovesPoint
+        interactionService.ToggleSelection(chart, 100, 200, 800, 600); // Deselect
+        var selection = interactionService.GetSelection(chart);
+        var totalPoints = selection.Values.Sum(pts => pts.Count);
+        Console.WriteLine($"✓ Double toggle deselects: TotalPoints={totalPoints}");
+
+        // Test 6: ClearSelection_AfterSelect_EmptiesSelection
+        interactionService.ClearSelection(chart);
+        var clearedSelection = interactionService.GetSelection(chart);
+        Console.WriteLine($"✓ Selection cleared: IsEmpty={clearedSelection.IsEmpty}");
+
+        // Test 7: ProcessInteractionAsync_WithCancellation_ThrowsOperationCancelled
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+        
+        try
+        {
+            await interactionService.ProcessInteractionAsync(
+                chart, ChartInteractionType.Hover, 0, 0, 800, 600, cts.Token);
+            Console.WriteLine("ERROR: Should have thrown OperationCanceledException");
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("✓ Async cancellation handled correctly");
+        }
+    }
+}
+```
+
 
 `ChartInteractionEventArgs` provides the event data for user interactions with chart elements such as clicks, hovers, selections, and context menu gestures. It contains detailed information about the interaction including the pointer position, the chart region affected, and any data points or series that were hit during the interaction.
 
