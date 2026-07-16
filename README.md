@@ -1306,6 +1306,87 @@ public class DataPointExtensionsExample
 }
 ```
 
+## ChartExtensions
+
+`ChartExtensions` provides a set of extension methods for enhancing and transforming `Chart` objects. These methods enable common chart operations like applying default configurations, calculating axis bounds, counting data points, checking for empty charts, applying color palettes, normalizing data across series, filtering series, and converting charts to builders for further customization.
+
+The extension methods work with existing chart objects and return either the modified chart (for in-place operations) or a new chart instance (for functional-style operations), allowing for method chaining and immutable-style transformations.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Extensions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Utilities;
+
+public class ChartExtensionsExample
+{
+    public static void Main()
+    {
+        // Create a chart with sample data
+        var chart = new Chart("sales-performance-chart");
+        
+        var revenueSeries = new ChartSeries("Revenue")
+        {
+            LineWidth = 2.5f,
+            Color = "#2E86C1"
+        };
+        revenueSeries.AddDataPoint(1.0, 100000.0);
+        revenueSeries.AddDataPoint(2.0, 125000.0);
+        revenueSeries.AddDataPoint(3.0, 150000.0);
+        revenueSeries.AddDataPoint(4.0, 175000.0);
+        
+        var expensesSeries = new ChartSeries("Expenses")
+        {
+            LineWidth = 2.5f,
+            Color = "#E74C3C"
+        };
+        expensesSeries.AddDataPoint(1.0, 85000.0);
+        expensesSeries.AddDataPoint(2.0, 92000.0);
+        expensesSeries.AddDataPoint(3.0, 98000.0);
+        expensesSeries.AddDataPoint(4.0, 105000.0);
+        
+        chart.AddSeries(revenueSeries);
+        chart.AddSeries(expensesSeries);
+
+        // Example 1: Apply default configuration
+        var configuredChart = chart.WithDefaultConfiguration();
+        Console.WriteLine($"Chart configured with type: {configuredChart.Type}");
+
+        // Example 2: Get axis bounds for the chart
+        var (minX, maxX, minY, maxY) = chart.GetAxisBounds();
+        Console.WriteLine($"Axis bounds - X: [{minX:F2}, {maxX:F2}], Y: [{minY:F2}, {maxY:F2}]");
+
+        // Example 3: Count total data points
+        int totalPoints = chart.GetTotalDataPoints();
+        Console.WriteLine($"Total data points: {totalPoints}");
+
+        // Example 4: Check if chart is empty
+        bool isEmpty = chart.IsEmpty();
+        Console.WriteLine($"Chart is empty: {isEmpty}");
+
+        // Example 5: Apply a color palette
+        var palette = new ColorPalette(new[] { "#2E86C1", "#E74C3C", "#27AE60", "#F39C12" });
+        var chartWithPalette = chart.ApplyPalette(palette);
+        Console.WriteLine($"Applied palette with {palette.GetColorCount()} colors");
+
+        // Example 6: Normalize data across all series
+        var normalizedChart = chart.NormalizeData(clone: true);
+        Console.WriteLine("Data normalized to 0-1 range");
+
+        // Example 7: Filter series (keep only series with high values)
+        var highValueChart = chart.FilterSeries(
+            series => series.DataPoints.Any(p => p.Y > 100000),
+            clone: true
+        );
+        Console.WriteLine($"Filtered to {highValueChart.Series.Count} high-value series");
+
+        // Example 8: Convert chart to builder for further customization
+        var builder = chart.ToBuilder();
+        Console.WriteLine($"Chart converted to builder with type: {builder.ChartType}");
+    }
+}
+```
+
 ## CollectionExtensions
 
 `CollectionExtensions` provides a set of utility extension methods for working with collections and sequences in a more convenient and expressive way. It includes methods for batching, filtering duplicates, checking for null/empty collections, getting random elements, shuffling, and various statistical operations.
