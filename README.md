@@ -54,6 +54,112 @@ public class TemplateControllerExample
 }
 ```
 
+## ChartTemplate
+
+`ChartTemplate` is a reusable template for creating charts with predefined settings, configurations, and default series. It serves as a blueprint for generating charts with consistent styling and data structure, reducing boilerplate code when creating similar charts across your application.
+
+Chart templates store chart type, base configuration (colors, margins, axis labels), default series with their data points, metadata like creation timestamp and author, and custom properties for extended functionality. Templates can be cloned, modified, and used to generate new chart instances on demand.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using SkiaSharpChartEngine.Models;
+
+public class ChartTemplateExample
+{
+    public static void Main()
+    {
+        // Example 1: Create a basic chart template
+        var basicTemplate = new ChartTemplate("Sales Dashboard", ChartType.LineChart)
+        {
+            Description = "Quarterly sales performance template",
+            CreatedBy = "system"
+        };
+        
+        Console.WriteLine($"Created template: {basicTemplate}");
+        Console.WriteLine($"Template ID: {basicTemplate.TemplateId}");
+        Console.WriteLine($"Created at: {basicTemplate.CreatedAt}");
+        
+        // Example 2: Configure base chart configuration
+        basicTemplate.BaseConfiguration = new ChartConfiguration
+        {
+            Title = "Sales Performance",
+            Subtitle = "Q2 2024 Report",
+            XAxisLabel = "Quarter",
+            YAxisLabel = "Revenue ($)",
+            BackgroundColor = "#FFFFFF",
+            MarginTop = 40,
+            MarginBottom = 60,
+            MarginLeft = 60,
+            MarginRight = 40
+        };
+        
+        // Example 3: Add default series with data points
+        var revenueSeries = new ChartSeries("Revenue")
+        {
+            LineWidth = 2.5f,
+            Color = "#2E86C1",
+            Description = "Quarterly revenue"
+        };
+        
+        revenueSeries.AddDataPoint(1.0, 100000.0);
+        revenueSeries.AddDataPoint(2.0, 125000.0);
+        revenueSeries.AddDataPoint(3.0, 150000.0);
+        revenueSeries.AddDataPoint(4.0, 175000.0);
+        
+        basicTemplate.DefaultSeries.Add(revenueSeries);
+        
+        // Example 4: Add custom properties for extended functionality
+        basicTemplate.CustomProperties = new Dictionary<string, object>
+        {
+            ["unit"] = "USD",
+            ["precision"] = 2,
+            ["autoRefreshInterval"] = 300 // 5 minutes in seconds
+        };
+        
+        // Example 5: Clone a template to create variations
+        var salesTemplateClone = basicTemplate.Clone();
+        salesTemplateClone.Name = "Sales Dashboard (Clone)";
+        salesTemplateClone.Description = "Modified version of sales template";
+        
+        // Example 6: Generate a chart from the template
+        var chartFromTemplate = basicTemplate.CreateChartFromTemplate();
+        Console.WriteLine($"Generated chart: {chartFromTemplate.Title}");
+        Console.WriteLine($"Chart type: {chartFromTemplate.Type}");
+        Console.WriteLine($"Number of series: {chartFromTemplate.Series.Count}");
+        Console.WriteLine($"Data points in first series: {chartFromTemplate.Series[0].GetDataPointCount()}");
+        
+        // Example 7: Modify template configuration
+        var expenseTemplate = new ChartTemplate("Expense Tracker", ChartType.BarChart)
+        {
+            BaseConfiguration = new ChartConfiguration
+            {
+                Title = "Monthly Expenses",
+                XAxisLabel = "Category",
+                YAxisLabel = "Amount ($)",
+                ShowGrid = true,
+                ShowLegend = true
+            }
+        };
+        
+        var marketingSeries = new ChartSeries("Marketing")
+        {
+            Color = "#E74C3C",
+            BarWidth = 0.8f
+        };
+        marketingSeries.AddDataPoint(1.0, 15000.0);
+        marketingSeries.AddDataPoint(2.0, 18000.0);
+        marketingSeries.AddDataPoint(3.0, 12000.0);
+        
+        expenseTemplate.DefaultSeries.Add(marketingSeries);
+        
+        // Generate chart from expense template
+        var expenseChart = expenseTemplate.CreateChartFromTemplate();
+        Console.WriteLine($"Expense chart generated: {expenseChart.Series[0].Name}");
+    }
+}
+```
+
 ## AsyncDataLoader
 
 `AsyncDataLoader` is a utility class for asynchronously loading chart data from various sources including JSON files, CSV files, and directories. It provides methods for loading individual charts or multiple charts from file systems, with automatic format detection and validation.
