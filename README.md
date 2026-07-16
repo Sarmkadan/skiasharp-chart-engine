@@ -1224,6 +1224,88 @@ public class StringExtensionsExample
 }
 ```
 
+## DataPointExtensions
+
+`DataPointExtensions` provides utility methods for working with `DataPoint` objects, enabling common geometric and statistical operations on chart data points. It includes distance calculations, proximity checks, and transformation methods for both individual points and collections of points.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using SkiaSharpChartEngine.Extensions;
+using SkiaSharpChartEngine.Models;
+
+public class DataPointExtensionsExample
+{
+    public static void Main()
+    {
+        // Create sample data points
+        var pointA = new DataPoint(1.0, 2.0);
+        var pointB = new DataPoint(4.0, 6.0);
+        var pointC = new DataPoint(1.0, 2.0);
+        
+        // Example 1: Calculate Euclidean distance between two points
+        double distance = pointA.GetDistance(pointB);
+        Console.WriteLine($"Distance between A and B: {distance:F2}");
+        // Output: Distance between A and B: 5.00
+        
+        // Example 2: Check if two points are near each other (within tolerance)
+        bool isNear = pointA.IsNear(pointB, 0.1);
+        Console.WriteLine($"Points A and B are near: {isNear}");
+        // Output: Points A and B are near: False
+        
+        // Example 3: Offset a single data point by specified X and Y values
+        var offsetPoint = pointA.Offset(3.0, 1.0);
+        Console.WriteLine($"Offset point: [{offsetPoint.X}, {offsetPoint.Y}]");
+        // Output: Offset point: [4, 3]
+        
+        // Example 4: Scale a single data point by specified factors
+        var scaledPoint = pointA.Scale(2.0, 0.5);
+        Console.WriteLine($"Scaled point: [{scaledPoint.X:F2}, {scaledPoint.Y:F2}]");
+        // Output: Scaled point: [2.00, 1.00]
+        
+        // Example 5: Offset all points in a collection
+        var points = new List<DataPoint> { pointA, pointB, new DataPoint(7.0, 8.0) };
+        var offsetPoints = points.Offset(10.0, 5.0);
+        Console.WriteLine("Offset points:");
+        foreach (var p in offsetPoints)
+        {
+            Console.WriteLine($"  [{p.X}, {p.Y}]");
+        }
+        // Output: Offset points:
+        //   [11, 7]
+        //   [14, 11]
+        //   [17, 13]
+        
+        // Example 6: Scale all points in a collection
+        var scaledPoints = points.Scale(0.5, 2.0);
+        Console.WriteLine("Scaled points:");
+        foreach (var p in scaledPoints)
+        {
+            Console.WriteLine($"  [{p.X:F2}, {p.Y:F2}]");
+        }
+        // Output: Scaled points:
+        //   [0.50, 4.00]
+        //   [2.00, 12.00]
+        //   [3.50, 16.00]
+        
+        // Example 7: Get bounds (min/max X and Y) for a collection of points
+        var bounds = points.GetBounds();
+        Console.WriteLine($"Bounds: X=[{bounds.minX:F2}, {bounds.maxX:F2}], Y=[{bounds.minY:F2}, {bounds.maxY:F2}]");
+        // Output: Bounds: X=[1.00, 7.00], Y=[2.00, 8.00]
+        
+        // Example 8: Calculate average X coordinate across multiple points
+        double avgX = points.GetAverageX();
+        Console.WriteLine($"Average X: {avgX:F2}");
+        // Output: Average X: 4.00
+        
+        // Example 9: Calculate average Y coordinate across multiple points
+        double avgY = points.GetAverageY();
+        Console.WriteLine($"Average Y: {avgY:F2}");
+        // Output: Average Y: 5.33
+    }
+}
+```
+
 ## CollectionExtensions
 
 `CollectionExtensions` provides a set of utility extension methods for working with collections and sequences in a more convenient and expressive way. It includes methods for batching, filtering duplicates, checking for null/empty collections, getting random elements, shuffling, and various statistical operations.
