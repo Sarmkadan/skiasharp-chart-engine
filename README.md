@@ -830,6 +830,89 @@ public class MathHelperTestsExample
 }
 ```
 
+## ExternalApiClient
+
+`ExternalApiClient` is an HTTP client for integrating with external APIs. It provides a convenient wrapper around `HttpClient` with built-in retry logic, error handling, request/response serialization, and header management. The client supports common HTTP methods (GET, POST, PUT, DELETE) and automatically handles JSON serialization/deserialization.
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using SkiaSharpChartEngine.Integration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
+public class ExternalApiClientExample
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize HttpClient and logger
+        var httpClient = new System.Net.Http.HttpClient();
+        var logger = new NullLogger<ExternalApiClient>();
+        
+        // Create API client with 3 retries and 1 second base delay
+        var apiClient = new ExternalApiClient(httpClient, logger, maxRetries: 3);
+        
+        // Set authorization header (e.g., Bearer token)
+        apiClient.SetAuthorizationHeader("Bearer", "your-access-token-here");
+        
+        // Add custom headers
+        apiClient.AddHeader("X-Custom-Header", "custom-value");
+        apiClient.AddHeader("Accept", "application/json");
+        
+        try
+        {
+            // Example 1: GET request to fetch data
+            var weatherData = await apiClient.GetAsync<WeatherResponse>(
+                "https://api.weather.com/v1/current?location=NewYork"
+            );
+            Console.WriteLine($"Temperature: {weatherData?.Temperature}°C");
+            
+            // Example 2: POST request to create a resource
+            var newChart = new { Name = "Sales Dashboard", Type = "line" };
+            var createdChart = await apiClient.PostAsync<Chart>(
+                "https://api.example.com/charts",
+                newChart
+            );
+            Console.WriteLine($"Created chart with ID: {createdChart?.Id}");
+            
+            // Example 3: PUT request to update a resource
+            var updateData = new { Title = "Updated Sales Dashboard" };
+            var updatedChart = await apiClient.PutAsync<Chart>(
+                $"https://api.example.com/charts/{createdChart?.Id}",
+                updateData
+            );
+            Console.WriteLine($"Updated chart: {updatedChart?.Name}");
+            
+            // Example 4: DELETE request to remove a resource
+            bool deleted = await apiClient.DeleteAsync(
+                $"https://api.example.com/charts/{createdChart?.Id}"
+            );
+            Console.WriteLine($"Resource deleted: {deleted}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"API request failed: {ex.Message}");
+        }
+    }
+}
+
+// Example response model
+public class WeatherResponse
+{
+    public double Temperature { get; set; }
+    public double Humidity { get; set; }
+    public string Location { get; set; }
+}
+
+// Example chart model
+public class Chart
+{
+    public string Id { get; set; }
+    public string Name { get; set; }
+    public string Type { get; set; }
+}
+```
+
 ## ChartModelsAndValidationTests
 
 `ChartModelsAndValidationTests` is a comprehensive unit test suite that validates the behavior of core chart models and validation logic in the SkiaSharpChartEngine library. This test class ensures the correctness of fundamental components including `DataPoint`, `ChartSeries`, `Chart`, `ChartValidator`, `ColorHelper`, and their associated extension methods.
