@@ -1908,6 +1908,177 @@ using Microsoft.Extensions.Logging.Abstractions;
 using SkiaSharpChartEngine.Models;
 using SkiaSharpChartEngine.Services;
 
+public class ChartRenderingServiceExample
+{
+    public static void Main()
+    {
+        // Initialize ChartRenderingService with required dependencies
+        var logger = new NullLogger<ChartRenderingService>();
+        var dataService = new ChartDataService(logger);
+        var cacheService = new RenderCacheService(logger, maxCacheSize: 100);
+        
+        var renderingService = new ChartRenderingService(logger, dataService, cacheService);
+
+        // Example 1: Render chart to byte array (async)
+        var chart = new Chart("sales-chart")
+        {
+            Title = "Quarterly Sales Performance",
+            Configuration = new ChartConfiguration
+            {
+                Width = 800,
+                Height = 600,
+                BackgroundColor = "#FFFFFF",
+                ShowGrid = true,
+                ShowLegend = true
+            }
+        };
+        
+        var chartSeries = new ChartSeries("Revenue")
+        {
+            LineWidth = 2.5f,
+            Color = "#2E86C1"
+        };
+        chartSeries.AddDataPoint(1.0, 100000.0);
+        chartSeries.AddDataPoint(2.0, 125000.0);
+        chartSeries.AddDataPoint(3.0, 150000.0);
+        chartSeries.AddDataPoint(4.0, 175000.0);
+        chart.AddSeries(chartSeries);
+
+        // Render to byte array asynchronously
+        var renderResult = await renderingService.RenderToByteArrayAsync(chart);
+        
+        if (renderResult.Success)
+        {
+            Console.WriteLine($"Chart rendered successfully: {renderResult.ImageData.Length} bytes");
+            Console.WriteLine($"Render time: {renderResult.RenderTimeMs}ms");
+        }
+
+        // Example 2: Render chart to file (sync)
+        var fileRenderResult = renderingService.RenderToFile(chart, "./output/quarterly-sales.png");
+        
+        if (fileRenderResult.Success)
+        {
+            Console.WriteLine($"Chart saved to file: {fileRenderResult.FilePath}");
+        }
+
+        // Example 3: Export chart with custom options (async)
+        var exportOptions = new ExportOptions
+        {
+            Format = ExportFormat.SVG,
+            OutputDirectory = "./output",
+            FileName = "quarterly-sales"
+        };
+        
+        var exportResult = await renderingService.RenderWithExportAsync(chart, exportOptions);
+        
+        if (exportResult.Success)
+        {
+            Console.WriteLine($"Chart exported as {exportResult.Format}: {exportResult.FilePath}");
+        }
+
+        // Example 4: Prewarm cache for faster subsequent renders
+        renderingService.PrewarmCache(chart);
+        Console.WriteLine("Cache prewarmed for chart");
+    }
+}
+```
+
+## ChartRenderingService
+
+`ChartRenderingService` is the core rendering service that converts chart models into visual representations using SkiaSharp. It provides methods for rendering charts to byte arrays, files, and various export formats (PNG, JPEG, WEBP, SVG), with built-in caching for performance optimization.
+
+The service supports both synchronous and asynchronous rendering operations, handles chart validation, manages an in-memory render cache to avoid redundant rendering operations, and provides detailed metrics about rendering performance. It's designed for both standalone usage and integration into ASP.NET Core applications via dependency injection.
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Services;
+
+public class ChartRenderingServiceExample
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize ChartRenderingService with required dependencies
+        var logger = new NullLogger<ChartRenderingService>();
+        var dataService = new ChartDataService(logger);
+        var cacheService = new RenderCacheService(logger, maxCacheSize: 100);
+        
+        var renderingService = new ChartRenderingService(logger, dataService, cacheService);
+
+        // Example 1: Render chart to byte array (async)
+        var chart = new Chart("sales-chart")
+        {
+            Title = "Quarterly Sales Performance",
+            Configuration = new ChartConfiguration
+            {
+                Width = 800,
+                Height = 600,
+                BackgroundColor = "#FFFFFF",
+                ShowGrid = true,
+                ShowLegend = true
+            }
+        };
+        
+        var chartSeries = new ChartSeries("Revenue")
+        {
+            LineWidth = 2.5f,
+            Color = "#2E86C1"
+        };
+        chartSeries.AddDataPoint(1.0, 100000.0);
+        chartSeries.AddDataPoint(2.0, 125000.0);
+        chartSeries.AddDataPoint(3.0, 150000.0);
+        chartSeries.AddDataPoint(4.0, 175000.0);
+        chart.AddSeries(chartSeries);
+
+        // Render to byte array asynchronously
+        var renderResult = await renderingService.RenderToByteArrayAsync(chart);
+        
+        if (renderResult.Success)
+        {
+            Console.WriteLine($"Chart rendered successfully: {renderResult.ImageData.Length} bytes");
+            Console.WriteLine($"Render time: {renderResult.RenderTimeMs}ms");
+        }
+
+        // Example 2: Render chart to file (sync)
+        var fileRenderResult = renderingService.RenderToFile(chart, "./output/quarterly-sales.png");
+        
+        if (fileRenderResult.Success)
+        {
+            Console.WriteLine($"Chart saved to file: {fileRenderResult.FilePath}");
+        }
+
+        // Example 3: Export chart with custom options (async)
+        var exportOptions = new ExportOptions
+        {
+            Format = ExportFormat.SVG,
+            OutputDirectory = "./output",
+            FileName = "quarterly-sales"
+        };
+        
+        var exportResult = await renderingService.RenderWithExportAsync(chart, exportOptions);
+        
+        if (exportResult.Success)
+        {
+            Console.WriteLine($"Chart exported as {exportResult.Format}: {exportResult.FilePath}");
+        }
+
+        // Example 4: Prewarm cache for faster subsequent renders
+        renderingService.PrewarmCache(chart);
+        Console.WriteLine("Cache prewarmed for chart");
+    }
+}
+```
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Services;
+
 public class ConfigurationServiceExample
 {
     public static void Main()
