@@ -1989,6 +1989,88 @@ public class RenderCacheServiceTestsExample
 }
 ```
 
+## RenderResult
+
+`RenderResult` represents the outcome of a chart rendering operation. It encapsulates success/failure status, rendered image data, file system information, timing metrics, error details, and custom metadata. This type is returned by all rendering methods and pipeline stages to provide comprehensive feedback about chart generation operations.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using SkiaSharpChartEngine.Models;
+
+public class RenderResultExample
+{
+    public static void Main()
+    {
+        // Example 1: Successful rendering with in-memory image data
+        var imageData = new byte[1024 * 1024]; // 1MB of chart image data
+        var successResult = RenderResult.CreateSuccess(
+            chartId: "sales-dashboard-2024",
+            imageData: imageData,
+            renderTimeMs: 150,
+            format: ExportFormat.Png
+        );
+        
+        Console.WriteLine(successResult);
+        Console.WriteLine($"Chart: {successResult.ChartId}");
+        Console.WriteLine($"Success: {successResult.Success}");
+        Console.WriteLine($"Image size: {successResult.ImageData?.Length} bytes");
+        Console.WriteLine($"File size: {successResult.FileSizeBytes} bytes");
+        Console.WriteLine($"Format: {successResult.ExportFormat}");
+        Console.WriteLine($"Rendered at: {successResult.RenderedAt}");
+        Console.WriteLine($"Render time: {successResult.RenderTimeMs}ms");
+        
+        // Example 2: Successful rendering with file output
+        var fileResult = RenderResult.CreateSuccess(
+            chartId: "quarterly-report",
+            outputPath: "/tmp/quarterly-report.png",
+            renderTimeMs: 210,
+            format: ExportFormat.Png
+        );
+        
+        Console.WriteLine($"\nFile output path: {fileResult.OutputPath}");
+        Console.WriteLine($"File exists: {fileResult.ImageData != null}");
+        
+        // Example 3: Failed rendering with error details
+        var errorResult = RenderResult.CreateFailure(
+            chartId: "problem-chart",
+            errorMessage: "Invalid chart configuration: series has no data points",
+            exception: new InvalidOperationException("Series validation failed")
+        );
+        
+        Console.WriteLine($"\nFailed render - Error: {errorResult.ErrorMessage}");
+        Console.WriteLine($"Exception: {errorResult.Exception?.Message}");
+        Console.WriteLine($"Success: {errorResult.Success}");
+        
+        // Example 4: Using custom metadata
+        var metadataResult = new RenderResult("custom-chart", true)
+        {
+            RenderTimeMs = 85,
+            ExportFormat = ExportFormat.Svg,
+            Metadata = new Dictionary<string, object>
+            {
+                ["renderEngine"] = "SkiaSharp",
+                ["quality"] = "high",
+                ["dpi"] = 300,
+                ["chartType"] = "line"
+            }
+        };
+        
+        Console.WriteLine($"\nMetadata count: {metadataResult.Metadata?.Count}");
+        Console.WriteLine($"Render engine: {metadataResult.Metadata?["renderEngine"]}");
+        
+        // Example 5: Checking render time with both properties
+        var result = new RenderResult("timing-test", true)
+        {
+            RenderTimeMs = 125
+        };
+        
+        Console.WriteLine($"\nRender time (ms): {result.RenderTimeMs}");
+        Console.WriteLine($"Render time (milliseconds): {result.RenderTimeMilliseconds}");
+    }
+}
+```
+
 ## ExportServiceTests
 
 `ExportServiceTests` provides a comprehensive suite of unit tests for the `ExportService` class, which handles chart export functionality including both synchronous and asynchronous export operations. The tests validate null argument validation, unsupported format handling, successful rendering delegation, error handling for infrastructure issues, cancellation support, and constructor dependency validation for the export service.
