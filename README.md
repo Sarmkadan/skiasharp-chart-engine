@@ -1044,6 +1044,145 @@ public class Chart
 }
 ```
 
+## CollectionExtensions
+
+`CollectionExtensions` provides a set of utility extension methods for working with collections and sequences in a more convenient and expressive way. It includes methods for batching, filtering duplicates, checking for null/empty collections, getting random elements, shuffling, and various statistical operations.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using SkiaSharpChartEngine.Extensions;
+
+public class CollectionExtensionsExample
+{
+    public static void Main()
+    {
+        // Example 1: Batch a large collection into smaller chunks
+        var numbers = Enumerable.Range(1, 25);
+        var batches = numbers.Batch(5);
+        
+        Console.WriteLine("Batches:");
+        foreach (var batch in batches)
+        {
+            Console.WriteLine($"  {string.Join(", ", batch)}");
+        }
+        // Output: Batches: 1, 2, 3, 4, 5
+        //         Batches: 6, 7, 8, 9, 10
+        //         ...
+        
+        // Example 2: Check if a collection is null or empty
+        List<string>? nullList = null;
+        List<string> emptyList = new();
+        var listWithItems = new List<string> { "item1", "item2" };
+        
+        Console.WriteLine($"Null list is null or empty: {nullList.IsNullOrEmpty()}");
+        Console.WriteLine($"Empty list is null or empty: {emptyList.IsNullOrEmpty()}");
+        Console.WriteLine($"List with items is null or empty: {listWithItems.IsNullOrEmpty()}");
+        
+        // Example 3: Get first element or default value
+        var emptyNumbers = new List<int>();
+        int firstOrDefault = emptyNumbers.GetOrDefault(42);
+        Console.WriteLine($"First or default for empty list: {firstOrDefault}");
+        // Output: First or default for empty list: 42
+        
+        // Example 4: Shuffle a collection randomly
+        var orderedNumbers = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+        var shuffled = orderedNumbers.Shuffle();
+        Console.WriteLine($"Original: {string.Join(", ", orderedNumbers)}");
+        Console.WriteLine($"Shuffled: {string.Join(", ", shuffled)}");
+        
+        // Example 5: Get a random element from a collection
+        var colors = new List<string> { "Red", "Green", "Blue", "Yellow", "Purple" };
+        string randomColor = colors.GetRandom();
+        Console.WriteLine($"Random color: {randomColor}");
+        
+        // Example 6: Find duplicate elements in a collection
+        var dataWithDuplicates = new List<int> { 1, 2, 3, 2, 4, 5, 3, 6, 1 };
+        var duplicates = dataWithDuplicates.FindDuplicates();
+        Console.WriteLine($"Duplicates found: {string.Join(", ", duplicates)}");
+        // Output: Duplicates found: 1, 2, 3
+        
+        // Example 7: DistinctBy - get distinct elements based on a key selector
+        var people = new List<Person>
+        {
+            new Person("Alice", 25),
+            new Person("Bob", 30),
+            new Person("Alice", 28), // Same name, different age
+            new Person("Charlie", 22)
+        };
+        
+        var distinctByName = people.DistinctBy(p => p.Name);
+        Console.WriteLine("People with distinct names:");
+        foreach (var person in distinctByName)
+        {
+            Console.WriteLine($"  {person.Name} - {person.Age}");
+        }
+        
+        // Example 8: ContainsAny - check if any element satisfies a condition
+        var temperatures = new List<double> { 15.5, 18.2, 22.1, 19.8 };
+        bool hasHighTemp = temperatures.ContainsAny(t => t > 20);
+        Console.WriteLine($"Contains temperature > 20: {hasHighTemp}");
+        
+        // Example 9: SumBy - sum a specific property across all elements
+        var products = new List<Product>
+        {
+            new Product("Laptop", 999.99m),
+            new Product("Mouse", 29.99m),
+            new Product("Keyboard", 79.99m)
+        };
+        decimal totalPrice = products.SumBy(p => p.Price);
+        Console.WriteLine($"Total price: {totalPrice:C}");
+        
+        // Example 10: AverageOrDefault - compute average with fallback
+        var measurements = new List<double> { 10.5, 12.3, 11.7, 13.1 };
+        double avg = measurements.AverageOrDefault(x => x, -1);
+        Console.WriteLine($"Average: {avg:F2}");
+        
+        // Example 11: ChunkBy - split collection by predicate
+        var logEntries = new List<string> { "INFO", "DEBUG", "INFO", "WARN", "ERROR", "INFO" };
+        var logChunks = logEntries.ChunkBy(entry => entry == "INFO");
+        Console.WriteLine("Log chunks separated by INFO:");
+        foreach (var chunk in logChunks)
+        {
+            Console.WriteLine($"  {string.Join(", ", chunk)}");
+        }
+        
+        // Example 12: Interleave - merge multiple sequences alternately
+        var sequence1 = new List<int> { 1, 2, 3 };
+        var sequence2 = new List<int> { 4, 5, 6, 7 };
+        var sequence3 = new List<int> { 8, 9 };
+        
+        var interleaved = CollectionExtensions.Interleave(sequence1, sequence2, sequence3);
+        Console.WriteLine($"Interleaved: {string.Join(", ", interleaved)}");
+        // Output: Interleaved: 1, 4, 8, 2, 5, 9, 3, 6, 7
+    }
+}
+
+public class Person
+{
+    public string Name { get; }
+    public int Age { get; }
+    
+    public Person(string name, int age)
+    {
+        Name = name;
+        Age = age;
+    }
+}
+
+public class Product
+{
+    public string Name { get; }
+    public decimal Price { get; }
+    
+    public Product(string name, decimal price)
+    {
+        Name = name;
+        Price = price;
+    }
+}
+```
+
 ## ChartModelsAndValidationTests
 
 `ChartModelsAndValidationTests` is a comprehensive unit test suite that validates the behavior of core chart models and validation logic in the SkiaSharpChartEngine library. This test class ensures the correctness of fundamental components including `DataPoint`, `ChartSeries`, `Chart`, `ChartValidator`, `ColorHelper`, and their associated extension methods.
