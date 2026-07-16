@@ -1110,6 +1110,57 @@ public class MathHelperBenchmarksExample
 }
 ```
 
+## RenderCacheService
+
+`RenderCacheService` is an in-memory cache service that stores rendered chart images to improve performance by avoiding redundant rendering operations. It maintains cache entries with image data, creation timestamps, and access counts, implementing a least-recently-used (LRU) eviction policy when the cache reaches its maximum size.
+
+The cache is particularly useful for web applications where the same chart configurations are requested multiple times, reducing server load and improving response times for repeated requests.
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Services;
+
+public class RenderCacheServiceExample
+{
+    public static void Main()
+    {
+        // Initialize cache service with logger
+        var logger = new NullLogger<RenderCacheService>();
+        var cacheService = new RenderCacheService(logger, maxCacheSize: 100);
+
+        // Example 1: Check cache size and contents
+        int cacheSize = cacheService.GetCacheSize();
+        Console.WriteLine($"Initial cache size: {cacheSize}");
+        Console.WriteLine($"Cache contains 'chart-123': {cacheService.Contains("chart-123")}");
+
+        // Example 2: Add an entry to cache
+        byte[] chartImageData = new byte[] { 0x89, 0x50, 0x4E, 0x47 }; // PNG header
+        cacheService.Set("chart-123", chartImageData);
+        Console.WriteLine("Added chart image to cache");
+
+        // Example 3: Retrieve cached data
+        byte[]? cachedData = cacheService.Get("chart-123");
+        Console.WriteLine(cachedData != null
+            ? $"Retrieved cached data: {cachedData.Length} bytes"
+            : "Cache miss");
+
+        // Example 4: List all cache keys
+        var allKeys = cacheService.GetAllKeys();
+        Console.WriteLine($"All cache keys: {string.Join(", ", allKeys)}");
+
+        // Example 5: Remove a specific entry
+        cacheService.Remove("chart-123");
+        Console.WriteLine("Removed chart-123 from cache");
+
+        // Example 6: Clear entire cache
+        cacheService.Clear();
+        Console.WriteLine($"Cache cleared. Size: {cacheService.GetCacheSize()}");
+    }
+}
+```
+
 ## ReportSection
 
 `ReportSection` represents a single section within a PDF report that can contain an optional heading, descriptive body text, and a chart visualization. Each section supports configurable layout options like image scaling behavior and automatic page breaks, making it easy to create multi-section reports with mixed text and chart content.
