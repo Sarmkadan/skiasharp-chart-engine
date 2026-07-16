@@ -1750,6 +1750,81 @@ public class Chart
 
 `ChartConfiguration` is a configuration class that defines the visual appearance and layout of charts rendered by the SkiaSharp chart engine. It controls chart margins, colors, axis labels, grid visibility, legend display, and scaling options for both X and Y axes. This configuration allows for consistent styling across multiple charts and easy customization of chart aesthetics.
 
+## ConfigurationService
+
+`ConfigurationService` is a service for managing chart configurations and templates in the SkiaSharp chart engine. It provides methods for retrieving, creating, saving, deleting, and listing chart configurations, as well as creating configurations from predefined templates for different chart types.
+
+The service maintains an in-memory dictionary of configurations and supports dependency injection for logging. It includes built-in validation and handles common operations like retrieving default configurations, cloning configurations to prevent mutation, and managing template-based configurations for line, bar, pie, heatmap, area, scatter, and column charts.
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Services;
+
+public class ConfigurationServiceExample
+{
+    public static void Main()
+    {
+        // Initialize ConfigurationService with logger
+        var logger = new NullLogger<ConfigurationService>();
+        var configService = new ConfigurationService(logger);
+
+        // Example 1: Get default configuration
+        var defaultConfig = configService.GetDefaultConfiguration();
+        Console.WriteLine($"Default config - Title: {defaultConfig.Title}, Grid enabled: {defaultConfig.ShowGrid}");
+
+        // Example 2: List all available configurations
+        var configs = configService.ListConfigurations();
+        Console.WriteLine($"Available configurations: {string.Join(", ", configs)}");
+
+        // Example 3: Check if configuration exists
+        bool exists = configService.ConfigurationExists("default_line");
+        Console.WriteLine($"Configuration 'default_line' exists: {exists}");
+
+        // Example 4: Get a specific configuration
+        var lineConfig = configService.GetConfiguration("default_line");
+        Console.WriteLine($"Retrieved config: {lineConfig.Title}");
+
+        // Example 5: Create configuration from template
+        var barConfig = configService.CreateConfigurationFromTemplate(ChartType.BarChart);
+        Console.WriteLine($"Created bar config: {barConfig.Title}, X-axis type: {barConfig.XAxisScaleType}");
+
+        // Example 6: Save a custom configuration
+        var customConfig = new ChartConfiguration
+        {
+            Title = "Custom Sales Dashboard",
+            XAxisLabel = "Quarter",
+            YAxisLabel = "Revenue ($)",
+            ShowGrid = true,
+            ShowLegend = true,
+            MarginTop = 50,
+            MarginBottom = 70,
+            MarginLeft = 70,
+            MarginRight = 50,
+            BackgroundColor = "#FFFFFF",
+            GridColor = "#E0E0E0"
+        };
+
+        configService.SaveConfiguration("sales_dashboard", customConfig);
+        Console.WriteLine("Custom configuration saved successfully");
+
+        // Example 7: Verify configuration was saved
+        bool configSaved = configService.ConfigurationExists("sales_dashboard");
+        Console.WriteLine($"Configuration saved: {configSaved}");
+
+        // Example 8: Delete a configuration
+        configService.DeleteConfiguration("sales_dashboard");
+        Console.WriteLine("Configuration deleted successfully");
+
+        // Example 9: Verify configuration was deleted
+        bool configDeleted = !configService.ConfigurationExists("sales_dashboard");
+        Console.WriteLine($"Configuration deleted: {configDeleted}");
+    }
+}
+```
+
 ## RenderMetrics
 
 `RenderMetrics` is a metrics collection class that tracks and analyzes chart rendering performance statistics. It captures key performance indicators such as render time, image size, series count, data point count, cache usage, and export format. The class provides analytical methods to calculate throughput metrics like megabytes per second and data points per second, enabling performance optimization and benchmarking of chart rendering operations.
