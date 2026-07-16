@@ -1007,6 +1007,109 @@ public class ChartDataServiceExample
 }
 ```
 
+## RenderCacheServiceTests
+
+`RenderCacheServiceTests` provides a comprehensive suite of unit tests for the `RenderCacheService` class, which implements a thread-safe, LRU (Least Recently Used) cache for storing rendered chart images. The tests validate null safety, cache operations (get/set/remove/clear), cache eviction policies when maximum size is reached, and statistics tracking. The test suite covers edge cases including null keys, empty keys, non-existent keys, and various cache management scenarios.
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Services;
+
+public class RenderCacheServiceTestsExample
+{
+  public static void Main()
+  {
+    // Initialize logger and cache service with small size for demonstration
+    var logger = new NullLogger<RenderCacheService>();
+    var cacheService = new RenderCacheService(logger, maxCacheSize: 5);
+
+    // Example 1: Store and retrieve cached render results
+    byte[] chartImageData = new byte[1024]; // Simulated chart image data
+    cacheService.Set("chart-2024-q1", chartImageData);
+    
+    var cachedData = cacheService.Get("chart-2024-q1");
+    Console.WriteLine($"Cache contains 'chart-2024-q1': {cachedData != null}");
+    // Output: Cache contains 'chart-2024-q1': True
+
+    // Example 2: Handle null keys gracefully
+    try
+    {
+      var nullResult = cacheService.Get(null!);
+      Console.WriteLine("✓ Get with null key handled gracefully");
+    }
+    catch
+    {
+      Console.WriteLine("✗ Get with null key threw exception");
+    }
+
+    // Example 3: Handle empty keys gracefully
+    try
+    {
+      var emptyResult = cacheService.Get(" ");
+      Console.WriteLine("✓ Get with empty key handled gracefully");
+    }
+    catch
+    {
+      Console.WriteLine("✗ Get with empty key threw exception");
+    }
+
+    // Example 4: Check cache contains key
+    cacheService.Set("chart-2024-q2", new byte[512]);
+    bool containsKey = cacheService.Contains("chart-2024-q2");
+    Console.WriteLine($"Cache contains 'chart-2024-q2': {containsKey}");
+    // Output: Cache contains 'chart-2024-q2': True
+
+    // Example 5: Remove entry from cache
+    cacheService.Remove("chart-2024-q2");
+    bool removed = !cacheService.Contains("chart-2024-q2");
+    Console.WriteLine($"Entry removed successfully: {removed}");
+    // Output: Entry removed successfully: True
+
+    // Example 6: Clear entire cache
+    cacheService.Set("chart-1", new byte[256]);
+    cacheService.Set("chart-2");
+    cacheService.Set("chart-3", new byte[256]);
+    
+    int sizeBeforeClear = cacheService.GetCacheSize();
+    cacheService.Clear();
+    int sizeAfterClear = cacheService.GetCacheSize();
+    
+    Console.WriteLine($"Cache size before clear: {sizeBeforeClear}");
+    Console.WriteLine($"Cache size after clear: {sizeAfterClear}");
+    // Output: Cache size before clear: 3
+    // Output: Cache size after clear: 0
+
+    // Example 7: Cache eviction when maximum size is reached
+    for (int i = 1; i <= 6; i++)
+    {
+      cacheService.Set($"chart-{i}", new byte[256]);
+    }
+    
+    // The cache should have evicted the least recently used entry (chart-1)
+    bool hasChart1 = cacheService.Contains("chart-1");
+    bool hasChart6 = cacheService.Contains("chart-6");
+    
+    Console.WriteLine($"Cache contains chart-1 (should be false): {hasChart1}");
+    Console.WriteLine($"Cache contains chart-6 (should be true): {hasChart6}");
+    // Output: Cache contains chart-1 (should be false): False
+    // Output: Cache contains chart-6 (should be true): True
+
+    // Example 8: Get all cached keys
+    cacheService.Set("chart-a", new byte[128]);
+    cacheService.Set("chart-b", new byte[128]);
+    cacheService.Set("chart-c", new byte[128]);
+    
+    var allKeys = cacheService.GetAllKeys();
+    Console.WriteLine($"Total cached entries: {allKeys.Count()}");
+    Console.WriteLine($"Keys: {string.Join(", ", allKeys)}");
+    // Output: Total cached entries: 3
+    // Output: Keys: chart-a, chart-b, chart-c
+  }
+}
+```
+
 ## ExportServiceTests
 
 `ExportServiceTests` provides a comprehensive suite of unit tests for the `ExportService` class, which handles chart export functionality including both synchronous and asynchronous export operations. The tests validate null argument validation, unsupported format handling, successful rendering delegation, error handling for infrastructure issues, cancellation support, and constructor dependency validation for the export service.
