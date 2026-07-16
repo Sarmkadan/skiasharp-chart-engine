@@ -1979,6 +1979,71 @@ public class DataPointExtensionsExample
 }
 ```
 
+## ArgumentParser
+
+`ArgumentParser` is a utility class for parsing command-line arguments into key-value pairs, supporting multiple input formats including `--key=value`, `--key value`, and `-k value`. It provides methods for parsing arguments, validating required parameters, retrieving values with defaults, and parsing comma-separated lists.
+
+The parser handles flags (boolean arguments without values), required argument validation, and provides flexible value retrieval with default fallbacks. It's commonly used in CLI applications and console tools that need to process user input arguments.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.CLI;
+
+public class ArgumentParserExample
+{
+    public static void Main(string[] args)
+    {
+        // Initialize argument parser with logger
+        var logger = new NullLogger<ArgumentParser>();
+        var argumentParser = new ArgumentParser(logger);
+
+        // Example 1: Parse command line arguments
+        var parsedArgs = argumentParser.Parse(new[] { 
+            "--output=chart.png",
+            "--width", "800",
+            "-h", "600",
+            "--format", "png",
+            "--verbose"
+        });
+
+        Console.WriteLine("Parsed arguments:");
+        foreach (var kvp in parsedArgs)
+        {
+            Console.WriteLine($"  {kvp.Key} = {kvp.Value}");
+        }
+
+        // Example 2: Validate required arguments
+        bool hasRequired = argumentParser.ValidateRequired(
+            parsedArgs,
+            "output", "width", "height"
+        );
+        Console.WriteLine($"\nHas required arguments: {hasRequired}");
+
+        // Example 3: Get argument value with default fallback
+        string outputFile = argumentParser.GetValue(parsedArgs, "output", "default.png");
+        int width = int.Parse(argumentParser.GetValue(parsedArgs, "width", "800"));
+        int height = int.Parse(argumentParser.GetValue(parsedArgs, "height", "600"));
+        string format = argumentParser.GetValue(parsedArgs, "format", "png");
+
+        Console.WriteLine($"\nChart settings:");
+        Console.WriteLine($"  Output file: {outputFile}");
+        Console.WriteLine($"  Dimensions: {width}x{height}");
+        Console.WriteLine($"  Format: {format}");
+
+        // Example 4: Parse comma-separated list
+        var tags = argumentParser.ParseList(parsedArgs, "tags");
+        Console.WriteLine($"\nTags: {string.Join(", ", tags)}");
+
+        // Example 5: Check for boolean flags
+        bool isVerbose = argumentParser.GetValue(parsedArgs, "verbose") == "true";
+        Console.WriteLine($"Verbose mode: {isVerbose}");
+    }
+}
+```
+
 ## RequestValidationMiddleware
 
 `RequestValidationMiddleware` is a middleware component that validates incoming HTTP requests before they are processed by the chart engine. It enforces security and data integrity by validating request headers, payload size limits, JSON schema compliance, and query parameters. This middleware helps prevent common web vulnerabilities and ensures that only properly formatted requests reach the chart rendering pipeline.
