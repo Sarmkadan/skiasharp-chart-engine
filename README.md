@@ -1454,6 +1454,85 @@ public class Chart
 
 `ChartConfiguration` is a configuration class that defines the visual appearance and layout of charts rendered by the SkiaSharp chart engine. It controls chart margins, colors, axis labels, grid visibility, legend display, and scaling options for both X and Y axes. This configuration allows for consistent styling across multiple charts and easy customization of chart aesthetics.
 
+## RenderMetrics
+
+`RenderMetrics` is a metrics collection class that tracks and analyzes chart rendering performance statistics. It captures key performance indicators such as render time, image size, series count, data point count, cache usage, and export format. The class provides analytical methods to calculate throughput metrics like megabytes per second and data points per second, enabling performance optimization and benchmarking of chart rendering operations.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using SkiaSharpChartEngine.Models;
+
+public class RenderMetricsExample
+{
+    public static void Main()
+    {
+        // Example 1: Record basic rendering metrics
+        var metrics = new RenderMetrics
+        {
+            ChartId = "quarterly-sales-chart",
+            RenderTimeMs = 150,
+            ImageSizeBytes = 45234,
+            SeriesCount = 3,
+            DataPointCount = 120,
+            ExportFormat = ExportFormat.PNG,
+            CacheSizeAtRenderTime = 1024,
+            WasCached = false,
+            AdditionalMetrics = new Dictionary<string, object>
+            {
+                ["cpuUsage"] = 45.2,
+                ["memoryUsage"] = 128.5,
+                ["renderEngine"] = "SkiaSharp"
+            }
+        };
+        
+        Console.WriteLine($"Render metrics: {metrics}");
+        Console.WriteLine($"Chart: {metrics.ChartId}");
+        Console.WriteLine($"Render time: {metrics.RenderTimeMs}ms");
+        Console.WriteLine($"Image size: {metrics.ImageSizeBytes} bytes ({metrics.ImageSizeBytes / 1024.0:F2} KB)");
+        Console.WriteLine($"Series count: {metrics.SeriesCount}");
+        Console.WriteLine($"Data points: {metrics.DataPointCount}");
+        
+        // Example 2: Calculate performance metrics
+        var mbPerSecond = metrics.GetMegabytesPerSecond();
+        var pointsPerSecond = metrics.GetDataPointsPerSecond();
+        
+        Console.WriteLine($"Throughput: {mbPerSecond:F2} MB/s");
+        Console.WriteLine($"Data points per second: {pointsPerSecond:F2}");
+        
+        // Example 3: Use with MetricsCollector for tracking multiple renders
+        var collector = new MetricsCollector();
+        collector.RecordMetrics(metrics);
+        
+        // Simulate another render
+        var cachedMetrics = new RenderMetrics
+        {
+            ChartId = "quarterly-sales-chart",
+            RenderTimeMs = 25,  // Much faster due to caching
+            ImageSizeBytes = 45234,
+            SeriesCount = 3,
+            DataPointCount = 120,
+            ExportFormat = ExportFormat.PNG,
+            CacheSizeAtRenderTime = 1024,
+            WasCached = true
+        };
+        
+        collector.RecordMetrics(cachedMetrics);
+        
+        // Example 4: Analyze collected metrics
+        Console.WriteLine($"\nCollected {collector.GetMetricsCount()} render metrics");
+        Console.WriteLine($"Average render time: {collector.GetAverageRenderTimeMs():F2}ms");
+        Console.WriteLine($"Average image size: {collector.GetAverageImageSizeBytes() / 1024.0:F2} KB");
+        Console.WriteLine($"Cache hit count: {collector.GetCacheHitCount()}");
+        Console.WriteLine($"Cache hit percentage: {collector.GetCacheHitPercentage():F1}%");
+        
+        // Example 5: Get last metrics
+        var lastMetrics = collector.GetLastMetrics();
+        Console.WriteLine($"\nLast render: {lastMetrics?.ChartId} in {lastMetrics?.RenderTimeMs}ms");
+    }
+}
+```
+
 ```csharp
 using SkiaSharpChartEngine.Models;
 
