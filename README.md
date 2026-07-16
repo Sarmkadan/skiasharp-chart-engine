@@ -1384,6 +1384,90 @@ var chart = new Chart("sales-chart")
 };
 ```
 
+## ExportOptions
+
+`ExportOptions` provides configuration for exporting charts to various image formats (PNG, JPEG, SVG, PDF, WEBP). It controls output quality, resolution (DPI), font embedding, aspect ratio preservation, and custom format-specific options. This class is used throughout the chart engine for saving rendered charts to files with consistent settings.
+
+```csharp
+using System;
+using System.IO;
+using SkiaSharpChartEngine.Models;
+
+public class ExportOptionsExample
+{
+    public static void Main()
+    {
+        // Example 1: Create export options with default settings
+        var defaultOptions = new ExportOptions("chart", ExportFormat.PNG);
+        Console.WriteLine($"Default export: {defaultOptions}");
+        Console.WriteLine($"Full path: {defaultOptions.GetFullPath()}");
+        
+        // Example 2: Configure high-quality PNG export with custom DPI
+        var highQualityOptions = new ExportOptions(
+            filename: "high-quality-chart",
+            format: ExportFormat.PNG,
+            dpi: 300,
+            quality: 0.95f
+        )
+        {
+            OutputDirectory = "./exports/",
+            EmbedFonts = true,
+            PreserveAspectRatio = true,
+            CustomFormatOptions = new Dictionary<string, object>
+            {
+                ["compressionLevel"] = 6,
+                ["includeAlpha"] = true
+            }
+        };
+        
+        Console.WriteLine($"High quality export: {highQualityOptions}");
+        Console.WriteLine($"Full path: {highQualityOptions.GetFullPath()}");
+        
+        // Example 3: Export to JPEG with specific quality settings
+        var jpegOptions = new ExportOptions("photo-chart", ExportFormat.JPEG, 150, 0.85f)
+        {
+            OutputDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "charts")
+        };
+        
+        Console.WriteLine($"JPEG export: {jpegOptions}");
+        
+        // Example 4: Export to PDF format
+        var pdfOptions = new ExportOptions("report-chart", ExportFormat.PDF)
+        {
+            DPI = 150,
+            Quality = 0.9f,
+            EmbedFonts = true
+        };
+        
+        Console.WriteLine($"PDF export: {pdfOptions}");
+        Console.WriteLine($"File extension: {ExportOptions.GetFileExtension(pdfOptions.Format)}");
+        
+        // Example 5: Clone and modify export options
+        var clonedOptions = highQualityOptions.Clone();
+        clonedOptions.Filename = "modified-chart";
+        clonedOptions.Quality = 0.8f;
+        
+        Console.WriteLine($"Cloned options: {clonedOptions}");
+        
+        // Example 6: Validate export options before use
+        try
+        {
+            defaultOptions.Validate();
+            Console.WriteLine("✓ Export options are valid");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"✗ Validation failed: {ex.Message}");
+        }
+        
+        // Example 7: Get file extension from format
+        Console.WriteLine($"PNG extension: {ExportOptions.GetFileExtension(ExportFormat.PNG)}");
+        Console.WriteLine($"SVG extension: {ExportOptions.GetFileExtension(ExportFormat.SVG)}");
+        Console.WriteLine($"PDF extension: {ExportOptions.GetFileExtension(ExportFormat.PDF)}");
+    }
+}
+```
+
 ## TooltipOptions
 
 `TooltipOptions` controls the appearance and behavior of interactive tooltips when hovering over chart data points. It allows customization of colors, dimensions, hit-testing radius, and content formatting. Tooltips provide contextual information about the data point under the cursor, including X/Y values, series name, and custom formatted content.
