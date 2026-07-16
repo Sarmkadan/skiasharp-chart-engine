@@ -1930,6 +1930,72 @@ public class Product
 }
 ```
 
+## AnimationSettings
+
+`AnimationSettings` provides configuration for chart animations, controlling duration, frame rate, easing functions, and opacity transitions. It supports smooth visual transitions when charts load or update, with configurable timing curves and opacity effects for professional-looking animations.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Models;
+
+public class AnimationSettingsExample
+{
+    public static void Main()
+    {
+        // Example 1: Create a simple animation with custom duration
+        var animationSettings = new AnimationSettings(durationMs: 1000) // 1 second animation
+        {
+            FrameRate = 30, // Lower frame rate for smoother performance
+            EasingType = EasingFunction.EaseOutQuad,
+            AnimateOnLoad = true,
+            AnimateOnUpdate = true,
+            StartOpacity = 0.3,
+            EndOpacity = 1.0
+        };
+
+        Console.WriteLine($"Animation duration: {animationSettings.DurationMs}ms");
+        Console.WriteLine($"Total frames: {animationSettings.GetTotalFrames()}");
+        Console.WriteLine($"Configuration: {animationSettings}");
+
+        // Example 2: Validate animation settings
+        try
+        {
+            animationSettings.Validate();
+            Console.WriteLine("✓ Animation settings are valid");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"✗ Validation failed: {ex.Message}");
+        }
+
+        // Example 3: Clone animation settings for reuse
+        var clonedSettings = animationSettings.Clone();
+        clonedSettings.DurationMs = 1500; // Modify cloned settings
+        Console.WriteLine($"Original duration: {animationSettings.DurationMs}ms");
+        Console.WriteLine($"Cloned duration: {clonedSettings.DurationMs}ms");
+
+        // Example 4: Calculate animation progress
+        int currentFrame = 15;
+        double progress = animationSettings.GetProgress(currentFrame);
+        Console.WriteLine($"Progress at frame {currentFrame}: {progress:P0}");
+
+        // Example 5: Use different easing functions
+        var linearAnimation = new AnimationSettings(800)
+        {
+            EasingType = EasingFunction.Linear
+        };
+
+        var easeInOutAnimation = new AnimationSettings(800)
+        {
+            EasingType = EasingFunction.EaseInOutCubic
+        };
+
+        Console.WriteLine($"Linear animation: {linearAnimation}");
+        Console.WriteLine($"EaseInOutCubic animation: {easeInOutAnimation}");
+    }
+}
+```
+
 ## ChartModelsAndValidationTests
 
 `ChartModelsAndValidationTests` is a comprehensive unit test suite that validates the behavior of core chart models and validation logic in the SkiaSharpChartEngine library. This test class ensures the correctness of fundamental components including `DataPoint`, `ChartSeries`, `Chart`, `ChartValidator`, `ColorHelper`, and their associated extension methods.
