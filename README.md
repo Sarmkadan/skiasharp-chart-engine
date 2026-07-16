@@ -1985,6 +1985,66 @@ public class DataPointExtensionsExample
 
 The middleware supports multiple content types (JSON, form data, CSV, XML) and provides configurable validation rules including maximum payload size limits and required field validation.
 
+## PerformanceMonitoringMiddleware
+
+`PerformanceMonitoringMiddleware` is a middleware component that monitors and tracks request performance metrics including execution time, memory usage, and operation latency. It helps identify performance bottlenecks, slow operations, and resource-intensive requests by providing detailed performance statistics and configurable slow operation alerts.
+
+The middleware automatically tracks:
+- Request execution time using high-precision stopwatch
+- Memory allocation and usage during request processing
+- Operation name and request correlation ID for traceability
+- Configurable slow operation thresholds with automatic logging
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Middleware;
+
+public class PerformanceMonitoringMiddlewareExample
+{
+    public static void Main()
+    {
+        // Initialize logger and middleware
+        var logger = new NullLogger<PerformanceMonitoringMiddleware>();
+        var performanceMiddleware = new PerformanceMonitoringMiddleware(logger, slowThresholdMs: 500);
+        
+        // Start monitoring a request
+        var requestId = Guid.NewGuid().ToString();
+        var operationName = "ChartRenderService.GetChartAsync";
+        var context = performanceMiddleware.StartRequest(requestId, operationName);
+        
+        try
+        {
+            // Simulate request processing
+            Console.WriteLine("Processing request...");
+            System.Threading.Thread.Sleep(250); // Simulate work
+            
+            // End monitoring and log results
+            performanceMiddleware.EndRequest(context);
+            
+            // Get performance statistics
+            var stats = performanceMiddleware.GetStatistics(operationName);
+            Console.WriteLine($"Performance stats for {operationName}:");
+            Console.WriteLine($"  Average: {stats.AverageMs}ms");
+            Console.WriteLine($"  Min: {stats.MinMs}ms");
+            Console.WriteLine($"  Max: {stats.MaxMs}ms");
+            Console.WriteLine($"  Total calls: {stats.TotalCalls}");
+            Console.WriteLine($"  Collected at: {stats.CollectedAt}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Request failed: {ex.Message}");
+            // Ensure context is ended even on failure
+            performanceMiddleware.EndRequest(context);
+        }
+        
+        // Update slow threshold dynamically
+        performanceMiddleware.SetSlowThreshold(1000); // 1 second threshold
+    }
+}
+```
+
 ## RateLimitingMiddleware
 
 `RateLimitingMiddleware` is a token bucket-based rate limiting middleware that prevents abuse by limiting the number of requests individual clients can make within a specified time window. It uses a sliding window approach with configurable token refill rates to provide fair rate limiting while allowing bursts of activity.
