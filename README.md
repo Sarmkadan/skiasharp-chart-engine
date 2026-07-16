@@ -679,6 +679,98 @@ public class ChartEngineTestsExample
 }
 ```
 
+## ChartDataServiceTests
+
+`ChartDataServiceTests` provides a comprehensive suite of unit tests for the `ChartDataService` class, which validates chart configurations, transforms and normalizes chart data, filters data points, and calculates axis ranges. The tests cover validation scenarios (null charts, empty series, invalid line widths), data transformation operations, normalization to [0, 1] intervals, and axis range calculations for both linear and logarithmic scales.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
+public class ChartDataServiceExample
+{
+    public static void Main()
+    {
+        // Initialize ChartDataService with logger
+        var logger = new NullLogger<ChartDataService>();
+        var chartDataService = new ChartDataService(logger);
+
+        // Example 1: Validate a chart before processing
+        var chart = new Chart("sales-performance");
+        var revenueSeries = new ChartSeries("Revenue")
+        {
+            LineWidth = 2.0f,
+            Color = "#2E86C1"
+        };
+        revenueSeries.AddDataPoint(1.0, 1000.0);
+        revenueSeries.AddDataPoint(2.0, 1500.0);
+        revenueSeries.AddDataPoint(3.0, 1200.0);
+        chart.AddSeries(revenueSeries);
+
+        // Validate chart configuration
+        try
+        {
+            chartDataService.ValidateChart(chart);
+            Console.WriteLine("✓ Chart validation passed");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"✗ Chart validation failed: {ex.Message}");
+        }
+
+        // Example 2: Calculate axis range for linear scale
+        var yValues = new double[] { 1000.0, 1500.0, 1200.0, 800.0 };
+        var (minValue, maxValue) = chartDataService.CalculateAxisRange(yValues, AxisScaleType.Linear);
+        Console.WriteLine($"Linear axis range: [{minValue}, {maxValue}]");
+        // Output: Linear axis range: [800, 1500]
+
+        // Example 3: Calculate axis range for logarithmic scale
+        var logValues = new double[] { 0.1, 1.0, 10.0, 100.0 };
+        var (logMin, logMax) = chartDataService.CalculateAxisRange(logValues, AxisScaleType.Logarithmic);
+        Console.WriteLine($"Logarithmic axis range: [{logMin}, {logMax}]");
+        // Output: Logarithmic axis range: [1, 100]
+
+        // Example 4: Filter data points with positive Y values
+        var allPoints = new List<DataPoint>
+        {
+            new DataPoint(1.0, 1000.0),
+            new DataPoint(2.0, -200.0),
+            new DataPoint(3.0, 1500.0),
+            new DataPoint(4.0, -500.0),
+            new DataPoint(5.0, 1200.0)
+        };
+        var filteredPoints = chartDataService.FilterDataPoints(allPoints, p => p.Y > 0);
+        Console.WriteLine($"Filtered points count: {filteredPoints.Count}");
+        // Output: Filtered points count: 3
+
+        // Example 5: Transform chart data (double all Y values)
+        var transformedChart = chartDataService.TransformChartData(chart, 
+            p => new DataPoint(p.X, p.Y * 2));
+        Console.WriteLine($"Original first point Y: {chart.Series[0].DataPoints[0].Y}");
+        Console.WriteLine($"Transformed first point Y: {transformedChart.Series[0].DataPoints[0].Y}");
+        // Output: Original first point Y: 1000
+        //         Transformed first point Y: 2000
+
+        // Example 6: Normalize data points to [0, 1] range
+        var normalizationPoints = new List<DataPoint>
+        {
+            new DataPoint(0.0, 100.0),
+            new DataPoint(50.0, 500.0),
+            new DataPoint(100.0, 900.0)
+        };
+        chartDataService.NormalizeDataPoints(normalizationPoints);
+        Console.WriteLine($"Normalized first point: [{normalizationPoints[0].X:F4}, {normalizationPoints[0].Y:F4}]");
+        Console.WriteLine($"Normalized last point: [{normalizationPoints[2].X:F4}, {normalizationPoints[2].Y:F4}]");
+        // Output: Normalized first point: [0.0000, 0.0000]
+        //         Normalized last point: [1.0000, 1.0000]
+    }
+}
+```
+
 ## ChartInteractionServiceTests
 
 `ChartInteractionServiceTests` provides a comprehensive suite of unit tests for the `ChartInteractionService` class, which handles user interactions with chart elements such as clicks, hovers, selections, and context menu gestures. The tests validate edge cases including null inputs, missed interactions, and proper event raising, ensuring the service correctly processes user interactions and maintains selection state.
