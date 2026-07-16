@@ -1428,6 +1428,70 @@ public class ChartInteractionHandler
     }
 }
 
+## DataAggregatorTests
+
+`DataAggregatorTests` provides a comprehensive suite of unit tests for the `DataAggregator` class, which handles data aggregation operations including bucket-based aggregation, interval-based grouping, and statistical calculations. The tests validate edge cases, parameter validation, and correct computation across different aggregation types (Average, Sum, Min, Max, Median) to ensure accurate data summarization for chart rendering scenarios.
+
+The test suite covers:
+
+- **Bucket-based aggregation**: Validating `AggregateByCount` with null/empty inputs, zero/negative bucket counts, various aggregation types, and edge cases where bucket count exceeds data point count
+- **Interval-based grouping**: Testing `AggregateByInterval` with null inputs, label-based grouping, and null label handling (groups as "unknown")
+- **Statistical calculations**: Verifying `CalculateStatistics` returns null for null/empty inputs and computes Sum, Average, Min, Max, Median, Range, and Standard Deviation correctly
+- **Error handling**: Ensuring proper exception throwing for invalid parameters and fallback behavior for unsupported aggregation types
+
+```csharp
+using System;
+using System.Collections.Generic;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Utilities;
+
+public class DataAggregatorTestsExample
+{
+    public static void Main()
+    {
+        // Initialize DataAggregator with logger
+        var logger = new Microsoft.Extensions.Logging.Abstractions.NullLogger<DataAggregator>();
+        var aggregator = new DataAggregator(logger);
+
+        // Example 1: Aggregate data points by count into buckets using average aggregation
+        var dataPoints = new List<DataPoint>
+        {
+            new DataPoint(1.0, 10.0),
+            new DataPoint(2.0, 20.0),
+            new DataPoint(3.0, 30.0),
+            new DataPoint(4.0, 40.0)
+        };
+
+        var aggregated = aggregator.AggregateByCount(dataPoints, 2, AggregationType.Average);
+        Console.WriteLine($"Aggregated {aggregated.Count} buckets");
+        Console.WriteLine($"Bucket 1 average: {aggregated[0].Value:F2}");  // 15.00
+        Console.WriteLine($"Bucket 2 average: {aggregated[1].Value:F2}");  // 35.00
+
+        // Example 2: Group data points by label (interval-based aggregation)
+        var labeledPoints = new List<DataPoint>
+        {
+            new DataPoint(1.0, 100.0) { Label = "Q1" },
+            new DataPoint(2.0, 150.0) { Label = "Q1" },
+            new DataPoint(3.0, 200.0) { Label = "Q2" },
+            new DataPoint(4.0, 250.0) { Label = "Q2" }
+        };
+
+        var grouped = aggregator.AggregateByInterval(labeledPoints, AggregationType.Average);
+        Console.WriteLine($"Groups created: {grouped.Count}");      // 2
+        Console.WriteLine($"Q1 data points: {grouped["Q1"].Count}"); // 2
+        Console.WriteLine($"Q2 data points: {grouped["Q2"].Count}"); // 2
+
+        // Example 3: Calculate comprehensive statistics
+        var stats = aggregator.CalculateStatistics(dataPoints);
+        Console.WriteLine($"Statistics - Count: {stats?.Count}, Sum: {stats?.Sum:F2}");
+        Console.WriteLine($"Min: {stats?.Min:F2}, Max: {stats?.Max:F2}");
+        Console.WriteLine($"Average: {stats?.Average:F2}, Median: {stats?.Median:F2}");
+        Console.WriteLine($"Range: {stats?.Range:F2}, StdDev: {stats?.StandardDeviation:F4}");
+        Console.WriteLine($"Calculated at: {stats?.CalculatedAt:O}");
+    }
+}
+```
+
 ## ChartRenderingIntegrationTests
 
 `ChartRenderingIntegrationTests` validates the end-to-end rendering pipeline of the SkiaSharp chart engine, ensuring that charts are generated and exported correctly across various formats and configurations. It covers functional testing for rendering, exporting, caching, and parallel processing capabilities, providing confidence in the system's reliability under different scenarios.
