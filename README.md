@@ -625,6 +625,120 @@ public class CacheKeyBenchmarksExample
 }
 ```
 
+## PdfReportGeneratorTests
+
+`PdfReportGeneratorTests` provides a comprehensive suite of unit tests for the `PdfReportGenerator` class, which generates PDF reports containing chart visualizations and formatted text content. The tests validate PDF generation with various section configurations, error handling for null inputs, and proper interaction with the chart rendering service.
+
+The test suite covers:
+- **Null argument validation**: Ensuring `GenerateAsync` and `GenerateToFileAsync` throw `ArgumentNullException` for invalid inputs
+- **Empty sections handling**: Testing PDF generation with empty section lists
+- **Text-only reports**: Validating PDF creation with only text content (headings and body text)
+- **Chart integration**: Verifying chart rendering service is called for chart sections and multiple charts produce correct output
+- **Error resilience**: Ensuring PDF generation succeeds even when chart rendering fails
+- **File system operations**: Testing successful file writing with `GenerateToFileAsync`
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Reports;
+using SkiaSharpChartEngine.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
+public class PdfReportGeneratorTestsExample
+{
+    public static async Task Main()
+    {
+        // Initialize PDF report generator with dependencies
+        var logger = new NullLogger<PdfReportGenerator>();
+        var renderingService = new ChartRenderingService(
+            logger,
+            new ChartDataService(logger),
+            new RenderCacheService()
+        );
+        var pdfGenerator = new PdfReportGenerator(renderingService, logger);
+
+        // Example 1: Generate a PDF report with text-only sections
+        var textSections = new List<ReportSection>
+        {
+            new ReportSection
+            {
+                Heading = "Executive Summary",
+                BodyText = "This report contains quarterly performance metrics and analysis."
+            },
+            new ReportSection
+            {
+                Heading = "Key Findings",
+                BodyText = "Revenue increased by 15% compared to last quarter. Customer satisfaction reached record high."
+            }
+        };
+
+        var pdfBytes = await pdfGenerator.GenerateAsync(textSections);
+        Console.WriteLine($"Generated PDF with text sections: {pdfBytes.Length} bytes");
+
+        // Example 2: Generate a PDF report with chart sections
+        var chart = new Chart("quarterly-sales");
+        var salesSeries = new ChartSeries("Sales Revenue");
+        salesSeries.AddDataPoint(1.0, 100000.0);
+        salesSeries.AddDataPoint(2.0, 125000.0);
+        salesSeries.AddDataPoint(3.0, 150000.0);
+        salesSeries.AddDataPoint(4.0, 175000.0);
+        chart.AddSeries(salesSeries);
+
+        var chartSections = new List<ReportSection>
+        {
+            new ReportSection
+            {
+                Heading = "Quarterly Revenue Analysis",
+                BodyText = "Sales performance across all regions.",
+                Chart = chart
+            },
+            new ReportSection
+            {
+                Heading = "Market Share Distribution",
+                BodyText = "Regional breakdown of market share.",
+                Chart = CreatePieChart(),
+                PageBreakBefore = true
+            }
+        };
+
+        var chartPdfBytes = await pdfGenerator.GenerateAsync(chartSections);
+        Console.WriteLine($"Generated PDF with chart sections: {chartPdfBytes.Length} bytes");
+
+        // Example 3: Generate and save PDF to file
+        var outputPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            $"report-{DateTime.Now:yyyyMMdd-HHmmss}.pdf"
+        );
+
+        await pdfGenerator.GenerateToFileAsync(outputPath, chartSections);
+        Console.WriteLine($"PDF saved to: {outputPath}");
+        Console.WriteLine($"File exists: {File.Exists(outputPath)}");
+
+        // Cleanup
+        if (File.Exists(outputPath))
+        {
+            File.Delete(outputPath);
+        }
+    }
+
+    private static Chart CreatePieChart()
+    {
+        var chart = new Chart("market-share");
+        var series = new ChartSeries("Market Share");
+        series.AddDataPoint(1.0, 35.0);
+        series.AddDataPoint(2.0, 25.0);
+        series.AddDataPoint(3.0, 20.0);
+        series.AddDataPoint(4.0, 20.0);
+        chart.AddSeries(series);
+        return chart;
+    }
+}
+```
+
 ## ChartModelsAndValidationTests
 
 `ChartModelsAndValidationTests` is a comprehensive unit test suite that validates the behavior of core chart models and validation logic in the SkiaSharpChartEngine library. This test class ensures the correctness of fundamental components including `DataPoint`, `ChartSeries`, `Chart`, `ChartValidator`, `ColorHelper`, and their associated extension methods.
