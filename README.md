@@ -901,54 +901,56 @@ public class ChartInteractionHandler
     }
 }
 
-// Example usage with different interaction types
-public class InteractionExamples
+## ChartRenderingIntegrationTests
+
+`ChartRenderingIntegrationTests` validates the end-to-end rendering pipeline of the SkiaSharp chart engine, ensuring that charts are generated and exported correctly across various formats and configurations. It covers functional testing for rendering, exporting, caching, and parallel processing capabilities, providing confidence in the system's reliability under different scenarios.
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using SkiaSharpChartEngine.Tests; 
+
+public class ChartRenderingIntegrationTestsExample
 {
-    public static void Main()
+    public static async Task Main()
     {
-        var now = DateTime.UtcNow;
-        var metadata = new Dictionary<string, object>
-        {
-            ["chartId"] = "sales-line-chart",
-            ["userRole"] = "analyst"
-        };
+        // Setup 
+        using var testEngine = new ChartRenderingIntegrationTests();
 
-        // Click interaction
-        var clickArgs = new ChartInteractionEventArgs
-        {
-            InteractionType = ChartInteractionType.Click,
-            PointerX = 150.5f,
-            PointerY = 200.75f,
-            Region = ChartRegion.PlotArea,
-            HitSeries = new ChartSeries { Name = "Sales" },
-            HitDataPoint = new DataPoint { X = 3, Y = 1500 },
-            SeriesIndex = 0,
-            TooltipText = "Q3 2024: $1,500",
-            Metadata = metadata
-        };
+        // 1. Basic rendering tests
+        testEngine.CanRenderSimpleLineChartToFile();
+        
+        var bytes = testEngine.CanRenderChartToByteArray();
+        Console.WriteLine($"Rendered chart to byte array, size: {bytes.Length}");
 
-        Console.WriteLine("Click interaction:");
-        Console.WriteLine($"  Position: ({clickArgs.PointerX}, {clickArgs.PointerY})");
-        Console.WriteLine($"  DataPoint: X={clickArgs.HitDataPoint?.X}, Y={clickArgs.HitDataPoint?.Y}");
-        Console.WriteLine($"  Tooltip: {clickArgs.TooltipText}");
+        // 2. Async rendering
+        await testEngine.CanRenderChartAsyncToFile();
 
-        // Hover interaction
-        var hoverArgs = new ChartInteractionEventArgs
-        {
-            InteractionType = ChartInteractionType.Hover,
-            PointerX = 200.0f,
-            PointerY = 180.0f,
-            Region = ChartRegion.AxisX,
-            HitSeries = null,
-            HitDataPoint = null,
-            SeriesIndex = -1,
-            TooltipText = "",
-            Metadata = new Dictionary<string, object>()
-        };
+        // 3. Export tests
+        testEngine.CanExportChartAsPng();
+        await testEngine.CanExportChartAsSvg();
+        await testEngine.CanExportChartAsJpeg();
+        await testEngine.CanExportChartAsWebP();
 
-        Console.WriteLine("\nHover interaction:");
-        Console.WriteLine($"  Position: ({hoverArgs.PointerX}, {hoverArgs.PointerY})");
-        Console.WriteLine($"  SeriesIndex: {hoverArgs.SeriesIndex}");
+        // 4. Advanced rendering features
+        testEngine.CanRenderMultiSeriesChart();
+        testEngine.CanToggleSeriesVisibility();
+        testEngine.CanRenderChartWithSingleDataPoint();
+
+        // 5. Caching and configuration
+        testEngine.CachingImprovesPerfomanceOnSecondRender();
+        testEngine.DifferentChartsProduceDifferentCacheKeys();
+        testEngine.CanApplyCustomConfiguration();
+        testEngine.CanDisableGridAndLegend();
+
+        // 6. Error handling
+        testEngine.RenderingFailsWithMissingData();
+        testEngine.ExportFailsWithInvalidPath();
+
+        // 7. Parallel processing
+        await testEngine.CanRenderMultipleChartsInParallel();
+        await testEngine.CanExportMultipleChartsInParallel();
     }
 }
+```
 ```
