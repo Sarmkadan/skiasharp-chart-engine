@@ -124,9 +124,146 @@ catch (ChartEngineException ex)
 throw new ChartEngineException("Invalid chart data", new InvalidChartDataException("Invalid data points"));
 ```
 
-## AnimationFrameGenerator
+## ChartRenderingPipeline
 
-`AnimationFrameGenerator` is a class responsible for generating animation frames. It provides methods for generating frames and data frames, as well as accessing the current frame number, progress, and values.
+`ChartRenderingPipeline` is a pipeline processor for chart rendering operations. It executes a sequence of stages sequentially with support for middleware-style interceptors. The pipeline maintains execution context, tracks performance metrics, and provides detailed execution results for each stage.
+
+The pipeline supports:
+- Adding custom rendering stages
+- Registering interceptors for before/after pipeline execution
+- Tracking execution context and data across stages
+- Measuring performance of individual stages
+- Comprehensive error handling and reporting
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Pipeline;
+
+public class ChartRenderingPipelineExample
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize pipeline with logger
+        var logger = new NullLogger<ChartRenderingPipeline>();
+        var pipeline = new ChartRenderingPipeline(logger);
+
+        // Create a simple chart with data
+        var chart = new Chart("sales-chart");
+        var series = new ChartSeries("Revenue")
+        {
+            LineWidth = 2.5f,
+            Color = "#2E86C1"
+        };
+        series.AddDataPoint(1.0, 100000.0);
+        series.AddDataPoint(2.0, 125000.0);
+        series.AddDataPoint(3.0, 150000.0);
+        series.AddDataPoint(4.0, 175000.0);
+        chart.AddSeries(series);
+
+        // Add a custom pipeline stage
+        pipeline.AddStage(new DataValidationStage());
+        
+        // Add a pipeline interceptor for logging
+        pipeline.AddInterceptor(new LoggingInterceptor());
+
+        // Create pipeline context with initial data
+        var context = new PipelineContext();
+        context.Set("requestId", Guid.NewGuid());
+        context.Set("userId", "user-123");
+
+        // Execute the pipeline
+        var result = await pipeline.ExecuteAsync(chart, context);
+
+        // Check execution results
+        Console.WriteLine($"Pipeline completed: {result.Success}");
+        Console.WriteLine($"Total duration: {result.TotalDurationMs}ms");
+        Console.WriteLine($"Successful stages: {result.SuccessfulStages}");
+        Console.WriteLine($"Failed stages: {result.FailedStages}");
+
+        if (!result.Success)
+        {
+            Console.WriteLine($"Error: {result.ErrorMessage}");
+        }
+
+        // Access stage-specific results
+        foreach (var stageResult in result.StageResults)
+        {
+            Console.WriteLine($"Stage '{stageResult.StageName}': {stageResult.Success} in {stageResult.DurationMs}ms");
+            if (!stageResult.Success && stageResult.Message != null)
+            {
+                Console.WriteLine($"  Error: {stageResult.Message}");
+            }
+        }
+
+        // Access context data after execution
+        var requestId = context.Get<Guid>("requestId");
+        Console.WriteLine($"Request ID from context: {requestId}");
+    }
+}
+
+// Example pipeline stage implementation
+public class DataValidationStage : IPipelineStage
+{
+    public string Name => "DataValidation";
+
+    public async Task<PipelineStageResult> ExecuteAsync(
+        Chart chart, 
+        PipelineContext context, 
+        System.Threading.CancellationToken cancellationToken)
+    {
+        // Validate chart has data
+        if (chart.Series.Count == 0)
+        {
+            return PipelineStageResult.Failure("Chart has no series data");
+        }
+
+        // Validate each series has data points
+        foreach (var series in chart.Series)
+        {
+            if (series.DataPoints.Count == 0)
+            {
+                return PipelineStageResult.Failure($"Series '{series.Name}' has no data points");
+            }
+        }
+
+        // Store validation result in context
+        context.Set("validationPassed", true);
+        context.Set("dataQualityScore", 95.5);
+
+        return PipelineStageResult.Success("Data validated successfully");
+    }
+}
+
+// Example pipeline interceptor implementation
+public class LoggingInterceptor : IPipelineInterceptor
+{
+    public async Task OnBeforeAsync(
+        PipelineContext context, 
+        System.Threading.CancellationToken cancellationToken)
+    {
+        var requestId = context.Get<Guid>("requestId");
+        Console.WriteLine($"[Before] Pipeline starting - Request ID: {requestId}");
+        await Task.CompletedTask;
+    }
+
+    public async Task OnAfterAsync(
+        PipelineResult result, 
+        PipelineContext context, 
+        System.Threading.CancellationToken cancellationToken)
+    {
+        var requestId = context.Get<Guid>("requestId");
+        var duration = result.TotalDurationMs;
+        Console.WriteLine($"[After] Pipeline completed - Request ID: {requestId}, Duration: {duration}ms, Success: {result.Success}");
+        await Task.CompletedTask;
+    }
+}
+```
+
+## AnimationFrameGenerator
 
 ```csharp
 using System.Collections.Generic;
