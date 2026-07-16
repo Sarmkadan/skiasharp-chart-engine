@@ -804,6 +804,82 @@ public class ChartDataServiceExample
 
 `ChartInteractionServiceTests` provides a comprehensive suite of unit tests for the `ChartInteractionService` class, which handles user interactions with chart elements such as clicks, hovers, selections, and context menu gestures. The tests validate edge cases including null inputs, missed interactions, and proper event raising, ensuring the service correctly processes user interactions and maintains selection state.
 
+## ChartRenderingServiceTests
+
+`ChartRenderingServiceTests` provides a comprehensive suite of unit tests for the `ChartRenderingService` class, which handles synchronous and asynchronous chart rendering to byte arrays and files in various image formats (PNG, SVG, JPEG, WebP). The tests validate null argument validation, caching behavior, file system operations, cancellation support, and constructor dependency validation for the chart rendering service.
+
+The test suite covers:
+- **Async rendering methods**: Validating `RenderToByteArrayAsync`, `RenderToFileAsync`, and `RenderWithExportAsync` with null checks, caching behavior, and cancellation support
+- **Sync rendering methods**: Testing `RenderToByteArray` and `RenderToFile` with null argument validation
+- **Cache pre-warming**: Verifying `PrewarmCache` populates the render cache correctly
+- **Constructor validation**: Ensuring proper dependency injection validation for logger, data service, and cache service
+
+```csharp
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
+public class ChartRenderingServiceExample
+{
+    public static void Main()
+    {
+        // Initialize ChartRenderingService with dependencies
+        var logger = new NullLogger<ChartRenderingService>();
+        var dataService = new ChartDataService(logger);
+        var cacheService = new RenderCacheService();
+        var renderingService = new ChartRenderingService(logger, dataService, cacheService);
+
+        // Create a simple line chart with data
+        var chart = new Chart("sales-chart");
+        var series = new ChartSeries("Revenue");
+        series.AddDataPoint(1.0, 1000.0);
+        series.AddDataPoint(2.0, 1500.0);
+        series.AddDataPoint(3.0, 1200.0);
+        chart.AddSeries(series);
+
+        // Example 1: Render chart to byte array (async)
+        var renderResult = await renderingService.RenderToByteArrayAsync(chart);
+        Console.WriteLine($"Async render success: {renderResult.Success}");
+        Console.WriteLine($"Render time: {renderResult.RenderTimeMilliseconds}ms");
+        Console.WriteLine($"Image data size: {renderResult.ImageData?.Length ?? 0} bytes");
+
+        // Example 2: Render chart to file (async)
+        var filePath = Path.Combine(Path.GetTempPath(), "chart-example.png");
+        var fileResult = await renderingService.RenderToFileAsync(chart, filePath);
+        Console.WriteLine($"Async file render success: {fileResult.Success}");
+        Console.WriteLine($"File exists: {File.Exists(filePath)}");
+
+        // Example 3: Export with custom options (async)
+        var exportOptions = new ExportOptions
+        {
+            Format = ExportFormat.SVG,
+            DirectoryPath = Path.GetTempPath(),
+            FileName = "chart-example.svg"
+        };
+        var exportResult = await renderingService.RenderWithExportAsync(chart, exportOptions);
+        Console.WriteLine($"Export render success: {exportResult.Success}");
+
+        // Example 4: Synchronous rendering
+        var syncResult = renderingService.RenderToByteArray(chart);
+        Console.WriteLine($"Sync render success: {syncResult.Success}");
+        Console.WriteLine($"Sync image data size: {syncResult.ImageData?.Length ?? 0} bytes");
+
+        // Example 5: Pre-warm the cache for faster subsequent renders
+        renderingService.PrewarmCache(chart);
+        Console.WriteLine("Cache pre-warmed");
+
+        // Cleanup
+        if (File.Exists(filePath)) File.Delete(filePath);
+        if (File.Exists(exportOptions.FullPath)) File.Delete(exportOptions.FullPath);
+    }
+}
+```
+
 ## ChartStreamingServiceTests
 
 `ChartStreamingServiceTests` provides a comprehensive suite of unit tests for the `ChartStreamingService` class, which handles real-time data streaming for charts. The service maintains a buffer of streaming data points, applies windowing to limit data retention, and provides thread-safe snapshot generation for rendering. Tests cover registration, publishing, batch operations, window size enforcement, auto-series creation, and asynchronous flushing operations.
