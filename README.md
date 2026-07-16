@@ -881,6 +881,86 @@ public class MathHelperTestsExample
 }
 ```
 
+## HttpChartClient
+
+`HttpChartClient` is an HTTP client for communicating with remote chart services. It provides methods for fetching charts, posting chart data, and downloading rendered chart images from a remote chart service endpoint. The client handles authentication headers, request serialization, and comprehensive error logging.
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Integration;
+using SkiaSharpChartEngine.Models;
+
+public class HttpChartClientExample
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize HttpChartClient with base URL and logger
+        var logger = new NullLogger<HttpChartClient>();
+        var serializer = new JsonChartSerializer();
+        var httpChartClient = new HttpChartClient(
+            "https://api.chart-service.example.com",
+            logger,
+            serializer
+        );
+
+        // Set authentication token for API access
+        httpChartClient.SetAuthenticationToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...");
+
+        // Set custom headers if needed
+        httpChartClient.SetDefaultHeaders("X-API-Version", "v2.1");
+        httpChartClient.SetDefaultHeaders("X-Request-ID", Guid.NewGuid().ToString());
+
+        try
+        {
+            // Example 1: Fetch a chart by ID
+            var chart = await httpChartClient.GetChartAsync("sales-dashboard-2024");
+            Console.WriteLine(chart != null
+                ? $"Fetched chart: {chart.Id} - {chart.Title}"
+                : "Chart not found");
+
+            // Example 2: Post a new chart to remote service
+            var newChart = new Chart("monthly-report-q2")
+            {
+                Title = "Q2 2024 Monthly Report",
+                Description = "Monthly sales performance report"
+            };
+            newChart.AddSeries(new ChartSeries("Revenue")
+            {
+                LineWidth = 2.5f,
+                Color = "#2E86C1"
+            });
+            
+            bool posted = await httpChartClient.PostChartAsync(newChart);
+            Console.WriteLine($"Chart posted successfully: {posted}");
+
+            // Example 3: Download rendered chart image
+            var chartImageData = await httpChartClient.GetRenderedChartAsync(
+                "sales-dashboard-2024",
+                format: "png"
+            );
+            
+            if (chartImageData != null)
+            {
+                Console.WriteLine($"Downloaded chart image: {chartImageData.Length} bytes");
+                // Save to file or process the image data
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Chart service error: {ex.Message}");
+        }
+        finally
+        {
+            // Cleanup
+            httpChartClient.Dispose();
+        }
+    }
+}
+```
+
 ## ExternalApiClient
 
 `ExternalApiClient` is an HTTP client for integrating with external APIs. It provides a convenient wrapper around `HttpClient` with built-in retry logic, error handling, request/response serialization, and header management. The client supports common HTTP methods (GET, POST, PUT, DELETE) and automatically handles JSON serialization/deserialization.
