@@ -1,3 +1,11 @@
+# SkiaSharp Chart Engine
+
+A .NET chart rendering library (SkiaSharp-based) with an ASP.NET Core Web API host. Usable standalone via `ChartEngine.Create()` or as a service through `AddSkiaSharpChartEngine()`.
+
+## Architecture
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the component breakdown, data flow, design decisions, extension points, and known limitations. The sections below are per-type usage examples.
+
 ## TemplateController
 
 `TemplateController` is a REST API controller that handles template management operations. It provides endpoints for retrieving, creating, updating, and deleting chart templates.
