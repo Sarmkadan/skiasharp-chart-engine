@@ -1137,6 +1137,93 @@ public class InteractivityExample
 }
 ```
 
+## StringExtensions
+
+`StringExtensions` provides a comprehensive set of utility extension methods for string manipulation and conversion. It includes methods for converting between different string formats (camelCase, snake_case, PascalCase, kebab-case), parsing and converting numeric values, truncating strings, checking string properties, and various text transformations.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Extensions;
+
+public class StringExtensionsExample
+{
+    public static void Main()
+    {
+        // Example 1: Convert between different string formats
+        string camelCase = "salesPerformanceMonthlyDashboard";
+        string kebabCase = camelCase.ToKebabCase();
+        Console.WriteLine($"Kebab case: {kebabCase}");
+        // Output: Kebab case: sales-performance-monthly-dashboard
+
+        string snakeCase = "quarterly_revenue_report";
+        string pascalCase = snakeCase.ToPascalCase();
+        Console.WriteLine($"Pascal case: {pascalCase}");
+        // Output: Pascal case: QuarterlyRevenueReport
+
+        // Example 2: Parse strings to numeric values with fallback
+        string numberString = "42.75";
+        double parsedDouble = numberString.ToDoubleOrDefault();
+        Console.WriteLine($"Parsed double: {parsedDouble}");
+        // Output: Parsed double: 42.75
+
+        string invalidNumber = "not-a-number";
+        double defaultValue = invalidNumber.ToDoubleOrDefault(999.99);
+        Console.WriteLine($"Invalid number fallback: {defaultValue}");
+        // Output: Invalid number fallback: 999.99
+
+        // Example 3: Truncate long strings with ellipsis
+        string longText = "This is a very long text that needs to be truncated";
+        string truncated = longText.Truncate(20);
+        Console.WriteLine($"Truncated: {truncated}");
+        // Output: Truncated: This is a very long...
+
+        // Example 4: Check string properties
+        string hexColor = "#FF5733";
+        bool isValidHex = hexColor.IsValidHexColor();
+        Console.WriteLine($"Is valid hex color: {isValidHex}");
+        // Output: Is valid hex color: True
+
+        string numericString = "12345";
+        bool containsDigits = numericString.ContainsDigit();
+        Console.WriteLine($"Contains digits: {containsDigits}");
+        // Output: Contains digits: True
+
+        // Example 5: Text transformations
+        string mixedCase = "hElLo WoRlD";
+        string capitalized = mixedCase.CapitalizeFirstLetter();
+        Console.WriteLine($"Capitalized: {capitalized}");
+        // Output: Capitalized: HElLo WoRlD
+
+        string whitespaceText = "  Hello   World  ";
+        string noWhitespace = whitespaceText.RemoveWhitespace();
+        Console.WriteLine($"No whitespace: '{noWhitespace}'");
+        // Output: No whitespace: 'HelloWorld'
+
+        // Example 6: Extract numbers from strings
+        string alphanumeric = "Product ID: 12345, Version: 2.1.0";
+        string numbersOnly = alphanumeric.ExtractNumbers();
+        Console.WriteLine($"Extracted numbers: {numbersOnly}");
+        // Output: Extracted numbers: 12345210
+
+        // Example 7: Repeat strings for padding or separators
+        string separator = "=".Repeat(30);
+        Console.WriteLine(separator);
+        // Output: ================================
+
+        // Example 8: Check if string is a palindrome
+        string palindrome = "madam";
+        bool isPalindrome = palindrome.IsPalindrome();
+        Console.WriteLine($"Is palindrome: {isPalindrome}");
+        // Output: Is palindrome: True
+
+        string notPalindrome = "hello";
+        bool isNotPalindrome = notPalindrome.IsPalindrome();
+        Console.WriteLine($"Is palindrome: {isNotPalindrome}");
+        // Output: Is palindrome: False
+    }
+}
+```
+
 ## CollectionExtensions
 
 `CollectionExtensions` provides a set of utility extension methods for working with collections and sequences in a more convenient and expressive way. It includes methods for batching, filtering duplicates, checking for null/empty collections, getting random elements, shuffling, and various statistical operations.
