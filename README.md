@@ -160,6 +160,68 @@ public class ChartTemplateExample
 }
 ```
 
+## ChartEngineCliInterface
+
+`ChartEngineCliInterface` is the command-line interface for the SkiaSharp Chart Engine. It provides a structured way to parse command-line arguments and execute CLI commands for chart rendering, exporting, validation, and other operations. The interface supports multiple commands (render, export, validate, help, version) and handles argument parsing with proper error logging and user feedback.
+
+The CLI interface can be used standalone or integrated into larger applications, providing a consistent entry point for chart-related operations through the command pattern.
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.CLI;
+using SkiaSharpChartEngine.Models;
+
+public class ChartEngineCliInterfaceExample
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize chart engine and logger
+        var chartEngine = ChartEngine.Create();
+        var logger = new NullLogger<ChartEngineCliInterface>();
+        
+        // Create CLI interface instance
+        var cliInterface = new ChartEngineCliInterface(chartEngine, logger);
+        
+        // Example 1: Display help
+        Console.WriteLine("=== Displaying help ===");
+        await cliInterface.ExecuteAsync(new[] { "help" });
+        
+        // Example 2: Display version
+        Console.WriteLine("\n=== Displaying version ===");
+        await cliInterface.ExecuteAsync(new[] { "version" });
+        
+        // Example 3: Render a chart (basic usage)
+        Console.WriteLine("\n=== Rendering chart ===");
+        int renderResult = await cliInterface.ExecuteAsync(new[] {
+            "render",
+            "--type", "line",
+            "--output", "./output/line-chart.png"
+        });
+        Console.WriteLine($"Render command result: {(renderResult == 0 ? "Success" : "Failed")}");
+        
+        // Example 4: Export chart to multiple formats
+        Console.WriteLine("\n=== Exporting chart ===");
+        int exportResult = await cliInterface.ExecuteAsync(new[] {
+            "export",
+            "--chart-id", "chart-123",
+            "--formats", "png,svg,pdf"
+        });
+        Console.WriteLine($"Export command result: {(exportResult == 0 ? "Success" : "Failed")}");
+        
+        // Example 5: Validate chart configuration
+        Console.WriteLine("\n=== Validating configuration ===");
+        int validateResult = await cliInterface.ExecuteAsync(new[] {
+            "validate",
+            "--config", "./configs/chart-config.json"
+        });
+        Console.WriteLine($"Validate command result: {(validateResult == 0 ? "Success" : "Failed")}");
+    }
+}
+```
+
 ## CommandRouter
 
 `CommandRouter` is a command routing system that implements the command pattern for CLI applications. It routes command-line arguments to appropriate command executors based on registered command names, providing a clean separation between command parsing, routing, and execution. The router supports help display, error handling, and maintains a registry of available commands.
