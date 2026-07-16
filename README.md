@@ -1979,6 +1979,77 @@ public class DataPointExtensionsExample
 }
 ```
 
+## ChartRepository
+
+`ChartRepository` is a repository class that provides data access and persistence operations for `Chart` entities. It abstracts the data layer and offers both synchronous and asynchronous methods for CRUD operations, enabling clean separation between business logic and data storage. The repository supports querying charts by ID, type, and search criteria, as well as checking for chart existence and counting charts.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Repository;
+
+public class ChartRepositoryExample
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize repository with data context
+        var repository = new ChartRepository(new ChartDbContext());
+
+        // Example 1: Check if a chart exists by ID
+        bool exists = await repository.ExistsAsync("sales-dashboard-2024");
+        Console.WriteLine($"Chart exists: {exists}");
+
+        // Example 2: Get a chart by ID
+        var chart = await repository.GetByIdAsync("sales-dashboard-2024");
+        Console.WriteLine(chart != null
+            ? $"Found chart: {chart.Id} - {chart.Title}"
+            : "Chart not found");
+
+        // Example 3: Get all charts
+        var allCharts = await repository.GetAllAsync();
+        Console.WriteLine($"Total charts: {allCharts.Count}");
+
+        // Example 4: Get charts by type
+        var lineCharts = await repository.GetByTypeAsync("line");
+        Console.WriteLine($"Line charts: {lineCharts.Count}");
+
+        // Example 5: Search charts by query
+        var searchResults = await repository.SearchAsync("sales");
+        Console.WriteLine($"Search results: {searchResults.Count}");
+
+        // Example 6: Save a new chart
+        var newChart = new Chart("monthly-report-q2")
+        {
+            Title = "Q2 2024 Monthly Report",
+            Description = "Monthly sales performance report"
+        };
+        newChart.AddSeries(new ChartSeries("Revenue")
+        {
+            LineWidth = 2.5f,
+            Color = "#2E86C1"
+        });
+
+        string chartId = await repository.SaveAsync(newChart);
+        Console.WriteLine($"Saved chart with ID: {chartId}");
+
+        // Example 7: Update an existing chart
+        newChart.Title = "Q2 2024 Monthly Report - Updated";
+        bool updated = await repository.UpdateAsync(newChart);
+        Console.WriteLine($"Chart updated: {updated}");
+
+        // Example 8: Delete a chart
+        bool deleted = await repository.DeleteAsync("old-chart-id");
+        Console.WriteLine($"Chart deleted: {deleted}");
+
+        // Example 9: Get total chart count
+        int chartCount = await repository.GetCountAsync();
+        Console.WriteLine($"Total charts in repository: {chartCount}");
+    }
+}
+```
+
 ## ChartExtensions
 
 `ChartExtensions` provides a set of extension methods for enhancing and transforming `Chart` objects. These methods enable common chart operations like applying default configurations, calculating axis bounds, counting data points, checking for empty charts, applying color palettes, normalizing data across series, filtering series, and converting charts to builders for further customization.
