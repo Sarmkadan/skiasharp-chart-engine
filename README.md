@@ -627,6 +627,135 @@ public class AnimationFrameGeneratorExample
 }
 ```
 
+## ChartInteractionService
+
+`ChartInteractionService` is the default implementation of `IChartInteractionService` that handles user interactions with chart elements such as clicks, hovers, selections, and context menu gestures. It delegates hit-testing to `IInteractivityService` and maintains per-chart selection state in a thread-safe dictionary, enabling interactive chart features like data point selection and hover tooltips.
+
+The service provides both synchronous and asynchronous methods for processing interactions, supports toggling data point selections, clearing selections, and retrieving the current selection state for any chart.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharp;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Services;
+
+public class ChartInteractionServiceExample
+{
+    public static void Main()
+    {
+        // Initialize services
+        var logger = new NullLogger<ChartInteractionService>();
+        var interactivityService = new InteractivityService();
+        var interactionService = new ChartInteractionService(interactivityService, logger);
+
+        // Create a chart with sample data
+        var chart = new Chart("sales-chart");
+        var series = new ChartSeries("Revenue")
+        {
+            LineWidth = 2.5f,
+            Color = "#2E86C1"
+        };
+        series.AddDataPoint(1.0, 100000.0);
+        series.AddDataPoint(2.0, 125000.0);
+        series.AddDataPoint(3.0, 150000.0);
+        series.AddDataPoint(4.0, 175000.0);
+        chart.AddSeries(series);
+
+        // Example 1: Process a click interaction
+        var clickArgs = interactionService.ProcessInteraction(
+            chart,
+            ChartInteractionType.Click,
+            pointerX: 200,
+            pointerY: 300,
+            canvasWidth: 800,
+            canvasHeight: 600
+        );
+        Console.WriteLine($"Click processed - Hit: {clickArgs.Region}, Tooltip: {clickArgs.TooltipText}");
+
+        // Example 2: Process hover interaction
+        var hoverArgs = interactionService.ProcessInteraction(
+            chart,
+            ChartInteractionType.Hover,
+            pointerX: 250,
+            pointerY: 280,
+            canvasWidth: 800,
+            canvasHeight: 600
+        );
+        Console.WriteLine($"Hover processed - Hit: {hoverArgs.Region}, Data point: {hoverArgs.HitDataPoint?.X},{hoverArgs.HitDataPoint?.Y}");
+
+        // Example 3: Toggle selection on a data point
+        bool selectionToggled = interactionService.ToggleSelection(
+            chart,
+            pointerX: 200,
+            pointerY: 300,
+            canvasWidth: 800,
+            canvasHeight: 600
+        );
+        Console.WriteLine($"Selection toggled: {selectionToggled}");
+
+        // Example 4: Get current selection state
+        var selection = interactionService.GetSelection(chart);
+        Console.WriteLine($"Current selection - Series count: {selection.Count}");
+        foreach (var seriesSelection in selection)
+        {
+            Console.WriteLine($"  {seriesSelection.Key}: {seriesSelection.Value.Count} points");
+        }
+
+        // Example 5: Clear all selections
+        interactionService.ClearSelection(chart);
+        Console.WriteLine("Selection cleared");
+
+        // Example 6: Process async interaction
+        var asyncTask = interactionService.ProcessInteractionAsync(
+            chart,
+            ChartInteractionType.Click,
+            pointerX: 300,
+            pointerY: 250,
+            canvasWidth: 800,
+            canvasHeight: 600
+        );
+        var asyncArgs = asyncTask.Result;
+        Console.WriteLine($"Async interaction completed - Hit: {asyncArgs.Region}");
+    }
+}
+
+// Subscribe to events to handle interactions
+public class ChartInteractionHandler
+{
+    private readonly IChartInteractionService _interactionService;
+
+    public ChartInteractionHandler(IChartInteractionService interactionService)
+    {
+        _interactionService = interactionService;
+        _interactionService.Clicked += OnChartClicked;
+        _interactionService.Hovered += OnChartHovered;
+        _interactionService.SelectionChanged += OnSelectionChanged;
+    }
+
+    private void OnChartClicked(object sender, ChartInteractionEventArgs e)
+    {
+        var chart = (Chart)sender!;
+        Console.WriteLine($"[Clicked] Chart: {chart.Id}, Region: {e.Region}");
+    }
+
+    private void OnChartHovered(object sender, ChartInteractionEventArgs e)
+    {
+        var chart = (Chart)sender!;
+        Console.WriteLine($"[Hovered] Chart: {chart.Id}, Tooltip: {e.TooltipText}");
+    }
+
+    private void OnSelectionChanged(object sender, ChartSelectionChangedEventArgs e)
+    {
+        var chart = (Chart)sender!;
+        Console.WriteLine($"[SelectionChanged] Chart: {chart.Id}, Points: {e.SelectedPoints.Count}");
+    }
+}
+```
+
 ## ChartEventPublisher
 
 `ChartEventPublisher` implements the publish-subscribe pattern for chart events in the SkiaSharp chart engine. It allows components to subscribe to various chart events (creation, update, deletion, rendering, export, and errors) and notifies all registered subscribers when these events occur. The publisher provides thread-safe subscription management and asynchronous event broadcasting with comprehensive logging.
