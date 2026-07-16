@@ -683,6 +683,74 @@ public class ChartEngineTestsExample
 
 `ChartInteractionServiceTests` provides a comprehensive suite of unit tests for the `ChartInteractionService` class, which handles user interactions with chart elements such as clicks, hovers, selections, and context menu gestures. The tests validate edge cases including null inputs, missed interactions, and proper event raising, ensuring the service correctly processes user interactions and maintains selection state.
 
+## ChartStreamingServiceTests
+
+`ChartStreamingServiceTests` provides a comprehensive suite of unit tests for the `ChartStreamingService` class, which handles real-time data streaming for charts. The service maintains a buffer of streaming data points, applies windowing to limit data retention, and provides thread-safe snapshot generation for rendering. Tests cover registration, publishing, batch operations, window size enforcement, auto-series creation, and asynchronous flushing operations.
+
+```csharp
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Services;
+using SkiaSharpChartEngine.Streaming;
+
+public class ChartStreamingServiceExample
+{
+    public static void Main()
+    {
+        // Initialize streaming service with rendering service
+        var renderingService = new ChartRenderingService();
+        var streamingService = new ChartStreamingService(renderingService);
+
+        // Create a chart for streaming
+        var chart = new Chart("temperature-stream");
+        chart.AddSeries(new ChartSeries("Temperature"));
+        chart.AddSeries(new ChartSeries("Humidity"));
+
+        // Register the chart with default options
+        streamingService.Register(chart);
+
+        // Publish individual data points
+        streamingService.Publish(chart.Id, new StreamDataPoint { SeriesName = "Temperature", X = 1, Y = 23.5 });
+        streamingService.Publish(chart.Id, new StreamDataPoint { SeriesName = "Temperature", X = 2, Y = 24.1 });
+        streamingService.Publish(chart.Id, new StreamDataPoint { SeriesName = "Humidity", X = 1, Y = 45.0 });
+
+        // Publish batch of points
+        var humidityPoints = Enumerable.Range(1, 10).Select(i =>
+            new StreamDataPoint { SeriesName = "Humidity", X = i, Y = 35.0 + i * 2.5 });
+        streamingService.PublishBatch(chart.Id, humidityPoints);
+
+        // Get current snapshot for rendering
+        var snapshot = streamingService.GetSnapshot(chart.Id);
+        Console.WriteLine($"Chart {snapshot.Id} has {snapshot.Series.Count} series");
+        Console.WriteLine($"Temperature points: {snapshot.GetSeriesByName("Temperature")?.GetDataPointCount()}");
+        Console.WriteLine($"Humidity points: {snapshot.GetSeriesByName("Humidity")?.GetDataPointCount()}");
+
+        // Configure window size to limit data retention
+        var options = new StreamingChartOptions { WindowSize = 5 };
+        streamingService.Register(chart, options);
+
+        // Publish more points - oldest will be dropped when window exceeds size
+        for (int i = 1; i <= 10; i++)
+        {
+            streamingService.Publish(chart.Id, new StreamDataPoint { SeriesName = "Temperature", X = i + 10, Y = 20.0 + i });
+        }
+
+        // Get updated snapshot
+        var finalSnapshot = streamingService.GetSnapshot(chart.Id);
+        Console.WriteLine($"After windowing, Temperature points: {finalSnapshot.GetSeriesByName("Temperature")?.GetDataPointCount()}");
+
+        // Flush buffered points asynchronously
+        var flushedCount = await streamingService.FlushAsync(chart.Id);
+        Console.WriteLine($"Flushed {flushedCount} buffered points");
+
+        // Unregister when chart is no longer needed
+        streamingService.Unregister(chart.Id);
+    }
+}
+```
+
 ```csharp
 using System;
 using System.Threading.Tasks;
