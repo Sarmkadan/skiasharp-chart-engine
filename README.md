@@ -1044,6 +1044,99 @@ public class Chart
 }
 ```
 
+## InteractivityExtensions
+
+`InteractivityExtensions` provides extension methods for adding interactive features to charts, including tooltip hit-testing, zooming, panning, and viewport management. These methods allow you to implement rich user interactions like hover tooltips, zoom/pan gestures, and reset functionality in your chart applications.
+
+The extension methods can be used with or without dependency injection - they include a built-in default service for standalone scenarios while also providing the `AddChartInteractivity()` method to register the service in your DI container.
+
+```csharp
+using System;
+using SkiaSharp;
+using SkiaSharpChartEngine.Extensions;
+using SkiaSharpChartEngine.Models;
+
+public class InteractivityExample
+{
+    public static void Main()
+    {
+        // Create a chart with sample data
+        var chart = new Chart("sales-chart");
+        var series = new ChartSeries("Revenue")
+        {
+            LineWidth = 2.5f,
+            Color = "#2E86C1"
+        };
+        series.AddDataPoint(1.0, 100000.0);
+        series.AddDataPoint(2.0, 125000.0);
+        series.AddDataPoint(3.0, 150000.0);
+        series.AddDataPoint(4.0, 175000.0);
+        chart.AddSeries(series);
+
+        // Example 1: Get tooltip at specific coordinates
+        var tooltipResult = chart.GetTooltipAt(
+            pointerX: 200,
+            pointerY: 300,
+            canvasWidth: 800,
+            canvasHeight: 600,
+            options: new TooltipOptions { HitRadius = 10 }
+        );
+
+        if (tooltipResult.IsHit)
+        {
+            Console.WriteLine($"Tooltip: {tooltipResult.TooltipText}");
+            Console.WriteLine($"Data point: X={tooltipResult.DataPoint?.X}, Y={tooltipResult.DataPoint?.Y}");
+        }
+
+        // Example 2: Zoom in at a specific point (2x zoom)
+        var currentViewport = chart.ResetViewport();
+        var zoomedViewport = chart.ZoomAt(
+            current: currentViewport,
+            anchorX: 400,
+            anchorY: 300,
+            canvasWidth: 800,
+            canvasHeight: 600,
+            factor: 2.0
+        );
+
+        Console.WriteLine($"Zoomed viewport: {zoomedViewport.ZoomLevel:P0}");
+
+        // Example 3: Pan the viewport by 50 pixels right
+        var pannedViewport = chart.PanBy(
+            current: zoomedViewport,
+            deltaX: 50,
+            deltaY: 0,
+            canvasWidth: 800,
+            canvasHeight: 600
+        );
+
+        Console.WriteLine($"Panned viewport: X offset={pannedViewport.XOffset}");
+
+        // Example 4: Reset viewport to show all data
+        var fullViewport = chart.ResetViewport();
+        Console.WriteLine("Reset to full viewport");
+
+        // Example 5: Async tooltip hit-testing
+        var asyncTooltip = await chart.GetTooltipAtAsync(
+            pointerX: 250,
+            pointerY: 250,
+            canvasWidth: 800,
+            canvasHeight: 600
+        );
+
+        Console.WriteLine($"Async tooltip hit: {asyncTooltip.IsHit}");
+
+        // Example 6: Using SKPoint overload for MAUI/Blazor coordinates
+        var skPoint = new SKPoint(300, 200);
+        var tooltipFromPoint = chart.GetTooltipAt(
+            point: skPoint,
+            canvasWidth: 800,
+            canvasHeight: 600
+        );
+    }
+}
+```
+
 ## CollectionExtensions
 
 `CollectionExtensions` provides a set of utility extension methods for working with collections and sequences in a more convenient and expressive way. It includes methods for batching, filtering duplicates, checking for null/empty collections, getting random elements, shuffling, and various statistical operations.
