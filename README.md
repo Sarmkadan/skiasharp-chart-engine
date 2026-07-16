@@ -54,6 +54,57 @@ public class TemplateControllerExample
 }
 ```
 
+## AsyncDataLoader
+
+`AsyncDataLoader` is a utility class for asynchronously loading chart data from various sources including JSON files, CSV files, and directories. It provides methods for loading individual charts or multiple charts from file systems, with automatic format detection and validation.
+
+```csharp
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using SkiaSharpChartEngine.Integration;
+using SkiaSharpChartEngine.Models;
+
+public class AsyncDataLoaderExample
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize the data loader with logger
+        var logger = new Microsoft.Extensions.Logging.Abstractions.NullLogger<AsyncDataLoader>();
+        var dataLoader = new AsyncDataLoader(logger);
+
+        // Example 1: Load a single chart from a JSON file
+        var jsonChart = await dataLoader.LoadChartFromFileAsync("chart-data.json");
+        Console.WriteLine(jsonChart != null
+            ? $"Loaded JSON chart: {jsonChart.Title}"
+            : "Failed to load JSON chart");
+
+        // Example 2: Load a chart from a CSV file
+        var csvChart = await dataLoader.LoadChartFromFileAsync("sales-data.csv");
+        Console.WriteLine(csvChart != null
+            ? $"Loaded CSV chart with {csvChart.Series.Count} series"
+            : "Failed to load CSV chart");
+
+        // Example 3: Load multiple charts from a directory
+        var chartsFromDir = await dataLoader.LoadChartsFromDirectoryAsync(
+            "./charts/",
+            "*.json"
+        );
+        Console.WriteLine($"Loaded {chartsFromDir.Count} charts from directory");
+
+        // Example 4: Parse CSV data directly
+        var csvData = "Quarter,Revenue,Expenses\nQ1,100000,85000\nQ2,125000,92000";
+        var dataPoints = dataLoader.ParseCsvData(csvData);
+        Console.WriteLine($"Parsed {dataPoints.Count} data points from CSV");
+
+        // Example 5: Check if a file can be loaded
+        bool canLoad = dataLoader.CanLoadFile("chart.json");
+        Console.WriteLine($"Can load file: {canLoad}");
+    }
+}
+```
+
 ## ChartEngineException
 
 `ChartEngineException` is a custom exception class that represents an error that occurred during chart engine operations. It provides a way to handle and propagate errors in a meaningful way.
