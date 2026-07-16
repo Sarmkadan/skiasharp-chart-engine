@@ -1288,6 +1288,66 @@ public class ChartRenderingServiceExample
 
 `ChartStreamingServiceTests` provides a comprehensive suite of unit tests for the `ChartStreamingService` class, which handles real-time data streaming for charts. The service maintains a buffer of streaming data points, applies windowing to limit data retention, and provides thread-safe snapshot generation for rendering. Tests cover registration, publishing, batch operations, window size enforcement, auto-series creation, and asynchronous flushing operations.
 
+## WebhookHandler
+
+`WebhookHandler` handles webhook subscriptions and deliveries, allowing external services to be notified of chart events. It implements the `IChartEventSubscriber` interface to receive chart events and deliver them via HTTP POST to registered webhook URLs.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Integration;
+using SkiaSharpChartEngine.Events;
+
+public class WebhookHandlerExample
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize webhook handler with logger
+        var logger = new NullLogger<WebhookHandler>();
+        var webhookHandler = new WebhookHandler(logger);
+
+        // Register a webhook for chart created events
+        string subscriptionId = webhookHandler.RegisterWebhook(
+            "chart.created",
+            "https://example.com/webhooks/chart-created",
+            new WebhookOptions { Headers = new Dictionary<string, string> { { "Authorization", "Bearer token123" } } }
+        );
+
+        Console.WriteLine($"Registered webhook with ID: {subscriptionId}");
+
+        // Get all subscriptions
+        List<WebhookSubscription> subscriptions = webhookHandler.GetSubscriptions();
+        Console.WriteLine($"Total subscriptions: {subscriptions.Count}");
+
+        // Simulate a chart created event
+        var chartCreatedEvent = new ChartCreatedEvent(
+            Guid.NewGuid(),
+            DateTime.UtcNow,
+            "chart-123"
+        );
+
+        await webhookHandler.OnChartCreatedAsync(chartCreatedEvent);
+        Console.WriteLine("Chart created event processed and webhook delivered");
+
+        // Check subscription details
+        var subscription = subscriptions.Find(s => s.Id == subscriptionId);
+        if (subscription != null)
+        {
+            Console.WriteLine($"Subscription status - Active: {subscription.IsActive}, Healthy: {subscription.IsHealthy}");
+            Console.WriteLine($"Delivery count: {subscription.DeliveryCount}");
+            Console.WriteLine($"Last delivery: {subscription.LastDeliveryAt}");
+        }
+
+        // Unregister the webhook
+        bool unregistered = webhookHandler.UnregisterWebhook(subscriptionId);
+        Console.WriteLine($"Webhook unregistered: {unregistered}");
+    }
+}
+```
+
 ```csharp
 using System;
 using System.Linq;
