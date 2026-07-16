@@ -1384,6 +1384,70 @@ var chart = new Chart("sales-chart")
 };
 ```
 
+## TooltipOptions
+
+`TooltipOptions` controls the appearance and behavior of interactive tooltips when hovering over chart data points. It allows customization of colors, dimensions, hit-testing radius, and content formatting. Tooltips provide contextual information about the data point under the cursor, including X/Y values, series name, and custom formatted content.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Models;
+
+public class TooltipOptionsExample
+{
+    public static void Main()
+    {
+        // Create a chart with sample data
+        var chart = new Chart("sales-performance-chart");
+        var series = new ChartSeries("Revenue")
+        {
+            LineWidth = 2.5f,
+            Color = "#2E86C1"
+        };
+        series.AddDataPoint(1.0, 100000.0);
+        series.AddDataPoint(2.0, 125000.0);
+        series.AddDataPoint(3.0, 150000.0);
+        series.AddDataPoint(4.0, 175000.0);
+        chart.AddSeries(series);
+
+        // Configure tooltip appearance and behavior
+        var tooltipOptions = new TooltipOptions
+        {
+            Enabled = true,
+            BackgroundColor = "#2E86C1",
+            BorderColor = "#1A5276",
+            TextColor = "#FFFFFF",
+            BorderWidth = 2f,
+            Padding = 12f,
+            BorderRadius = 8f,
+            FontSize = 14f,
+            HitRadius = 20f,
+            ShadowOpacity = 0.3f,
+            ContentTemplate = "{series}: {y:C0} in Q{x}"
+        };
+
+        // Use tooltip options when checking for tooltip hits
+        var tooltipResult = chart.GetTooltipAt(
+            pointerX: 200,
+            pointerY: 300,
+            canvasWidth: 800,
+            canvasHeight: 600,
+            options: tooltipOptions
+        );
+
+        if (tooltipResult.IsHit)
+        {
+            Console.WriteLine($"Tooltip: {tooltipResult.TooltipText}");
+            Console.WriteLine($"Data point: X={tooltipResult.DataPoint?.X}, Y={tooltipResult.DataPoint?.Y}");
+            Console.WriteLine($"Series: {tooltipResult.Series?.Name}");
+        }
+
+        // Clone tooltip options for reuse
+        var clonedOptions = tooltipOptions.Clone();
+        clonedOptions.BackgroundColor = "#E74C3C";
+    }
+}
+```
+
 ## InteractivityExtensions
 
 `InteractivityExtensions` provides extension methods for adding interactive features to charts, including tooltip hit-testing, zooming, panning, and viewport management. These methods allow you to implement rich user interactions like hover tooltips, zoom/pan gestures, and reset functionality in your chart applications.
