@@ -160,6 +160,111 @@ public class ChartTemplateExample
 }
 ```
 
+## CommandRouter
+
+`CommandRouter` is a command routing system that implements the command pattern for CLI applications. It routes command-line arguments to appropriate command executors based on registered command names, providing a clean separation between command parsing, routing, and execution. The router supports help display, error handling, and maintains a registry of available commands.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.CLI;
+
+public class CommandRouterExample
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize logger and argument parser
+        var logger = new NullLogger<CommandRouter>();
+        var argumentParser = new ArgumentParser(logger);
+        
+        // Create command router
+        var commandRouter = new CommandRouter(logger, argumentParser);
+        
+        // Register command handlers
+        commandRouter.RegisterCommand("render", new RenderChartCommandExecutor());
+        commandRouter.RegisterCommand("export", new ExportChartCommandExecutor());
+        commandRouter.RegisterCommand("validate", new ValidateChartCommandExecutor());
+        
+        // Display available commands
+        commandRouter.DisplayHelp();
+        
+        // Get list of registered commands
+        var commands = commandRouter.GetRegisteredCommands();
+        Console.WriteLine($"\nRegistered commands: {string.Join(", ", commands)}");
+        
+        // Route and execute a command (simulated)
+        var result = await commandRouter.RouteAsync(new[] { "render", "--chart=quarterly-sales", "--output=chart.png" });
+        Console.WriteLine($"Command executed with result: {result}");
+    }
+}
+
+// Example command executor implementation
+public class RenderChartCommandExecutor : ICommandExecutor
+{
+    public async Task<bool> ExecuteAsync(Dictionary<string, string> arguments)
+    {
+        Console.WriteLine("Executing render command...");
+        
+        if (arguments.TryGetValue("chart", out var chartName))
+        {
+            Console.WriteLine($"Rendering chart: {chartName}");
+        }
+        
+        if (arguments.TryGetValue("output", out var outputFile))
+        {
+            Console.WriteLine($"Output file: {outputFile}");
+        }
+        
+        // Simulate async work
+        await Task.Delay(100);
+        
+        return true;
+    }
+}
+
+// Example command executor for export
+public class ExportChartCommandExecutor : ICommandExecutor
+{
+    public async Task<bool> ExecuteAsync(Dictionary<string, string> arguments)
+    {
+        Console.WriteLine("Executing export command...");
+        
+        if (arguments.TryGetValue("chart", out var chartName))
+        {
+            Console.WriteLine($"Exporting chart: {chartName}");
+        }
+        
+        if (arguments.TryGetValue("format", out var format))
+        {
+            Console.WriteLine($"Export format: {format}");
+        }
+        
+        await Task.Delay(50);
+        return true;
+    }
+}
+
+// Example command executor for validation
+public class ValidateChartCommandExecutor : ICommandExecutor
+{
+    public async Task<bool> ExecuteAsync(Dictionary<string, string> arguments)
+    {
+        Console.WriteLine("Executing validate command...");
+        
+        if (arguments.TryGetValue("chart", out var chartName))
+        {
+            Console.WriteLine($"Validating chart: {chartName}");
+        }
+        
+        await Task.Delay(25);
+        return true;
+    }
+}
+```
+
 ## AsyncDataLoader
 
 `AsyncDataLoader` is a utility class for asynchronously loading chart data from various sources including JSON files, CSV files, and directories. It provides methods for loading individual charts or multiple charts from file systems, with automatic format detection and validation.
