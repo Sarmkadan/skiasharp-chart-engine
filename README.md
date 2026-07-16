@@ -617,64 +617,93 @@ public class CacheKeyBenchmarksExample
 }
 ```
 
-## ChartEngineTests
+## ChartModelsAndValidationTests
 
-`ChartEngineTests` provides a comprehensive suite of unit tests for the `ChartEngine` class, ensuring reliable performance and correct behavior across various rendering, configuration, and export scenarios. The tests validate edge cases such as null or empty inputs, and confirm that the engine handles valid charts and different formats correctly.
+`ChartModelsAndValidationTests` is a comprehensive unit test suite that validates the behavior of core chart models and validation logic in the SkiaSharpChartEngine library. This test class ensures the correctness of fundamental components including `DataPoint`, `ChartSeries`, `Chart`, `ChartValidator`, `ColorHelper`, and their associated extension methods.
+
+The tests cover:
+- **DataPoint validation**: Ensuring X and Y coordinates cannot be NaN or infinite values
+- **DataPoint operations**: Cloning and coordinate transformations (offset, scale)
+- **ChartSeries functionality**: Adding data points and calculating Y-axis ranges
+- **Chart validation**: Checking for null inputs, empty series, and series naming
+- **Color utilities**: Hex/RGB conversion and color manipulation
+- **Distance calculations**: Euclidean distance between data points
 
 ```csharp
 using System;
-using System.Threading.Tasks;
-using Xunit;
-using SkiaSharpChartEngine;
+using System.Collections.Generic;
 using SkiaSharpChartEngine.Models;
-using SkiaSharpChartEngine.Exceptions;
+using SkiaSharpChartEngine.Utilities;
+using SkiaSharpChartEngine.Extensions;
 
-public class ChartEngineTestsExample
+public class ChartModelsAndValidationTestsExample
 {
-    [Fact]
-    public void RenderChart_WithValidChart_ReturnsSuccessfulRenderResult()
+    public static void Main()
     {
-        // Arrange
-        var engine = new ChartEngine();
-        var chart = new Chart { /* Initialize valid chart */ };
+        // Example 1: Test DataPoint validation - setting X to NaN throws ArgumentException
+        var point = new DataPoint(1.0, 2.0);
+        try
+        {
+            point.X = double.NaN;
+            Console.WriteLine("ERROR: Should have thrown ArgumentException");
+        }
+        catch (ArgumentException ex)
+        {
+            Console.WriteLine($"✓ DataPoint validation: {ex.Message}");
+        }
 
-        // Act
-        var result = engine.RenderChart(chart);
+        // Example 2: Test DataPoint cloning produces independent copy
+        var original = new DataPoint(3.0, 7.5, "Q3", "#FF0000");
+        original.Metadata = new Dictionary<string, object> { ["key"] = "value" };
+        
+        var clone = original.Clone();
+        clone.X = 99.0;
+        
+        Console.WriteLine($"✓ Clone independent: Original.X={original.X}, Clone.X={clone.X}");
 
-        // Assert
-        Assert.NotNull(result);
-        Assert.True(result.IsSuccess);
-    }
+        // Example 3: Test ChartSeries data point count and Y-axis range
+        var series = new ChartSeries("Revenue");
+        series.AddDataPoint(1.0, 100.0);
+        series.AddDataPoint(2.0, 150.0);
+        series.AddDataPoint(3.0, 120.0);
+        
+        Console.WriteLine($"✓ Series data points: {series.GetDataPointCount()}");
+        var (minY, maxY) = series.GetYAxisRange();
+        Console.WriteLine($"✓ Y-axis range: [{minY}, {maxY}]");
 
-    [Fact]
-    public async Task RenderChartAsync_WithValidChart_ReturnsSuccessfulRenderResult()
-    {
-        // Arrange
-        var engine = new ChartEngine();
-        var chart = new Chart { /* Initialize valid chart */ };
+        // Example 4: Test Chart validation
+        var chart = new Chart("sales-chart");
+        var validationResult = ChartValidator.ValidateChart(chart);
+        Console.WriteLine($"✓ Chart validation valid: {validationResult.IsValid}");
+        
+        // Add a series to make it valid
+        chart.AddSeries(series);
+        validationResult = ChartValidator.ValidateChart(chart);
+        Console.WriteLine($"✓ Chart with series valid: {validationResult.IsValid}");
 
-        // Act
-        var result = await engine.RenderChartAsync(chart);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.True(result.IsSuccess);
-    }
-
-    [Fact]
-    public void ExportChart_WithValidChartAndPngFormat_ReturnsSuccessfulResult()
-    {
-        // Arrange
-        var engine = new ChartEngine();
-        var chart = new Chart { /* Initialize valid chart */ };
-        var options = new ExportOptions { Format = "PNG" };
-
-        // Act
-        var result = engine.ExportChart(chart, options);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.True(result.IsSuccess);
+        // Example 5: Test ColorHelper utilities
+        string rgbRed = ColorHelper.HexToRgb("#FF0000");
+        Console.WriteLine($"✓ Hex to RGB: {rgbRed}");
+        
+        string hexBlue = ColorHelper.RgbToHex(0, 0, 255);
+        Console.WriteLine($"✓ RGB to Hex: {hexBlue}");
+        
+        bool isValidHex = ColorHelper.IsValidHexColor("#1F77B4");
+        Console.WriteLine($"✓ Valid hex color: {isValidHex}");
+        
+        // Example 6: Test DataPoint extensions - offset and scale
+        var dataPoint = new DataPoint(1.0, 2.0);
+        var offsetPoint = dataPoint.Offset(3.0, 1.0);
+        Console.WriteLine($"✓ Offset point: [{offsetPoint.X}, {offsetPoint.Y}]");
+        
+        var scaledPoint = dataPoint.Scale(2.0, 0.5);
+        Console.WriteLine($"✓ Scaled point: [{scaledPoint.X:F2}, {scaledPoint.Y:F2}]");
+        
+        // Example 7: Test Euclidean distance calculation
+        var pointA = new DataPoint(0.0, 0.0);
+        var pointB = new DataPoint(3.0, 4.0);
+        double distance = pointA.GetDistance(pointB);
+        Console.WriteLine($"✓ Distance between (0,0) and (3,4): {distance:F4}");
     }
 }
 ```
