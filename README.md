@@ -516,6 +516,52 @@ public class MathHelperBenchmarksExample
 }
 ```
 
+## ReportSection
+
+`ReportSection` represents a single section within a PDF report that can contain an optional heading, descriptive body text, and a chart visualization. Each section supports configurable layout options like image scaling behavior and automatic page breaks, making it easy to create multi-section reports with mixed text and chart content.
+
+```csharp
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Reports;
+
+// Create a simple text-only section
+var textSection = new ReportSection
+{
+    Heading = "Executive Summary",
+    BodyText = "This report contains quarterly performance metrics and key insights."
+};
+
+// Create a chart section with automatic page break
+var chart = new Chart("quarterly-sales");
+var series = new ChartSeries("Revenue")
+{
+    LineWidth = 2.5f,
+    Color = "#2E86C1"
+};
+series.AddDataPoint(1.0, 100000.0);
+series.AddDataPoint(2.0, 125000.0);
+series.AddDataPoint(3.0, 150000.0);
+series.AddDataPoint(4.0, 175000.0);
+chart.AddSeries(series);
+
+var chartSection = new ReportSection
+{
+    Heading = "Quarterly Revenue Analysis",
+    BodyText = "Sales performance across all regions for Q2 2024.",
+    Chart = chart,
+    ImageFit = PdfImageFit.FitWidth,
+    PageBreakBefore = true
+};
+
+// Create a section with original image size (may clip if too large)
+var fullSizeSection = new ReportSection
+{
+    Heading = "High Resolution Chart",
+    Chart = chart,
+    ImageFit = PdfImageFit.Original
+};
+```
+
 ## QuickStartExample
 
 `QuickStartExample` provides a collection of practical examples demonstrating common usage patterns for the SkiaSharp chart engine. It showcases how to create various chart types, configure chart properties, render charts to images, export charts to files, validate chart configurations, work with color palettes, and perform asynchronous rendering operations.
