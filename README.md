@@ -1036,6 +1036,129 @@ public class ChartStreamingServiceExample
         streamingService.Publish(chart.Id, new StreamDataPoint { SeriesName = "Humidity", X = 1, Y = 45.0 });
 
         // Publish batch of points
+        var humidityPoints = Enumerable.Range(1, 10).Select(i => 
+            new StreamDataPoint { SeriesName = "Humidity", X = i, Y = 35.0 + i * 2.5 });
+        streamingService.PublishBatch(chart.Id, humidityPoints);
+
+        // Get current snapshot for rendering
+        var snapshot = streamingService.GetSnapshot(chart.Id);
+        Console.WriteLine($"Chart {snapshot.Id} has {snapshot.Series.Count} series");
+        Console.WriteLine($"Temperature points: {snapshot.GetSeriesByName("Temperature")?.GetDataPointCount()}");
+        Console.WriteLine($"Humidity points: {snapshot.GetSeriesByName("Humidity")?.GetDataPointCount()}");
+
+        // Configure window size to limit data retention
+        var options = new StreamingChartOptions { WindowSize = 5 };
+        streamingService.Register(chart, options);
+
+        // Publish more points - oldest will be dropped when window exceeds size
+        for (int i = 1; i <= 10; i++)
+        {
+            streamingService.Publish(chart.Id, new StreamDataPoint { SeriesName = "Temperature", X = i + 10, Y = 20.0 + i });
+        }
+
+        // Get updated snapshot
+        var finalSnapshot = streamingService.GetSnapshot(chart.Id);
+        Console.WriteLine($"After windowing, Temperature points: {finalSnapshot.GetSeriesByName("Temperature")?.GetDataPointCount()}");
+
+        // Flush buffered points asynchronously
+        var flushedCount = await streamingService.FlushAsync(chart.Id);
+        Console.WriteLine($"Flushed {flushedCount} buffered points");
+
+        // Unregister when chart is no longer needed
+        streamingService.Unregister(chart.Id);
+    }
+}
+```
+
+## RenderResultCacheTests
+
+`RenderResultCacheTests` provides a comprehensive suite of unit tests for the `RenderResultCache` class, which implements a thread-safe, time-based cache for storing chart rendering results. The cache supports configurable maximum size limits, time-to-live (TTL) expiration, LRU (Least Recently Used) eviction policy, and detailed statistics tracking. Tests cover null safety, cache operations (add/get/remove/clear), TTL expiration, size limits, thread safety, and statistics reporting.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Caching;
+using SkiaSharpChartEngine.Models;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
+public class RenderResultCacheExample
+{
+    public static void Main()
+    {
+        // Initialize cache with logger and maximum size (100 MB default)
+        var logger = new NullLogger<RenderResultCache>();
+        var cache = new RenderResultCache(logger, maxSizeBytes: 104_857_600);
+
+        // Create a test render result
+        var renderResult = RenderResult.CreateSuccess(
+            "line-chart-001",
+            new byte[1024], // Image data
+            renderTimeMilliseconds: 42,
+            ExportFormat.PNG
+        );
+
+        // Example 1: Cache a render result with default TTL (1 hour)
+        cache.Cache("render-key-001", renderResult);
+        Console.WriteLine("Cached render result successfully");
+
+        // Example 2: Retrieve cached result
+        var cachedResult = cache.Get("render-key-001");
+        if (cachedResult != null)
+        {
+            Console.WriteLine($"Retrieved cached result: ChartId={cachedResult.ChartId}, Size={cachedResult.ImageData?.Length} bytes");
+        }
+
+        // Example 3: Cache with custom TTL (5 minutes)
+        var customTtl = TimeSpan.FromMinutes(5);
+        cache.Cache("render-key-002", renderResult, customTtl);
+        Console.WriteLine("Cached with 5-minute TTL");
+
+        // Example 4: Remove a cached entry
+        bool removed = cache.Remove("render-key-001");
+        Console.WriteLine($"Entry removed: {removed}");
+
+        // Example 5: Clear all cached entries
+        cache.Clear();
+        Console.WriteLine("Cache cleared");
+
+        // Example 6: Get cache statistics
+        var stats = cache.GetStatistics();
+        Console.WriteLine($"Cache stats - Entries: {stats.TotalEntries}, Size: {stats.TotalSize} bytes, " +
+                        $"Hits: {stats.TotalHits}, MaxSize: {stats.MaxSize} bytes");
+    }
+}
+```
+
+```csharp
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Services;
+using SkiaSharpChartEngine.Streaming;
+
+public class ChartStreamingServiceExample
+{
+    public static void Main()
+    {
+        // Initialize streaming service with rendering service
+        var renderingService = new ChartRenderingService();
+        var streamingService = new ChartStreamingService(renderingService);
+
+        // Create a chart for streaming
+        var chart = new Chart("temperature-stream");
+        chart.AddSeries(new ChartSeries("Temperature"));
+        chart.AddSeries(new ChartSeries("Humidity"));
+
+        // Register the chart with default options
+        streamingService.Register(chart);
+
+        // Publish individual data points
+        streamingService.Publish(chart.Id, new StreamDataPoint { SeriesName = "Temperature", X = 1, Y = 23.5 });
+        streamingService.Publish(chart.Id, new StreamDataPoint { SeriesName = "Temperature", X = 2, Y = 24.1 });
+        streamingService.Publish(chart.Id, new StreamDataPoint { SeriesName = "Humidity", X = 1, Y = 45.0 });
+
+        // Publish batch of points
         var humidityPoints = Enumerable.Range(1, 10).Select(i =>
             new StreamDataPoint { SeriesName = "Humidity", X = i, Y = 35.0 + i * 2.5 });
         streamingService.PublishBatch(chart.Id, humidityPoints);
