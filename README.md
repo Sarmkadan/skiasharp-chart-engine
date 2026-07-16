@@ -627,6 +627,100 @@ public class AnimationFrameGeneratorExample
 }
 ```
 
+## IInteractivityService
+
+`IInteractivityService` provides interactive chart capabilities including nearest-point tooltip hit-testing and zoom/pan viewport management over a chart's data coordinate space. It enables interactive features like hover tooltips, chart zooming, panning, and viewport reset operations.
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharp;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Services;
+
+public class InteractivityServiceExample
+{
+    public static void Main()
+    {
+        // Initialize services
+        var logger = new NullLogger<InteractivityService>();
+        var interactivityService = new InteractivityService(logger);
+
+        // Create a chart with sample data
+        var chart = new Chart("sales-chart");
+        var series = new ChartSeries("Revenue")
+        {
+            LineWidth = 2.5f,
+            Color = "#2E86C1"
+        };
+        series.AddDataPoint(1.0, 100000.0);
+        series.AddDataPoint(2.0, 125000.0);
+        series.AddDataPoint(3.0, 150000.0);
+        series.AddDataPoint(4.0, 175000.0);
+        chart.AddSeries(series);
+
+        // Example 1: Hit-test to find nearest data point to cursor position
+        var hitResult = interactivityService.HitTest(
+            chart,
+            pointerX: 200,
+            pointerY: 300,
+            canvasWidth: 800,
+            canvasHeight: 600
+        );
+        
+        if (hitResult.IsHit)
+        {
+            Console.WriteLine($"Hit data point: X={hitResult.DataPoint.X}, Y={hitResult.DataPoint.Y}");
+            Console.WriteLine($"Tooltip text: {hitResult.TooltipText}");
+        }
+
+        // Example 2: Zoom in at a specific point
+        var viewport = new ViewportState();
+        var zoomedViewport = interactivityService.Zoom(
+            chart,
+            viewport,
+            anchorX: 400,
+            anchorY: 300,
+            canvasWidth: 800,
+            canvasHeight: 600,
+            factor: 2.0 // 2x zoom in
+        );
+        Console.WriteLine($"Zoomed viewport: ZoomX={zoomedViewport.ZoomX:F2}, ZoomY={zoomedViewport.ZoomY:F2}");
+
+        // Example 3: Pan the viewport
+        var pannedViewport = interactivityService.Pan(
+            chart,
+            zoomedViewport,
+            deltaX: 50,
+            deltaY: 25,
+            canvasWidth: 800,
+            canvasHeight: 600
+        );
+        Console.WriteLine($"Panned viewport: PanX={pannedViewport.PanX:F2}, PanY={pannedViewport.PanY:F2}");
+
+        // Example 4: Reset viewport to show full data range
+        var resetViewport = interactivityService.ResetViewport(chart);
+        Console.WriteLine($"Reset viewport visible range: X=[{resetViewport.VisibleXRange.Min:F2}, {resetViewport.VisibleXRange.Max:F2}], Y=[{resetViewport.VisibleYRange.Min:F2}, {resetViewport.VisibleYRange.Max:F2}]");
+
+        // Example 5: Get visible data range for current viewport
+        var visibleRange = interactivityService.GetVisibleRange(chart, pannedViewport);
+        Console.WriteLine($"Visible range: X=[{visibleRange.minX:F2}, {visibleRange.maxX:F2}], Y=[{visibleRange.minY:F2}, {visibleRange.maxY:F2}]");
+
+        // Example 6: Format tooltip with custom template
+        var tooltipWithTemplate = interactivityService.FormatTooltip(
+            hitResult,
+            new TooltipOptions
+            {
+                ContentTemplate = "{series}: {y:C0} at {x}"
+            }
+        );
+        Console.WriteLine($"Formatted tooltip: {tooltipWithTemplate}");
+    }
+}
+```
+
 ## ChartInteractionService
 
 `ChartInteractionService` is the default implementation of `IChartInteractionService` that handles user interactions with chart elements such as clicks, hovers, selections, and context menu gestures. It delegates hit-testing to `IInteractivityService` and maintains per-chart selection state in a thread-safe dictionary, enabling interactive chart features like data point selection and hover tooltips.
