@@ -1979,6 +1979,78 @@ public class DataPointExtensionsExample
 }
 ```
 
+## RequestValidationMiddleware
+
+`RequestValidationMiddleware` is a middleware component that validates incoming HTTP requests before they are processed by the chart engine. It enforces security and data integrity by validating request headers, payload size limits, JSON schema compliance, and query parameters. This middleware helps prevent common web vulnerabilities and ensures that only properly formatted requests reach the chart rendering pipeline.
+
+The middleware supports multiple content types (JSON, form data, CSV, XML) and provides configurable validation rules including maximum payload size limits and required field validation.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Middleware;
+
+public class RequestValidationMiddlewareExample
+{
+    public static void Main()
+    {
+        // Initialize middleware with logger
+        var logger = new NullLogger<RequestValidationMiddleware>();
+        var validationMiddleware = new RequestValidationMiddleware(logger, maxPayloadSize: 5_242_880); // 5MB limit
+        
+        // Add custom allowed content type
+        validationMiddleware.AddAllowedContentType("application/x-yaml");
+        
+        // Example 1: Validate request headers
+        var headers = new Dictionary<string, string>
+        {
+            {"Content-Type", "application/json"},
+            {"Authorization", "Bearer token123"},
+            {"X-Request-ID", Guid.NewGuid().ToString()}
+        };
+        
+        bool headersValid = validationMiddleware.ValidateHeaders(headers);
+        Console.WriteLine($"Headers valid: {headersValid}");
+        
+        // Example 2: Validate payload size
+        var smallPayload = new byte[1024]; // 1KB payload
+        bool sizeValid = validationMiddleware.ValidatePayloadSize(smallPayload);
+        Console.WriteLine($"Payload size valid: {sizeValid}");
+        
+        // Example 3: Validate JSON schema with required fields
+        string jsonPayload = @"{
+            \"chartType\": \"line\",
+            \"dataPoints\": [
+                {\"x\": 1, \"y\": 100},
+                {\"x\": 2, \"y\": 200}
+            ]
+        }";
+        
+        bool schemaValid = validationMiddleware.ValidateJsonSchema(jsonPayload, "chartType", "dataPoints");
+        Console.WriteLine($"JSON schema valid: {schemaValid}");
+        
+        // Example 4: Validate query parameters
+        var queryParams = new Dictionary<string, string>
+        {
+            {"chartId", "sales-dashboard-2024"},
+            {"width", "800"},
+            {"height", "600"},
+            {"format", "png"}
+        };
+        
+        var validatedParams = validationMiddleware.ValidateQueryParameters(queryParams);
+        Console.WriteLine($"Validated {validatedParams.Count} query parameters");
+        
+        // Example 5: Handle validation failure scenarios
+        var invalidHeaders = new Dictionary<string, string>(); // Empty headers
+        bool invalidResult = validationMiddleware.ValidateHeaders(invalidHeaders);
+        Console.WriteLine($"Invalid headers result: {invalidResult}");
+    }
+}
+```
+
 ## ChartRepository
 
 `ChartRepository` is a repository class that provides data access and persistence operations for `Chart` entities. It abstracts the data layer and offers both synchronous and asynchronous methods for CRUD operations, enabling clean separation between business logic and data storage. The repository supports querying charts by ID, type, and search criteria, as well as checking for chart existence and counting charts.
