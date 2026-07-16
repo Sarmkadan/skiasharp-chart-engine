@@ -42,6 +42,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IChartRenderingService, ChartRenderingService>();
         services.AddSingleton<IExportService, ExportService>();
 
+        // Facade over the services above. Controllers (ChartController, ExportController)
+        // inject ChartEngine directly, so it must be resolvable from the container.
+        services.AddSingleton<ChartEngine>();
+
         return services;
     }
 
