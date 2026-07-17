@@ -31,6 +31,7 @@ public class HttpChartClient : IDisposable
             throw new ArgumentException("Base URL cannot be empty", nameof(baseUrl));
 
         _baseUrl = baseUrl.TrimEnd('/');
+        BaseUrl = baseUrl.TrimEnd('/');
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
         _httpClient = new HttpClient();
@@ -153,6 +154,11 @@ public class HttpChartClient : IDisposable
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
         _logger.LogDebug("Authentication token set");
     }
+
+    /// <summary>
+    /// Gets the base URL of the HTTP chart client.
+    /// </summary>
+    public string BaseUrl { get; }
 
     public void Dispose()
     {

@@ -12,7 +12,10 @@ namespace SkiaSharpChartEngine.Integration;
 /// <summary>
 /// Provides System.Text.Json serialization extensions for <see cref="HttpChartClient"/>
 /// </summary>
-public static class HttpChartClientJsonExtensions
+/// <remarks>
+/// This static class cannot be inherited.
+/// </remarks>
+public static sealed class HttpChartClientJsonExtensions
 {
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new(JsonSerializerDefaults.Web)
     {
@@ -37,7 +40,7 @@ public static class HttpChartClientJsonExtensions
 
         var config = new HttpChartClientConfiguration
         {
-            BaseUrl = GetBaseUrl(value)
+            BaseUrl = value.BaseUrl
         };
 
         var options = indented
@@ -57,6 +60,7 @@ public static class HttpChartClientJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <returns>The deserialized HTTP chart client instance, or null if deserialization fails.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
     public static HttpChartClient? FromJson(string json)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
@@ -66,9 +70,9 @@ public static class HttpChartClientJsonExtensions
             var config = JsonSerializer.Deserialize<HttpChartClientConfiguration>(json, _jsonSerializerOptions);
             return config?.ToHttpChartClient();
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
-            return null;
+            throw new JsonException("Failed to deserialize HttpChartClient configuration", ex);
         }
     }
 
@@ -106,27 +110,13 @@ public static class HttpChartClientJsonExtensions
 
         public HttpChartClient ToHttpChartClient()
         {
-            if (string.IsNullOrEmpty(BaseUrl))
+            if (string.IsNullOrWhiteSpace(BaseUrl))
             {
                 throw new InvalidOperationException(
-                    "BaseUrl cannot be null or empty when deserializing HttpChartClient.");
+                    "BaseUrl cannot be null or whitespace when deserializing HttpChartClient.");
             }
 
             return new HttpChartClient(BaseUrl, null!, null!);
         }
-    }
-
-    /// <summary>
-    /// Gets the base URL from an HttpChartClient instance using reflection.
-    /// </summary>
-    private static string GetBaseUrl(HttpChartClient client)
-    {
-        ArgumentNullException.ThrowIfNull(client);
-
-        var field = typeof(HttpChartClient).GetField(
-            "_baseUrl",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-        return field?.GetValue(client) as string ?? string.Empty;
     }
 }
