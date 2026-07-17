@@ -2031,6 +2031,32 @@ public class CacheKeyBuilderExample
 }
 ```
 
+## ValidationRuleBuilder
+
+`ValidationRuleBuilder` provides a fluent API for defining and applying validation rules to generic objects. It simplifies the process of creating complex validation logic by allowing developers to chain conditions like required checks, range constraints, and length validations.
+
+### Example
+
+```csharp
+// Example: Using ValidationRuleBuilder to validate a string
+// Assuming 'builder' is an instance of ValidationRuleBuilder<string>
+builder.AddRule(s => !string.IsNullOrEmpty(s), "Cannot be null or empty")
+       .IsRequired(s => s, "Username")
+       .HasLength(s => s, 5, 10, "Username");
+
+var result = builder.Validate("my-data");
+
+if (!result.IsValid)
+{
+    foreach (var error in result.Errors)
+    {
+        Console.WriteLine(error);
+    }
+}
+
+builder.ClearRules();
+```
+
 ## ChartStreamingService
 
 `ChartStreamingService` is the default implementation of `IChartStreamingService` that provides real-time data streaming capabilities for charts. It enables dynamic chart updates by buffering incoming data points and rendering frames at configurable intervals, making it ideal for live dashboards, monitoring applications, and real-time data visualization scenarios.
