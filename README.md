@@ -297,6 +297,158 @@ public class JsonChartSerializerExample
             Id = "temperature-chart",
             Title = "Daily Temperature",
             ChartType = "Line",
+```
+
+## TemplateControllerValidation
+
+`TemplateControllerValidation` provides validation helpers for the `TemplateController` class, ensuring that template names, IDs, chart configurations, and chart templates meet business rules before processing. It validates null/empty strings, out-of-range values, and structural integrity, returning lists of validation problems or throwing exceptions when using the `EnsureValid` variants.
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.API.Controllers;
+
+public class TemplateControllerValidationExample
+{
+    public static void Main()
+    {
+        // Initialize TemplateController with a logger
+        var logger = new NullLogger<TemplateController>();
+        var controller = new TemplateController(logger);
+
+        // Example 1: Validate controller instance
+        var controllerProblems = controller.Validate();
+        if (controllerProblems.Count > 0)
+        {
+            Console.WriteLine("Controller validation failed:");
+            foreach (var problem in controllerProblems)
+            {
+                Console.WriteLine($"- {problem}");
+            }
+        }
+
+        // Example 2: Validate template name
+        var nameValidation = TemplateControllerValidation.ValidateTemplateName("Sales Dashboard", "templateName");
+        if (nameValidation.Count > 0)
+        {
+            Console.WriteLine("Name validation failed:");
+            foreach (var error in nameValidation)
+            {
+                Console.WriteLine($"- {error}");
+            }
+        }
+
+        // Example 3: Validate template ID
+        var idValidation = TemplateControllerValidation.ValidateTemplateId("sales-dashboard-2024", "templateId");
+        if (idValidation.Count > 0)
+        {
+            Console.WriteLine("ID validation failed:");
+            foreach (var error in idValidation)
+            {
+                Console.WriteLine($"- {error}");
+            }
+        }
+
+        // Example 4: Validate chart configuration
+        var config = new ChartConfiguration
+        {
+            Width = 800,
+            Height = 600,
+            Title = "Sales Chart",
+            MarginTop = 20,
+            MarginBottom = 20,
+            MarginLeft = 20,
+            MarginRight = 20,
+            AnimationDurationMs = 500,
+            ExportDPI = 300,
+            ExportQuality = 0.9f
+        };
+
+        var configValidation = TemplateControllerValidation.ValidateChartConfiguration(config);
+        if (configValidation.Count > 0)
+        {
+            Console.WriteLine("Configuration validation failed:");
+            foreach (var error in configValidation)
+            {
+                Console.WriteLine($"- {error}");
+            }
+        }
+
+        // Example 5: Validate chart template
+        var template = new ChartTemplate
+        {
+            Name = "Sales Dashboard Template",
+            TemplateId = "sales-dashboard",
+            ChartType = ChartType.BarChart,
+            CreatedAt = DateTime.UtcNow,
+            BaseConfiguration = config,
+            DefaultSeries = new ChartSeries
+            {
+                Name = "Default Series",
+                DataPoints = new System.Collections.Generic.List<DataPoint>()
+            }
+        };
+
+        var templateValidation = TemplateControllerValidation.ValidateChartTemplate(template);
+        if (templateValidation.Count > 0)
+        {
+            Console.WriteLine("Template validation failed:");
+            foreach (var error in templateValidation)
+            {
+                Console.WriteLine($"- {error}");
+            }
+        }
+
+        // Example 6: Validate chart type
+        var typeValidation = TemplateControllerValidation.ValidateChartType(ChartType.PieChart);
+        if (typeValidation.Count > 0)
+        {
+            Console.WriteLine("Type validation failed:");
+            foreach (var error in typeValidation)
+            {
+                Console.WriteLine($"- {error}");
+            }
+        }
+
+        // Example 7: Validate cancellation token
+        var cts = new CancellationTokenSource();
+        var tokenValidation = TemplateControllerValidation.ValidateCancellationToken(cts.Token);
+        if (tokenValidation.Count > 0)
+        {
+            Console.WriteLine("Token validation failed:");
+            foreach (var error in tokenValidation)
+            {
+                Console.WriteLine($"- {error}");
+            }
+        }
+
+        // Example 8: Check if controller is valid
+        if (controller.IsValid())
+        {
+            Console.WriteLine("Controller is valid!");
+        }
+
+        // Example 9: Ensure controller is valid (throws if invalid)
+        controller.EnsureValid();
+    }
+}
+```
+
+public class JsonChartSerializerExample
+{
+    public static void Main()
+    {
+        // Initialize JsonChartSerializer with a logger
+        var logger = new NullLogger<JsonChartSerializer>();
+        var serializer = new JsonChartSerializer(logger);
+
+        // Example 1: Create a sample chart
+        var chart = new Chart
+        {
+            Id = "temperature-chart",
+            Title = "Daily Temperature",
+            ChartType = "Line",
             Series = new System.Collections.Generic.List<ChartSeries>
             {
                 new ChartSeries
