@@ -1049,6 +1049,82 @@ public class CacheCleanupWorkerExample
 }
 ```
 
+## TransitionTimeline
+
+`TransitionTimeline` defines a sequence of chart states distributed along a time axis. Each state is captured as a `TransitionKeyframe`; the engine interpolates data values between consecutive keyframes to produce smooth animated transitions.
+
+The timeline can be built using a fluent API with methods like `AddKeyframe`, `AppendTransition`, `StartWith`, and `Repeat`, or created using factory methods like `Between` and `FromSteps` for common scenarios.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Animation;
+using SkiaSharpChartEngine.Models;
+
+public class TransitionTimelineExample
+{
+    public static void Main()
+    {
+        // Example 1: Create a simple two-state transition
+        var chartA = new Chart("chart-a")
+        {
+            Title = "Initial State"
+        };
+        var chartB = new Chart("chart-b")
+        {
+            Title = "Final State"
+        };
+        
+        var simpleTransition = TransitionTimeline.Between(chartA, chartB, durationMs: 600);
+        Console.WriteLine(simpleTransition);
+        
+        // Example 2: Build a multi-step timeline with fluent API
+        var multiStepTransition = new TransitionTimeline()
+            .StartWith(chartA)
+            .AppendTransition(chartB, durationMs: 400, TransitionEasing.EaseOutBack)
+            .AppendTransition(chartA, durationMs: 600, TransitionEasing.Spring)
+            .Repeat(3);
+        
+        Console.WriteLine($"Multi-step timeline: {multiStepTransition.TotalDurationMs}ms duration, {multiStepTransition.LoopCount} loops");
+        
+        // Example 3: Create timeline from steps
+        var stepTransition = TransitionTimeline.FromSteps(
+            TransitionEasing.EaseInOutCubic,
+            (chartA, 300),
+            (chartB, 500),
+            (chartA, 300)
+        );
+        
+        Console.WriteLine($"Step-based timeline: {stepTransition.TotalDurationMs}ms total duration");
+        
+        // Example 4: Add keyframe at specific time
+        var chartC = new Chart("chart-c") { Title = "Intermediate State" };
+        var timelineWithExplicitTime = new TransitionTimeline()
+            .AddKeyframe(chartA, timeMs: 0)
+            .AddKeyframe(chartC, timeMs: 250)
+            .AddKeyframe(chartB, timeMs: 750);
+        
+        Console.WriteLine($"Explicit time timeline: {timelineWithExplicitTime.TotalDurationMs}ms duration");
+        
+        // Example 5: Enumerate segments
+        foreach (var segment in timelineWithExplicitTime.GetSegments())
+        {
+            Console.WriteLine($"Segment: {segment.From.TimeMs}ms -> {segment.To.TimeMs}ms");
+        }
+        
+        // Example 6: Validate timeline before rendering
+        try
+        {
+            timelineWithExplicitTime.Validate();
+            Console.WriteLine("Timeline is valid and ready for rendering");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Validation failed: {ex.Message}");
+        }
+    }
+}
+```
+
 ## ChartEventPublisher
 
 `ChartEventPublisher` implements the publish-subscribe pattern for chart events in the SkiaSharp chart engine. It allows components to subscribe to various chart events (creation, update, deletion, rendering, export, and errors) and notifies all registered subscribers when these events occur. The publisher provides thread-safe subscription management and asynchronous event broadcasting with comprehensive logging.
