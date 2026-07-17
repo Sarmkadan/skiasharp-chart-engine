@@ -9,6 +9,12 @@ namespace SkiaSharpChartEngine.Utilities;
 
 /// <summary>
 /// Provides System.Text.Json serialization extensions for <see cref="StringFormatHelper"/>.
+/// <para>
+/// This class serializes <see cref="StringFormatHelper"/> instances to JSON and deserializes them back.
+/// Since <see cref="StringFormatHelper"/> is a stateless utility class with only static methods,
+/// serialization produces a minimal JSON representation indicating the type,
+/// and deserialization returns a new instance.
+/// </para>
 /// </summary>
 public static class StringFormatHelperJsonExtensions
 {
@@ -20,16 +26,14 @@ public static class StringFormatHelperJsonExtensions
     /// <summary>
     /// Serializes the <see cref="StringFormatHelper"/> instance to a JSON string.
     /// </summary>
-    /// <param name="value">The instance to serialize.</param>
+    /// <param name="value">The instance to serialize. Must not be null.</param>
     /// <param name="indented">Whether to format the JSON with indentation for readability.</param>
-    /// <returns>A JSON string representation of the instance.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+    /// <returns>A JSON string representation of the instance containing type information.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
     public static string ToJson(this StringFormatHelper value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        // StringFormatHelper has no instance state to serialize.
-        // Return a JSON representation indicating the type.
         var options = indented
             ? new JsonSerializerOptions(_jsonOptions) { WriteIndented = true }
             : _jsonOptions;
@@ -40,9 +44,12 @@ public static class StringFormatHelperJsonExtensions
     /// <summary>
     /// Deserializes a JSON string to a <see cref="StringFormatHelper"/> instance.
     /// </summary>
-    /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>The deserialized instance, or null if the JSON is null or empty.</returns>
-    /// <exception cref="JsonException">Thrown when the JSON is invalid.</exception>
+    /// <param name="json">The JSON string to deserialize. Can be null or empty.</param>
+    /// <returns>
+    /// A new <see cref="StringFormatHelper"/> instance if deserialization succeeds,
+    /// or null if <paramref name="json"/> is null or empty.
+    /// </returns>
+    /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be parsed.</exception>
     public static StringFormatHelper? FromJson(string? json)
     {
         if (string.IsNullOrEmpty(json))
@@ -50,25 +57,19 @@ public static class StringFormatHelperJsonExtensions
             return null;
         }
 
-        // StringFormatHelper has no instance state, so we return a new instance.
-        // The JSON is validated but not used for deserialization.
-        try
-        {
-            JsonSerializer.Deserialize<object>(json, _jsonOptions);
-            return new StringFormatHelper();
-        }
-        catch (JsonException)
-        {
-            throw;
-        }
+        // StringFormatHelper has no instance state to deserialize.
+        // Validate JSON format but return a new instance.
+        JsonSerializer.Deserialize<object>(json, _jsonOptions);
+        return new StringFormatHelper();
     }
 
     /// <summary>
     /// Attempts to deserialize a JSON string to a <see cref="StringFormatHelper"/> instance.
     /// </summary>
-    /// <param name="json">The JSON string to deserialize.</param>
+    /// <param name="json">The JSON string to deserialize. Cannot be null or empty.</param>
     /// <param name="value">Receives the deserialized instance if successful.</param>
     /// <returns>True if deserialization succeeded; otherwise, false.</returns>
+    /// <exception cref="ArgumentException"><paramref name="json"/> is null or empty.</exception>
     public static bool TryFromJson(string json, out StringFormatHelper? value)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
