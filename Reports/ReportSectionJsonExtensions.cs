@@ -9,8 +9,8 @@ using System.Text.Json.Serialization.Metadata;
 namespace SkiaSharpChartEngine.Reports;
 
 /// <summary>
-/// Provides System.Text.Json serialization and deserialization extensions for
-/// <see cref="ReportSection"/> instances.
+/// Provides extension methods for serializing and deserializing <see cref="ReportSection"/> instances
+/// to and from JSON using System.Text.Json.
 /// </summary>
 public static class ReportSectionJsonExtensions
 {
@@ -27,7 +27,7 @@ public static class ReportSectionJsonExtensions
     /// <param name="value">The instance to serialize.</param>
     /// <param name="indented">Whether to format the JSON with indentation for readability.</param>
     /// <returns>A JSON string representation of the instance.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
     public static string ToJson(this ReportSection value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -43,8 +43,8 @@ public static class ReportSectionJsonExtensions
     /// Deserializes a JSON string to a <see cref="ReportSection"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>A deserialized <see cref="ReportSection"/> instance, or null if deserialization fails.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
+    /// <returns>A deserialized <see cref="ReportSection"/> instance, or <see langword="null"/> if deserialization fails.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
     public static ReportSection? FromJson(string json)
     {
         ArgumentNullException.ThrowIfNull(json);
@@ -63,9 +63,9 @@ public static class ReportSectionJsonExtensions
     /// Attempts to deserialize a JSON string to a <see cref="ReportSection"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="value">Receives the deserialized instance if successful, otherwise null.</param>
-    /// <returns>True if deserialization succeeded; otherwise false.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
+    /// <param name="value">Receives the deserialized instance if successful; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if deserialization succeeded; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
     public static bool TryFromJson(string json, out ReportSection? value)
     {
         ArgumentNullException.ThrowIfNull(json);
