@@ -7684,6 +7684,79 @@ public class PerformanceOptimizerExample
 }
 ```
 
+## PerformanceMonitor
+
+`PerformanceMonitor` tracks and analyzes performance metrics for chart operations, providing detailed statistics on execution time, success rates, and performance trends. It helps identify bottlenecks and optimize rendering performance by monitoring operations such as chart rendering, data processing, and export tasks.
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Diagnostics;
+
+public class PerformanceMonitorExample
+{
+    public static void Main()
+    {
+        // Create performance monitor with logger
+        var logger = new NullLogger<PerformanceMonitor>();
+        var performanceMonitor = new PerformanceMonitor(logger);
+
+        // Simulate chart rendering operations
+        Console.WriteLine("Simulating chart rendering operations...\n");
+
+        // Record metrics for successful operations
+        performanceMonitor.RecordMetric("Chart.Render", 45);
+        performanceMonitor.RecordMetric("Chart.Render", 38);
+        performanceMonitor.RecordMetric("Chart.Render", 52);
+        performanceMonitor.RecordMetric("Chart.Render", 41);
+        performanceMonitor.RecordMetric("Chart.Render", 49);
+
+        // Record metrics for failed operations
+        performanceMonitor.RecordMetric("Data.Load", 120, success: false);
+        performanceMonitor.RecordMetric("Data.Load", 150, success: false);
+
+        // Record metrics for export operations
+        performanceMonitor.RecordMetric("Chart.Export.PNG", 185);
+        performanceMonitor.RecordMetric("Chart.Export.PNG", 172);
+        performanceMonitor.RecordMetric("Chart.Export.PDF", 245);
+
+        // Get statistics for specific operations
+        var renderStats = performanceMonitor.GetStatistics("Chart.Render");
+        Console.WriteLine(renderStats?.ToString() ?? "No data");
+        Console.WriteLine($"Total tracked operations: {performanceMonitor.GetTrackedOperationCount()}");
+        Console.WriteLine($"Total metrics recorded: {performanceMonitor.GetTotalMetricCount()}");
+        Console.WriteLine();
+
+        // Get statistics for export operations
+        var exportStats = performanceMonitor.GetStatistics("Chart.Export.PNG");
+        Console.WriteLine(exportStats?.ToString() ?? "No data");
+        Console.WriteLine();
+
+        // Get statistics for failed operations
+        var failedStats = performanceMonitor.GetStatistics("Data.Load");
+        Console.WriteLine(failedStats?.ToString() ?? "No data");
+        Console.WriteLine();
+
+        // Get all statistics
+        var allStats = performanceMonitor.GetAllStatistics();
+        Console.WriteLine("All tracked operations:");
+        foreach (var stat in allStats)
+        {
+            Console.WriteLine($"  - {stat}");
+        }
+        Console.WriteLine();
+
+        // Clear metrics for specific operation
+        performanceMonitor.ClearOperation("Chart.Export.PDF");
+        Console.WriteLine($"Operations after clearing 'Chart.Export.PDF': {performanceMonitor.GetTrackedOperationCount()}");
+        
+        // Clear all metrics
+        performanceMonitor.Clear();
+        Console.WriteLine($"Operations after clearing all metrics: {performanceMonitor.GetTrackedOperationCount()}");
+    }
+}
+```
+
 ## ChartValidator
 
 `ChartValidator` is a comprehensive validation utility for SkiaSharp charts that provides static methods to validate charts, series, data points, and configurations. It returns detailed validation results with errors and warnings, making it ideal for debugging and ensuring chart integrity before rendering. The validator checks for null references, empty identifiers, invalid dimensions, malformed colors, and other common issues that could cause rendering problems.
