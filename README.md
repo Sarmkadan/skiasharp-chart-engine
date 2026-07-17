@@ -159,6 +159,81 @@ public class ColorHelperExample
 }
 ```
 
+## CsvDataSerializer
+
+`CsvDataSerializer` provides functionality for exporting chart data to CSV format, enabling easy integration with spreadsheet applications and data analysis tools. It supports multiple serialization formats including standard CSV, CSV with metadata comments, and wide format for data point columns. The serializer includes validation methods to ensure CSV structure integrity and provides MIME type and file extension information.
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Serializers;
+
+public class CsvDataSerializerExample
+{
+    public static void Main()
+    {
+        // Initialize CsvDataSerializer with a logger
+        var logger = new NullLogger<CsvDataSerializer>();
+        var serializer = new CsvDataSerializer(logger);
+
+        // Example 1: Create a sample chart with series data
+        var chart = new Chart
+        {
+            Id = "sales-chart-2024",
+            Title = "Quarterly Sales 2024",
+            ChartType = "Bar",
+            Series = new System.Collections.Generic.List<ChartSeries>
+            {
+                new ChartSeries
+                {
+                    Name = "Q1 Sales",
+                    DataPoints = new System.Collections.Generic.List<DataPoint>
+                    {
+                        new DataPoint { Value = 120000 },
+                        new DataPoint { Value = 135000 },
+                        new DataPoint { Value = 142000 }
+                    }
+                },
+                new ChartSeries
+                {
+                    Name = "Q2 Sales",
+                    DataPoints = new System.Collections.Generic.List<DataPoint>
+                    {
+                        new DataPoint { Value = 156000 },
+                        new DataPoint { Value = 168000 },
+                        new DataPoint { Value = 175000 }
+                    }
+                }
+            }
+        };
+
+        // Example 2: Serialize chart to CSV (long format)
+        string csvData = serializer.Serialize(chart);
+        Console.WriteLine("CSV Data:");
+        Console.WriteLine(csvData);
+
+        // Example 3: Serialize with metadata comments
+        string csvWithMetadata = serializer.SerializeWithMetadata(chart);
+        Console.WriteLine("CSV with Metadata:");
+        Console.WriteLine(csvWithMetadata);
+
+        // Example 4: Serialize in wide format
+        string wideFormat = serializer.SerializeWideFormat(chart);
+        Console.WriteLine("Wide Format CSV:");
+        Console.WriteLine(wideFormat);
+
+        // Example 5: Validate CSV structure
+        bool isValid = serializer.IsValidCsv(csvData);
+        Console.WriteLine($"Is valid CSV: {isValid}");
+
+        // Example 6: Get MIME type and file extension
+        Console.WriteLine($"MIME type: {serializer.GetMimeType()}");
+        Console.WriteLine($"File extension: {serializer.GetFileExtension()}");
+    }
+}
+```
+
 ## PathHelper
 
 `PathHelper` provides utility methods for file system operations, path manipulation, and directory management. It includes path validation to prevent directory traversal attacks, safe filename generation, unique filename generation, directory existence checks, path combination utilities, and file cleanup operations.
