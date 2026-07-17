@@ -280,6 +280,65 @@ public class ConcurrencyLimiterExample
 }
 ```
 
+## ColorSchemeManager
+
+`ColorSchemeManager` provides a centralized system for managing and generating color schemes for chart visualization. It allows developers to register custom color schemes, retrieve existing schemes by name, and generate color variations such as complementary, analogous, and triadic color palettes. This is particularly useful for creating visually appealing and consistent color schemes across multiple chart types.
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharp;
+using SkiaSharpChartEngine.Utilities;
+
+public class ColorSchemeManagerExample
+{
+    public static void Main()
+    {
+        // Initialize ColorSchemeManager with a logger
+        var logger = new NullLogger<ColorSchemeManager>();
+        var schemeManager = new ColorSchemeManager(logger);
+
+        // Example 1: List all available color scheme names
+        Console.WriteLine("Available color schemes: " + string.Join(", ", schemeManager.ListAvailableSchemes()));
+
+        // Example 2: Get a specific color scheme by name
+        var scheme = schemeManager.GetScheme("vibrant");
+        Console.WriteLine($"Retrieved scheme: {scheme.Name} ({scheme.Description})");
+        Console.WriteLine($"Colors: {string.Join(", ", Array.ConvertAll(scheme.Colors, c => c.ToString()))}");
+
+        // Example 3: Register a custom color scheme
+        var customScheme = new ColorScheme
+        {
+            Name = "Corporate Teal",
+            Description = "Professional color scheme with teal and gray tones",
+            Colors = new[] { SKColors.Teal, SKColors.DarkSlateGray, SKColors.LightSlateGray, SKColors.WhiteSmoke }
+        };
+        schemeManager.RegisterScheme("corporate_teal", customScheme);
+
+        // Example 4: Get colors from the newly registered scheme
+        var corporateScheme = schemeManager.GetScheme("corporate_teal");
+        Console.WriteLine($"Registered scheme: {corporateScheme.Name}");
+
+        // Example 5: Generate complementary colors
+        var baseColor = SKColors.DodgerBlue;
+        var complementary = schemeManager.GetComplementary(baseColor);
+        Console.WriteLine($"Complementary of {baseColor}: {complementary}");
+
+        // Example 6: Generate analogous colors
+        var analogousColors = schemeManager.GetAnalogous(baseColor, 5);
+        Console.WriteLine($"Analogous colors (count: {analogousColors.Length}): {string.Join(", ", analogousColors)}");
+
+        // Example 7: Generate triadic colors
+        var triadicColors = schemeManager.GetTriadic(baseColor);
+        Console.WriteLine($"Triadic colors (count: {triadicColors.Length}): {string.Join(", ", triadicColors)}");
+
+        // Example 8: Get a specific color from a scheme by index
+        var firstColor = schemeManager.GetColor("vibrant", 0);
+        Console.WriteLine($"First color from 'vibrant' scheme: {firstColor}");
+    }
+}
+```
+
 ## CachePolicy
 
 `CachePolicy` is a configuration class that defines caching behavior for chart rendering operations. It controls expiration policies, priority-based eviction, and post-eviction callbacks, enabling fine-grained control over cache management strategies.
