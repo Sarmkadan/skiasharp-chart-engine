@@ -6,6 +6,45 @@ A .NET chart rendering library (SkiaSharp-based) with an ASP.NET Core Web API ho
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the component breakdown, data flow, design decisions, extension points, and known limitations. The sections below are per-type usage examples.
 
+## BatchProcessor
+
+`BatchProcessor` processes items in batches, providing an efficient way to handle bulk operations with configurable batch sizing and timeout settings. It is designed to manage large collections by breaking them into manageable chunks, ensuring timely processing, and tracking metrics such as total items, processed items, failed items, and elapsed time.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Utilities;
+
+public class BatchProcessorExample
+{
+    public static async Task Main()
+    {
+        var logger = new NullLogger<BatchProcessor<int>>();
+        var items = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+
+        // Define the batch processing logic
+        Func<List<int>, Task> processor = async (batch) =>
+        {
+            Console.WriteLine($"Processing batch of {batch.Count} items...");
+            await Task.Delay(100); // Simulate work
+        };
+
+        // Create processor with batch size of 3 and 1000ms timeout
+        var batchProcessor = new BatchProcessor<int>(3, 1000, processor, logger);
+
+        // Process items
+        await batchProcessor.ProcessAsync(items);
+
+        // Example: Process a single item
+        await batchProcessor.ProcessSingleAsync(11);
+
+        Console.WriteLine("Batch processing finished.");
+    }
+}
+```
+
 ## RenderResultCache
 
 `RenderResultCache` is an in-memory cache specifically designed for storing rendered chart results. It automatically tracks cache hits/misses, evicts stale entries based on time-to-live (TTL), and maintains comprehensive statistics about cache usage. The cache uses a least-recently-used (LRU) eviction policy when approaching maximum size limits and includes a background timer for periodic cleanup of expired entries.
@@ -5984,6 +6023,45 @@ public class ChartStreamingServiceExample
 
         // Unregister when chart is no longer needed
         streamingService.Unregister(chart.Id);
+    }
+}
+```
+
+## BatchProcessor
+
+`BatchProcessor` processes items in batches, providing an efficient way to handle bulk operations with configurable batch sizing and timeout settings. It is designed to manage large collections by breaking them into manageable chunks, ensuring timely processing, and tracking metrics such as total items, processed items, failed items, and elapsed time.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Utilities;
+
+public class BatchProcessorExample
+{
+    public static async Task Main()
+    {
+        var logger = new NullLogger<BatchProcessor<int>>();
+        var items = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+
+        // Define the batch processing logic
+        Func<List<int>, Task> processor = async (batch) =>
+        {
+            Console.WriteLine($"Processing batch of {batch.Count} items...");
+            await Task.Delay(100); // Simulate work
+        };
+
+        // Create processor with batch size of 3 and 1000ms timeout
+        var batchProcessor = new BatchProcessor<int>(3, 1000, processor, logger);
+
+        // Process items
+        await batchProcessor.ProcessAsync(items);
+
+        // Example: Process a single item
+        await batchProcessor.ProcessSingleAsync(11);
+
+        Console.WriteLine("Batch processing finished.");
     }
 }
 ```
