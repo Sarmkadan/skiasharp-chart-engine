@@ -1937,6 +1937,98 @@ public class ConfigurationServiceExample
 }
 ```
 
+## ChartEngineOptions
+
+`ChartEngineOptions` is a configuration class that defines runtime settings for the SkiaSharp chart engine. It controls caching behavior, rendering performance, default chart dimensions, background styling, data validation, and custom settings for extended functionality. This class is typically configured during application startup when setting up the chart engine services.
+
+The options include performance tuning parameters like `MaxConcurrentRenders` and `CacheSize`, rendering quality settings such as `UseAntiAliasing`, and data handling options like `MaxDataPointsPerSeries` and `ValidateDataOnLoad`. The `Validate()` method performs validation on all configuration values to ensure they meet minimum requirements.
+
+```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using SkiaSharpChartEngine;
+using SkiaSharpChartEngine.Configuration;
+
+public class ChartEngineOptionsExample
+{
+    public static void Main()
+    {
+        // Example 1: Configure ChartEngineOptions with default values
+        var options = new ChartEngineOptions
+        {
+            CacheSize = 100,
+            EnableCaching = true,
+            EnableLogging = true,
+            MaxConcurrentRenders = Environment.ProcessorCount,
+            DefaultChartWidth = 1024,
+            DefaultChartHeight = 768,
+            DefaultBackgroundColor = "#FFFFFF",
+            UseAntiAliasing = true,
+            MaxDataPointsPerSeries = 1000,
+            MaxSeriesPerChart = 10,
+            CacheExpirationTime = TimeSpan.FromHours(2),
+            ValidateDataOnLoad = true
+        };
+
+        // Validate configuration
+        options.Validate();
+        Console.WriteLine("Chart engine options validated successfully");
+
+        // Example 2: Configure via dependency injection (ASP.NET Core scenario)
+        var services = new ServiceCollection();
+        
+        services.AddSkiaSharpChartEngine(options =>
+        {
+            options.CacheSize = 200;
+            options.EnableCaching = true;
+            options.MaxConcurrentRenders = 8;
+            options.DefaultChartWidth = 1920;
+            options.DefaultChartHeight = 1080;
+            options.UseAntiAliasing = true;
+            options.MaxDataPointsPerSeries = 5000;
+            options.MaxSeriesPerChart = 20;
+            options.CacheExpirationTime = TimeSpan.FromHours(1);
+            options.ValidateDataOnLoad = true;
+            
+            // Add custom settings for application-specific features
+            options.CustomSettings = new Dictionary<string, object>
+            {
+                ["enableAnimations"] = true,
+                ["defaultFont"] = "Arial",
+                ["enableTooltips"] = true
+            };
+        });
+
+        var serviceProvider = services.BuildServiceProvider();
+        Console.WriteLine("Chart engine configured via DI container");
+
+        // Example 3: Access cache duration via seconds property
+        var cacheOptions = new ChartEngineOptions
+        {
+            CacheExpirationTime = TimeSpan.FromMinutes(30)
+        };
+        
+        // CacheDurationSeconds provides convenient access to TotalSeconds
+        Console.WriteLine($"Cache duration in seconds: {cacheOptions.CacheDurationSeconds}");
+        
+        // Example 4: Configure for high-performance scenario
+        var highPerformanceOptions = new ChartEngineOptions
+        {
+            CacheSize = 500,
+            MaxConcurrentRenders = Environment.ProcessorCount * 2,
+            MaxDataPointsPerSeries = 10000,
+            MaxSeriesPerChart = 50,
+            EnableCaching = true,
+            CacheExpirationTime = TimeSpan.FromMinutes(15),
+            ValidateDataOnLoad = false // Skip validation for performance-critical scenarios
+        };
+
+        highPerformanceOptions.Validate();
+        Console.WriteLine("High-performance configuration validated");
+    }
+}
+```
+
 ## RenderPipelineService
 
 `RenderPipelineService` orchestrates the chart rendering pipeline with validation, caching, and processing stages. It implements the pipeline pattern to provide flexible rendering workflows that can be extended with custom stages for data validation, transformation, and rendering operations.
