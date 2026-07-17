@@ -9,9 +9,9 @@ using System.Text.Json;
 namespace SkiaSharpChartEngine.Utilities;
 
 /// <summary>
-/// Provides System.Text.Json serialization extensions for ColorHelper operations.
+/// Provides System.Text.Json serialization extensions for common types.
 /// </summary>
-public static class ColorHelperJsonExtensions
+public static class JsonExtensions
 {
     private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.General)
     {
@@ -21,11 +21,11 @@ public static class ColorHelperJsonExtensions
     };
 
     /// <summary>
-    /// Serializes color-related data to a JSON string.
+    /// Serializes an object to a JSON string.
     /// </summary>
-    /// <param name="value">The color data to serialize.</param>
+    /// <param name="value">The object to serialize.</param>
     /// <param name="indented">Whether to format the JSON with indentation for readability.</param>
-    /// <returns>A JSON string representation of the color data.</returns>
+    /// <returns>A JSON string representation of the object.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
     public static string ToJson(this object value, bool indented = false)
     {
@@ -39,7 +39,7 @@ public static class ColorHelperJsonExtensions
     }
 
     /// <summary>
-    /// Deserializes a JSON string.
+    /// Deserializes a JSON string to an object.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
     /// <returns>null if the JSON is null or empty; otherwise, the deserialized object.</returns>
