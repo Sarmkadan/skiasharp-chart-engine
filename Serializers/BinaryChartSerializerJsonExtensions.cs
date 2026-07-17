@@ -56,8 +56,10 @@ public static class BinaryChartSerializerJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <param name="value">Receives the deserialized instance if successful.</param>
     /// <returns>True if deserialization succeeded; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
     public static bool TryFromJson(string json, out BinaryChartSerializer? value)
     {
+        ArgumentNullException.ThrowIfNull(json);
         value = null;
 
         if (string.IsNullOrEmpty(json))
