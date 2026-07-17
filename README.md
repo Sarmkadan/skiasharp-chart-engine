@@ -6951,6 +6951,51 @@ public class ChartStatisticsExample
 }
 ```
 
+## CompressionHelper
+
+`CompressionHelper` provides compression and decompression utilities for chart data and exports using GZip compression. It efficiently reduces storage and transmission size for binary data, strings, and chart exports while maintaining data integrity. The class calculates compression ratios and can detect GZip-compressed data.
+
+```csharp
+using System;
+using System.IO;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Utilities;
+
+public class CompressionHelperExample
+{
+    public static async Task Main()
+    {
+        var logger = new NullLogger<CompressionHelper>();
+        var compressionHelper = new CompressionHelper(logger);
+
+        // Compress and decompress byte arrays
+        var originalData = new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08 };
+        var compressedData = await compressionHelper.CompressAsync(originalData);
+        var decompressedData = await compressionHelper.DecompressAsync(compressedData);
+
+        Console.WriteLine($"Original size: {originalData.Length} bytes");
+        Console.WriteLine($"Compressed size: {compressedData.Length} bytes");
+        Console.WriteLine($"Decompression successful: {decompressedData.SequenceEqual(originalData)}");
+
+        // Calculate compression ratio
+        var ratio = compressionHelper.CalculateCompressionRatio(originalData.Length, compressedData.Length);
+        Console.WriteLine($"Compression ratio: {ratio:F1}%");
+
+        // Check if data is GZip compressed
+        Console.WriteLine($"Is GZip compressed: {compressionHelper.IsGZipCompressed(compressedData)}");
+
+        // Compress and decompress strings
+        var originalText = "This is a sample text that needs to be compressed for efficient storage and transmission";
+        var compressedText = await compressionHelper.CompressStringAsync(originalText);
+        var decompressedText = await compressionHelper.DecompressStringAsync(compressedText);
+
+        Console.WriteLine($"Original text: {originalText}");
+        Console.WriteLine($"Decompressed text: {decompressedText}");
+        Console.WriteLine($"Text compression successful: {decompressedText == originalText}");
+    }
+}
+```
+
 ## PerformanceOptimizer
 
 `PerformanceOptimizer` provides tools to analyze chart performance and optimize rendering by downsampling data points and estimating memory usage. It identifies potential performance bottlenecks through detailed analysis, returning actionable recommendations based on data volume, series count, and chart dimensions.
