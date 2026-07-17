@@ -90,11 +90,16 @@ public static class QuickStartExampleJsonExtensions
     /// Deserializes a JSON string to a QuickStartExample instance
     /// </summary>
     /// <param name="json">The JSON string to deserialize</param>
-    /// <returns>A QuickStartExample instance, or null if deserialization fails</returns>
-    /// <exception cref="ArgumentException">Thrown when json is null or whitespace</exception>
+    /// <returns>A QuickStartExample instance if deserialization succeeds; otherwise, null</returns>
+    /// <exception cref="ArgumentNullException">Thrown when json is null</exception>
+    /// <exception cref="ArgumentException">Thrown when json is empty or consists only of whitespace</exception>
     public static QuickStartExample? FromJson(string json)
     {
-        ArgumentException.ThrowIfNullOrEmpty(json);
+        ArgumentNullException.ThrowIfNull(json);
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            throw new ArgumentException("JSON string cannot be empty or whitespace.", nameof(json));
+        }
 
         try
         {
@@ -112,10 +117,15 @@ public static class QuickStartExampleJsonExtensions
     /// <param name="json">The JSON string to deserialize</param>
     /// <param name="value">Output parameter receiving the deserialized instance</param>
     /// <returns>True if deserialization succeeds; otherwise, false</returns>
-    /// <exception cref="ArgumentException">Thrown when json is null or whitespace</exception>
+    /// <exception cref="ArgumentNullException">Thrown when json is null</exception>
+    /// <exception cref="ArgumentException">Thrown when json is empty or consists only of whitespace</exception>
     public static bool TryFromJson(string json, out QuickStartExample? value)
     {
-        ArgumentException.ThrowIfNullOrEmpty(json);
+        ArgumentNullException.ThrowIfNull(json);
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            throw new ArgumentException("JSON string cannot be empty or whitespace.", nameof(json));
+        }
 
         try
         {
