@@ -1363,6 +1363,46 @@ public class ColorPaletteExample
 }
 ```
 
+## CliOptions
+
+`CliOptions` defines the configuration parameters for the SkiaSharp Chart Engine CLI. It aggregates command-line arguments, facilitating the management of input/output paths, rendering dimensions, export formats, caching strategies, and performance monitoring.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Configuration;
+
+public class CliOptionsExample
+{
+    public static void Main(string[] args)
+    {
+        // Parse command line arguments
+        var options = CliOptions.Parse(args);
+
+        if (options.ShowHelp)
+        {
+            CliOptions.DisplayHelp();
+            return;
+        }
+
+        if (!options.IsValid)
+        {
+            Console.WriteLine("Invalid CLI configuration provided.");
+            return;
+        }
+
+        // Access parsed options
+        Console.WriteLine($"Input file: {options.InputFile}");
+        Console.WriteLine($"Output directory: {options.OutputDirectory}");
+        Console.WriteLine($"Dimensions: {options.Width}x{options.Height}");
+        Console.WriteLine($"Enable cache: {options.EnableCache}");
+        Console.WriteLine($"Cache size: {options.GetCacheSizeBytes} bytes");
+
+        var formats = options.GetExportFormats;
+        Console.WriteLine($"Export formats: {string.Join(", ", formats)}");
+    }
+}
+```
+
 ## QuickStartExample
 
 `QuickStartExample` provides a collection of practical examples demonstrating common usage patterns for the SkiaSharp chart engine. It showcases how to create various chart types, configure chart properties, render charts to images, export charts to files, validate chart configurations, work with color palettes, and perform asynchronous rendering operations.
