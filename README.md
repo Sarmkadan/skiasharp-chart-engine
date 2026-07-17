@@ -238,6 +238,45 @@ public class CsvDataSerializerExample
 
 `JsonChartSerializer` provides functionality for serializing and deserializing `Chart` objects to and from JSON format. It supports both single chart serialization and collection serialization, with built-in validation and formatting capabilities. The serializer uses camelCase property naming and handles null values efficiently.
 
+## DataControllerValidation
+
+The `DataControllerValidation` class provides validation helpers for `DataController` operations. It validates method parameters and data integrity before processing, ensuring that series IDs, data points, and aggregation parameters meet expected criteria. The validation methods return error messages for invalid inputs or throw exceptions when using the `EnsureValid` variants.
+
+### Usage Example
+
+```csharp
+// Validate a series ID
+var seriesId = "temperature-001";
+var validationErrors = seriesId.Validate();
+if (validationErrors.Count > 0)
+{
+    Console.WriteLine("Validation failed:");
+    foreach (var error in validationErrors)
+    {
+        Console.WriteLine($"- {error}");
+    }
+}
+
+// Validate data points
+var dataPoints = new List<DataPoint>
+{
+    new DataPoint { X = 1.0, Y = 2.5, Color = "#FF0000", Label = "Point 1" },
+    new DataPoint { X = 2.0, Y = 3.7, Color = "#00FF00", Label = "Point 2" }
+};
+
+if (!dataPoints.IsValid())
+{
+    dataPoints.EnsureValid(); // Throws if invalid
+}
+
+// Validate aggregation parameters
+var isValid = dataPoints.Validate("average", 10);
+if (!isValid)
+{
+    dataPoints.EnsureValid("average", 10); // Throws if invalid
+}
+```
+
 ```csharp
 using System;
 using Microsoft.Extensions.Logging.Abstractions;
