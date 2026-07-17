@@ -850,6 +850,77 @@ public class ChartInteractionHandler
 }
 ```
 
+## ChartProcessingWorker
+
+`ChartProcessingWorker` is a background worker that processes chart rendering jobs asynchronously without blocking main application threads. It maintains a queue of chart jobs, processes them with configurable concurrency, and provides comprehensive job tracking with callbacks for completion and error handling. The worker is ideal for batch processing, web API scenarios, or any application requiring non-blocking chart rendering operations.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Workers;
+
+public class ChartProcessingWorkerExample
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize logger and worker with 4 concurrent processors
+        var logger = new NullLogger<ChartProcessingWorker>();
+        using var worker = new ChartProcessingWorker(logger, concurrencyLevel: 4);
+
+        Console.WriteLine("Worker started with concurrency level: " + worker.GetStatistics().ConcurrencyLevel);
+
+        // Example 1: Create a chart processing job
+        var chartJob = new ChartProcessingJob
+        {
+            ChartTitle = "Quarterly Revenue Report",
+            ChartId = "q2-revenue-2024",
+            Parameters = new Dictionary<string, object>
+            {
+                ["width"] = 1920,
+                ["height"] = 1080,
+                ["format"] = "PNG"
+            },
+            ProcessingDelegate = async (job, cancellationToken) =>
+            {
+                // Simulate chart rendering work
+                await Task.Delay(1000, cancellationToken);
+                job.Result = new { ImageSize = "1920x1080", Format = "PNG" };
+            },
+            OnComplete = job => 
+            {
+                Console.WriteLine($"Job completed: {job.JobId}");
+                Console.WriteLine($"Duration: {job.GetDuration()?.TotalSeconds:F2}s");
+                Console.WriteLine($"Result: {job.Result}");
+            },
+            OnError = (job, ex) =>
+            {
+                Console.WriteLine($"Job failed: {ex.Message}");
+            }
+        };
+
+        // Example 2: Enqueue the job and get job ID
+        string jobId = worker.EnqueueJob(chartJob);
+        Console.WriteLine($"Job enqueued with ID: {jobId}");
+
+        // Example 3: Monitor job statistics
+        var stats = worker.GetStatistics();
+        Console.WriteLine($"Pending jobs: {stats.PendingJobs}");
+        Console.WriteLine($"Worker running: {stats.IsRunning}");
+
+        // Example 4: Wait for job completion (in real app, use proper async handling)
+        await Task.Delay(2000);
+
+        // Example 5: Gracefully shutdown when done
+        await worker.StopAsync();
+        Console.WriteLine("Worker stopped gracefully");
+    }
+}
+```
+
 ## CacheCleanupWorker
 
 `CacheCleanupWorker` is a background worker that maintains cache health by periodically cleaning up expired entries and managing memory usage. It automatically removes expired cache entries, monitors cache utilization, and removes low-priority entries when cache usage exceeds 90% to prevent memory pressure. The worker runs on a configurable interval (default: 10 minutes) and provides comprehensive statistics about cleanup operations.
