@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using SkiaSharpChartEngine.Models;
 
@@ -13,70 +12,21 @@ namespace SkiaSharpChartEngine.API.Controllers;
 public static class DataControllerValidation
 {
     /// <summary>
-    /// Validates all public members of a <see cref="DataController"/> instance.
-    /// </summary>
-    /// <param name="value">The DataController instance to validate</param>
-    /// <returns>List of validation error messages; empty if valid</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
-    public static IReadOnlyList<string> Validate(this DataController value)
-    {
-        ArgumentNullException.ThrowIfNull(value);
-
-        var errors = new List<string>();
-
-        // DataController itself doesn't have direct validation properties
-        // Validation is performed on method parameters when called
-
-        return errors.AsReadOnly();
-    }
-
-    /// <summary>
-    /// Checks if all public members of a <see cref="DataController"/> instance are valid.
-    /// </summary>
-    /// <param name="value">The DataController instance to check</param>
-    /// <returns>True if valid; false otherwise</returns>
-    public static bool IsValid(this DataController value)
-    {
-        return Validate(value).Count == 0;
-    }
-
-    /// <summary>
-    /// Ensures all public members of a <see cref="DataController"/> instance are valid.
-    /// Throws <see cref="ArgumentException"/> if validation fails.
-    /// </summary>
-    /// <param name="value">The DataController instance to validate</param>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
-    /// <exception cref="ArgumentException">Thrown if validation fails with error messages</exception>
-    public static void EnsureValid(this DataController value)
-    {
-        ArgumentNullException.ThrowIfNull(value);
-
-        var errors = Validate(value);
-        if (errors.Count > 0)
-        {
-            throw new ArgumentException(
-                string.Join("\n", errors),
-                nameof(value)
-            );
-        }
-    }
-
-    /// <summary>
     /// Validates parameters for <see cref="DataController.GetDataStatisticsAsync"/> method.
     /// </summary>
     /// <param name="seriesId">The series identifier</param>
     /// <returns>List of validation error messages; empty if valid</returns>
-    public static IReadOnlyList<string> Validate(
-        this string seriesId)
+    /// <exception cref="ArgumentException">Thrown if seriesId is null, empty, or whitespace</exception>
+    public static IReadOnlyList<string> Validate(this string seriesId)
     {
-        var errors = new List<string>();
+        ArgumentException.ThrowIfNullOrEmpty(seriesId);
 
         if (string.IsNullOrWhiteSpace(seriesId))
         {
-            errors.Add("Series ID cannot be null, empty, or whitespace.");
+            return new[] { "Series ID cannot be null, empty, or whitespace." };
         }
 
-        return errors.AsReadOnly();
+        return Array.Empty<string>();
     }
 
     /// <summary>
@@ -84,16 +34,12 @@ public static class DataControllerValidation
     /// </summary>
     /// <param name="dataPoints">The list of data points to validate</param>
     /// <returns>List of validation error messages; empty if valid</returns>
-    public static IReadOnlyList<string> Validate(
-        this List<DataPoint> dataPoints)
+    /// <exception cref="ArgumentNullException">Thrown if dataPoints is null</exception>
+    public static IReadOnlyList<string> Validate(this List<DataPoint> dataPoints)
     {
-        var errors = new List<string>();
+        ArgumentNullException.ThrowIfNull(dataPoints);
 
-        if (dataPoints == null)
-        {
-            errors.Add("Data points list cannot be null.");
-            return errors.AsReadOnly();
-        }
+        var errors = new List<string>();
 
         if (dataPoints.Count == 0)
         {
@@ -118,16 +64,12 @@ public static class DataControllerValidation
     /// </summary>
     /// <param name="dataPoint">The data point to validate</param>
     /// <returns>List of validation error messages; empty if valid</returns>
-    public static IReadOnlyList<string> Validate(
-        this DataPoint dataPoint)
+    /// <exception cref="ArgumentNullException">Thrown if dataPoint is null</exception>
+    public static IReadOnlyList<string> Validate(this DataPoint dataPoint)
     {
-        var errors = new List<string>();
+        ArgumentNullException.ThrowIfNull(dataPoint);
 
-        if (dataPoint == null)
-        {
-            errors.Add("Data point cannot be null.");
-            return errors.AsReadOnly();
-        }
+        var errors = new List<string>();
 
         // Validate X coordinate
         if (double.IsNaN(dataPoint.X))
@@ -168,12 +110,9 @@ public static class DataControllerValidation
         }
 
         // Validate CustomRadius
-        if (dataPoint.CustomRadius.HasValue)
+        if (dataPoint.CustomRadius.HasValue && dataPoint.CustomRadius.Value <= 0)
         {
-            if (dataPoint.CustomRadius.Value <= 0)
-            {
-                errors.Add("CustomRadius must be positive if specified.");
-            }
+            errors.Add("CustomRadius must be positive if specified.");
         }
 
         // Validate Timestamp (if present, should be reasonable)
@@ -211,11 +150,13 @@ public static class DataControllerValidation
     /// <param name="aggregationType">The aggregation type identifier</param>
     /// <param name="bucketSize">The bucket size for aggregation</param>
     /// <returns>List of validation error messages; empty if valid</returns>
-    public static IReadOnlyList<string> Validate(
-        this List<DataPoint> dataPoints,
-        string aggregationType,
-        int bucketSize)
+    /// <exception cref="ArgumentNullException">Thrown if dataPoints is null</exception>
+    /// <exception cref="ArgumentException">Thrown if aggregationType is null, empty, or whitespace</exception>
+    public static IReadOnlyList<string> Validate(this List<DataPoint> dataPoints, string aggregationType, int bucketSize)
     {
+        ArgumentNullException.ThrowIfNull(dataPoints);
+        ArgumentException.ThrowIfNullOrEmpty(aggregationType);
+
         var errors = new List<string>();
 
         // Validate dataPoints
@@ -247,11 +188,11 @@ public static class DataControllerValidation
     /// <param name="minValue">The minimum value for filtering</param>
     /// <param name="maxValue">The maximum value for filtering</param>
     /// <returns>List of validation error messages; empty if valid</returns>
-    public static IReadOnlyList<string> Validate(
-        this List<DataPoint> dataPoints,
-        double minValue,
-        double maxValue)
+    /// <exception cref="ArgumentNullException">Thrown if dataPoints is null</exception>
+    public static IReadOnlyList<string> Validate(this List<DataPoint> dataPoints, double minValue, double maxValue)
     {
+        ArgumentNullException.ThrowIfNull(dataPoints);
+
         var errors = new List<string>();
 
         // Validate dataPoints
@@ -272,10 +213,11 @@ public static class DataControllerValidation
     /// <param name="dataPoints">The list of data points to resample</param>
     /// <param name="targetCount">The target number of data points</param>
     /// <returns>List of validation error messages; empty if valid</returns>
-    public static IReadOnlyList<string> Validate(
-        this List<DataPoint> dataPoints,
-        int targetCount)
+    /// <exception cref="ArgumentNullException">Thrown if dataPoints is null</exception>
+    public static IReadOnlyList<string> Validate(this List<DataPoint> dataPoints, int targetCount)
     {
+        ArgumentNullException.ThrowIfNull(dataPoints);
+
         var errors = new List<string>();
 
         // Validate dataPoints
@@ -295,44 +237,11 @@ public static class DataControllerValidation
     }
 
     /// <summary>
-    /// Checks if a DataController instance is valid.
-    /// </summary>
-    /// <param name="value">The DataController instance to check</param>
-    /// <returns>True if the instance and all its dependencies are valid; false otherwise</returns>
-    public static bool IsValid(this DataController value)
-    {
-        return Validate(value).Count == 0;
-    }
-
-    /// <summary>
-    /// Ensures the DataController instance is valid, throwing if not.
-    /// </summary>
-    /// <param name="value">The DataController instance to validate</param>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
-    /// <exception cref="ArgumentException">Thrown if validation fails</exception>
-    public static void EnsureValid(this DataController value)
-    {
-        ArgumentNullException.ThrowIfNull(value);
-
-        var errors = Validate(value);
-        if (errors.Count > 0)
-        {
-            throw new ArgumentException(
-                string.Join("\n", errors),
-                nameof(value)
-            );
-        }
-    }
-
-    /// <summary>
     /// Checks if a series ID is valid.
     /// </summary>
     /// <param name="seriesId">The series identifier</param>
     /// <returns>True if valid; false otherwise</returns>
-    public static bool IsValid(this string seriesId)
-    {
-        return Validate(seriesId).Count == 0;
-    }
+    public static bool IsValid(this string seriesId) => Validate(seriesId).Count == 0;
 
     /// <summary>
     /// Ensures a series ID is valid, throwing if not.
@@ -344,10 +253,7 @@ public static class DataControllerValidation
         var errors = Validate(seriesId);
         if (errors.Count > 0)
         {
-            throw new ArgumentException(
-                string.Join("\n", errors),
-                nameof(seriesId)
-            );
+            throw new ArgumentException(string.Join("\n", errors), nameof(seriesId));
         }
     }
 
@@ -356,10 +262,7 @@ public static class DataControllerValidation
     /// </summary>
     /// <param name="dataPoints">The list of data points</param>
     /// <returns>True if valid; false otherwise</returns>
-    public static bool IsValid(this List<DataPoint> dataPoints)
-    {
-        return Validate(dataPoints).Count == 0;
-    }
+    public static bool IsValid(this List<DataPoint> dataPoints) => Validate(dataPoints).Count == 0;
 
     /// <summary>
     /// Ensures a list of data points is valid, throwing if not.
@@ -371,10 +274,7 @@ public static class DataControllerValidation
         var errors = Validate(dataPoints);
         if (errors.Count > 0)
         {
-            throw new ArgumentException(
-                string.Join("\n", errors),
-                nameof(dataPoints)
-            );
+            throw new ArgumentException(string.Join("\n", errors), nameof(dataPoints));
         }
     }
 
@@ -383,10 +283,7 @@ public static class DataControllerValidation
     /// </summary>
     /// <param name="dataPoint">The data point</param>
     /// <returns>True if valid; false otherwise</returns>
-    public static bool IsValid(this DataPoint dataPoint)
-    {
-        return Validate(dataPoint).Count == 0;
-    }
+    public static bool IsValid(this DataPoint dataPoint) => Validate(dataPoint).Count == 0;
 
     /// <summary>
     /// Ensures a data point is valid, throwing if not.
@@ -398,10 +295,7 @@ public static class DataControllerValidation
         var errors = Validate(dataPoint);
         if (errors.Count > 0)
         {
-            throw new ArgumentException(
-                string.Join("\n", errors),
-                nameof(dataPoint)
-            );
+            throw new ArgumentException(string.Join("\n", errors), nameof(dataPoint));
         }
     }
 
@@ -412,13 +306,8 @@ public static class DataControllerValidation
     /// <param name="aggregationType">The aggregation type</param>
     /// <param name="bucketSize">The bucket size</param>
     /// <returns>True if valid; false otherwise</returns>
-    public static bool IsValid(
-        this List<DataPoint> dataPoints,
-        string aggregationType,
-        int bucketSize)
-    {
-        return Validate(dataPoints, aggregationType, bucketSize).Count == 0;
-    }
+    public static bool IsValid(this List<DataPoint> dataPoints, string aggregationType, int bucketSize) =>
+        Validate(dataPoints, aggregationType, bucketSize).Count == 0;
 
     /// <summary>
     /// Ensures aggregation parameters are valid, throwing if not.
@@ -427,18 +316,12 @@ public static class DataControllerValidation
     /// <param name="aggregationType">The aggregation type</param>
     /// <param name="bucketSize">The bucket size</param>
     /// <exception cref="ArgumentException">Thrown if parameters are invalid</exception>
-    public static void EnsureValid(
-        this List<DataPoint> dataPoints,
-        string aggregationType,
-        int bucketSize)
+    public static void EnsureValid(this List<DataPoint> dataPoints, string aggregationType, int bucketSize)
     {
         var errors = Validate(dataPoints, aggregationType, bucketSize);
         if (errors.Count > 0)
         {
-            throw new ArgumentException(
-                string.Join("\n", errors),
-                nameof(dataPoints)
-            );
+            throw new ArgumentException(string.Join("\n", errors), nameof(dataPoints));
         }
     }
 
@@ -449,13 +332,8 @@ public static class DataControllerValidation
     /// <param name="minValue">The minimum value</param>
     /// <param name="maxValue">The maximum value</param>
     /// <returns>True if valid; false otherwise</returns>
-    public static bool IsValid(
-        this List<DataPoint> dataPoints,
-        double minValue,
-        double maxValue)
-    {
-        return Validate(dataPoints, minValue, maxValue).Count == 0;
-    }
+    public static bool IsValid(this List<DataPoint> dataPoints, double minValue, double maxValue) =>
+        Validate(dataPoints, minValue, maxValue).Count == 0;
 
     /// <summary>
     /// Ensures filter parameters are valid, throwing if not.
@@ -464,18 +342,12 @@ public static class DataControllerValidation
     /// <param name="minValue">The minimum value</param>
     /// <param name="maxValue">The maximum value</param>
     /// <exception cref="ArgumentException">Thrown if parameters are invalid</exception>
-    public static void EnsureValid(
-        this List<DataPoint> dataPoints,
-        double minValue,
-        double maxValue)
+    public static void EnsureValid(this List<DataPoint> dataPoints, double minValue, double maxValue)
     {
         var errors = Validate(dataPoints, minValue, maxValue);
         if (errors.Count > 0)
         {
-            throw new ArgumentException(
-                string.Join("\n", errors),
-                nameof(dataPoints)
-            );
+            throw new ArgumentException(string.Join("\n", errors), nameof(dataPoints));
         }
     }
 
@@ -485,12 +357,8 @@ public static class DataControllerValidation
     /// <param name="dataPoints">The data points</param>
     /// <param name="targetCount">The target count</param>
     /// <returns>True if valid; false otherwise</returns>
-    public static bool IsValid(
-        this List<DataPoint> dataPoints,
-        int targetCount)
-    {
-        return Validate(dataPoints, targetCount).Count == 0;
-    }
+    public static bool IsValid(this List<DataPoint> dataPoints, int targetCount) =>
+        Validate(dataPoints, targetCount).Count == 0;
 
     /// <summary>
     /// Ensures resample parameters are valid, throwing if not.
@@ -498,27 +366,26 @@ public static class DataControllerValidation
     /// <param name="dataPoints">The data points</param>
     /// <param name="targetCount">The target count</param>
     /// <exception cref="ArgumentException">Thrown if parameters are invalid</exception>
-    public static void EnsureValid(
-        this List<DataPoint> dataPoints,
-        int targetCount)
+    public static void EnsureValid(this List<DataPoint> dataPoints, int targetCount)
     {
         var errors = Validate(dataPoints, targetCount);
         if (errors.Count > 0)
         {
-            throw new ArgumentException(
-                string.Join("\n", errors),
-                nameof(dataPoints)
-            );
+            throw new ArgumentException(string.Join("\n", errors), nameof(dataPoints));
         }
     }
 
     private static bool IsValidHexColor(string color)
     {
         if (string.IsNullOrWhiteSpace(color))
+        {
             return false;
+        }
 
         if (!color.StartsWith("#", StringComparison.Ordinal))
+        {
             return false;
+        }
 
         var hex = color.Substring(1);
         return hex.Length == 6 || hex.Length == 8;
