@@ -6815,3 +6815,50 @@ public class ChartStatisticsExample
     }
 }
 ```
+
+## PerformanceOptimizer
+
+`PerformanceOptimizer` provides tools to analyze chart performance and optimize rendering by downsampling data points and estimating memory usage. It identifies potential performance bottlenecks through detailed analysis, returning actionable recommendations based on data volume, series count, and chart dimensions.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Utilities;
+
+public class PerformanceOptimizerExample
+{
+    public static void Main()
+    {
+        var logger = new NullLogger<PerformanceOptimizer>();
+        var optimizer = new PerformanceOptimizer(logger);
+
+        // Create a sample chart
+        var chart = new Chart("performance-chart-1");
+        chart.Configuration = new ChartConfiguration { Width = 1920, Height = 1080 };
+        var series = new ChartSeries("LargeSeries");
+        for (int i = 0; i < 15000; i++)
+            series.AddDataPoint(i, i * 2);
+        chart.AddSeries(series);
+
+        // 1. Analyze chart performance
+        var analysis = optimizer.AnalyzeChart(chart);
+        Console.WriteLine($"Analysis for {analysis.ChartId} (Points: {analysis.TotalDataPoints})");
+
+        foreach (var rec in analysis.Recommendations)
+        {
+            Console.WriteLine($"[{rec.Severity}] {rec.Category}: {rec.Message}");
+            Console.WriteLine($"   Action: {rec.Action}");
+        }
+
+        // 2. Downsample data points
+        var downsampled = optimizer.Downsample(series.DataPoints, 1000);
+        Console.WriteLine($"Downsampled from {series.DataPoints.Count} to {downsampled.Count} points");
+
+        // 3. Estimate memory usage
+        long memoryEstimate = optimizer.EstimateMemoryUsage(chart);
+        Console.WriteLine($"Estimated memory: {memoryEstimate / 1024 / 1024} MB");
+    }
+}
+```
