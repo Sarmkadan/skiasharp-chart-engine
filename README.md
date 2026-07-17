@@ -2,6 +2,60 @@
 
 A .NET chart rendering library (SkiaSharp-based) with an ASP.NET Core Web API host. Usable standalone via `ChartEngine.Create()` or as a service through `AddSkiaSharpChartEngine()`.
 
+## CollectionExtensionsJsonExtensions
+
+`CollectionExtensionsJsonExtensions` provides extension methods for serializing collections and dictionaries to JSON and deserializing JSON strings back to strongly-typed collections. The methods support both compact and indented JSON formatting, and include safe parsing variants that return null or boolean status instead of throwing exceptions.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using SkiaSharpChartEngine.Extensions;
+
+public class CollectionExtensionsExample
+{
+    public static void Main()
+    {
+        // Serialize a collection to JSON
+        var colors = new List<string> { "Red", "Green", "Blue" };
+        string json = colors.ToJson(); // Compact JSON
+        Console.WriteLine(json); // ["Red","Green","Blue"]
+        
+        // Serialize with indentation
+        string indentedJson = colors.ToJson(indented: true);
+        Console.WriteLine(indentedJson);
+        /*
+        [
+          "Red",
+          "Green",
+          "Blue"
+        ]
+        */
+        
+        // Deserialize back to collection
+        var deserialized = json.FromJsonToCollection<string>();
+        Console.WriteLine(string.Join(", ", deserialized!)); // Red, Green, Blue
+        
+        // Serialize a dictionary
+        var chartSettings = new Dictionary<string, object>
+        {
+            ["width"] = 800,
+            ["height"] = 600,
+            ["theme"] = "dark"
+        };
+        string dictJson = chartSettings.ToJson();
+        Console.WriteLine(dictJson); // {"width":800,"height":600,"theme":"dark"}
+        
+        // Deserialize dictionary
+        var settings = dictJson.FromJsonToDictionary<string, object>();
+        Console.WriteLine(settings!["theme"]); // dark
+        
+        // Safe parsing with Try method
+        bool success = json.TryFromJsonToCollection<string>(out var safeResult);
+        Console.WriteLine(success); // True
+    }
+}
+```
+
 ## ThemeManager
 
 `ThemeManager` provides a centralized system for managing chart themes and color schemes. It allows developers to register custom themes, switch the active theme at runtime, and retrieve theme properties (such as background/foreground colors, font settings, and series colors) to ensure consistent styling across generated charts.
