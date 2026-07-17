@@ -6261,6 +6261,68 @@ public class ChartInteractionHandler
     }
 }
 
+## DataAggregator
+
+`DataAggregator` provides functionality for aggregating and analyzing data points in chart rendering scenarios. It supports bucket-based aggregation (grouping data into buckets), interval-based grouping (grouping by labels), and comprehensive statistical calculations including sum, average, min, max, median, standard deviation, and more.
+
+The class is designed to process large datasets efficiently by reducing data volume while preserving key statistical properties for visualization purposes.
+
+### Usage Example
+
+```csharp
+using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Utilities;
+
+// Initialize DataAggregator with logger
+var logger = new NullLogger<DataAggregator>();
+var aggregator = new DataAggregator(logger);
+
+// Create sample data points
+var dataPoints = new List<DataPoint>
+{
+    new DataPoint(1.0, 10.0),
+    new DataPoint(2.0, 20.0),
+    new DataPoint(3.0, 30.0),
+    new DataPoint(4.0, 40.0),
+    new DataPoint(5.0, 50.0)
+};
+
+// Example 1: Aggregate by count (bucket-based aggregation)
+var aggregatedByCount = aggregator.AggregateByCount(dataPoints, 2, AggregationType.Average);
+Console.WriteLine($"Aggregated into {aggregatedByCount.Count} buckets");
+Console.WriteLine($"Bucket 1: {aggregatedByCount[0].Value:F2}"); // 30.00
+Console.WriteLine($"Bucket 2: {aggregatedByCount[1].Value:F2}"); // 40.00
+
+// Example 2: Group by interval (label-based aggregation)
+var labeledPoints = new List<DataPoint>
+{
+    new DataPoint(1.0, 100.0) { Label = "Q1" },
+    new DataPoint(2.0, 150.0) { Label = "Q1" },
+    new DataPoint(3.0, 200.0) { Label = "Q2" },
+    new DataPoint(4.0, 250.0) { Label = "Q2" }
+};
+
+var groupedByInterval = aggregator.AggregateByInterval(labeledPoints, AggregationType.Average);
+Console.WriteLine($"Created {groupedByInterval.Count} groups");
+Console.WriteLine($"Q1 points: {groupedByInterval["Q1"].Count}"); // 2
+Console.WriteLine($"Q2 points: {groupedByInterval["Q2"].Count}"); // 2
+
+// Example 3: Calculate comprehensive statistics
+var statistics = aggregator.CalculateStatistics(dataPoints);
+Console.WriteLine($"Count: {statistics.Count}");
+Console.WriteLine($"Sum: {statistics.Sum:F2}");
+Console.WriteLine($"Average: {statistics.Average:F2}");
+Console.WriteLine($"Min: {statistics.Min:F2}");
+Console.WriteLine($"Max: {statistics.Max:F2}");
+Console.WriteLine($"Median: {statistics.Median:F2}");
+Console.WriteLine($"Range: {statistics.Range:F2}");
+Console.WriteLine($"Standard Deviation: {statistics.StandardDeviation:F4}");
+Console.WriteLine($"Calculated at: {statistics.CalculatedAt:O}");
+```
+
 ## DataAggregatorTests
 
 `DataAggregatorTests` provides a comprehensive suite of unit tests for the `DataAggregator` class, which handles data aggregation operations including bucket-based aggregation, interval-based grouping, and statistical calculations. The tests validate edge cases, parameter validation, and correct computation across different aggregation types (Average, Sum, Min, Max, Median) to ensure accurate data summarization for chart rendering scenarios.
