@@ -234,6 +234,82 @@ public class CsvDataSerializerExample
 }
 ```
 
+## JsonChartSerializer
+
+`JsonChartSerializer` provides functionality for serializing and deserializing `Chart` objects to and from JSON format. It supports both single chart serialization and collection serialization, with built-in validation and formatting capabilities. The serializer uses camelCase property naming and handles null values efficiently.
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Serializers;
+
+public class JsonChartSerializerExample
+{
+    public static void Main()
+    {
+        // Initialize JsonChartSerializer with a logger
+        var logger = new NullLogger<JsonChartSerializer>();
+        var serializer = new JsonChartSerializer(logger);
+
+        // Example 1: Create a sample chart
+        var chart = new Chart
+        {
+            Id = "temperature-chart",
+            Title = "Daily Temperature",
+            ChartType = "Line",
+            Series = new System.Collections.Generic.List<ChartSeries>
+            {
+                new ChartSeries
+                {
+                    Name = "Temperature (°C)",
+                    DataPoints = new System.Collections.Generic.List<DataPoint>
+                    {
+                        new DataPoint { Value = 22.5 },
+                        new DataPoint { Value = 23.1 },
+                        new DataPoint { Value = 24.8 }
+                    }
+                }
+            }
+        };
+
+        // Example 2: Serialize chart to JSON
+        string jsonData = serializer.Serialize(chart);
+        Console.WriteLine("Serialized JSON:");
+        Console.WriteLine(jsonData);
+
+        // Example 3: Deserialize JSON back to chart
+        var deserializedChart = serializer.Deserialize(jsonData);
+        Console.WriteLine($"Deserialized chart ID: {deserializedChart?.Id}");
+
+        // Example 4: Serialize multiple charts
+        var chart2 = new Chart
+        {
+            Id = "humidity-chart",
+            Title = "Humidity Levels",
+            ChartType = "Line"
+        };
+        
+        string collectionJson = serializer.SerializeCollection(new[] { chart, chart2 });
+        Console.WriteLine("Collection JSON:");
+        Console.WriteLine(collectionJson);
+
+        // Example 5: Deserialize collection
+        var charts = serializer.DeserializeCollection(collectionJson);
+        Console.WriteLine($"Deserialized {charts.Count} charts");
+
+        // Example 6: Validate JSON
+        bool isValid = serializer.IsValidJson(jsonData);
+        Console.WriteLine($"Is valid JSON: {isValid}");
+
+        // Example 7: Pretty print JSON
+        string prettyJson = serializer.PrettyPrint(jsonData);
+        Console.WriteLine("Pretty printed JSON:");
+        Console.WriteLine(prettyJson);
+    }
+}
+```
+
 ## PathHelper
 
 `PathHelper` provides utility methods for file system operations, path manipulation, and directory management. It includes path validation to prevent directory traversal attacks, safe filename generation, unique filename generation, directory existence checks, path combination utilities, and file cleanup operations.
