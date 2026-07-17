@@ -10,6 +10,7 @@ public static class ExportControllerExtensions
     /// </summary>
     /// <param name="controller">The export controller.</param>
     /// <returns>true if the export controller has any failed renders; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="controller"/> is null.</exception>
     public static bool HasFailedRenders(this ExportController controller)
     {
         ArgumentNullException.ThrowIfNull(controller);
@@ -21,6 +22,7 @@ public static class ExportControllerExtensions
     /// </summary>
     /// <param name="controller">The export controller.</param>
     /// <returns>The total number of charts rendered.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="controller"/> is null.</exception>
     public static int GetTotalChartsRendered(this ExportController controller)
     {
         ArgumentNullException.ThrowIfNull(controller);
@@ -32,6 +34,7 @@ public static class ExportControllerExtensions
     /// </summary>
     /// <param name="controller">The export controller.</param>
     /// <returns>A read-only list of individual render results.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="controller"/> is null.</exception>
     public static IReadOnlyList<IndividualRenderResult> GetRenderResults(this ExportController controller)
     {
         ArgumentNullException.ThrowIfNull(controller);
