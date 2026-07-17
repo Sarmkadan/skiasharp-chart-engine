@@ -72,13 +72,10 @@ public static class ChartInteractionEventArgsValidation
     /// </summary>
     /// <param name="value">The event arguments to check.</param>
     /// <returns><c>true</c> if valid; otherwise, <c>false</c>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <c>null</c>.</exception>
     public static bool IsValid(this ChartInteractionEventArgs value)
     {
-        if (value is null)
-        {
-            return false;
-        }
-
+        ArgumentNullException.ThrowIfNull(value);
         return value.Validate().Count == 0;
     }
 
