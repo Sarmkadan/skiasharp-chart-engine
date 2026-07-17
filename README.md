@@ -341,6 +341,81 @@ public class DateTimeHelperExample
 }
 ```
 
+## BitmapHelper
+
+`BitmapHelper` provides utility methods for working with bitmap and image data. It includes image format validation, dimension calculations, DPI/PPI conversions, and aspect ratio utilities. This is useful for validating images, estimating file sizes, and calculating physical dimensions from pixel data.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Utilities;
+
+public class BitmapHelperExample
+{
+    public static void Main()
+    {
+        // Example 1: Validate PNG image data
+        var pngData = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
+        bool isPngValid = BitmapHelper.IsPngValid(pngData);
+        Console.WriteLine($"Is PNG valid? {isPngValid}"); // True
+
+        // Example 2: Validate JPEG image data
+        var jpegData = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 };
+        bool isJpegValid = BitmapHelper.IsJpegValid(jpegData);
+        Console.WriteLine($"Is JPEG valid? {isJpegValid}"); // True
+
+        // Example 3: Get PNG dimensions
+        var pngWithDimensions = new byte[] {
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+            0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+            0x00, 0x00, 0x00, 0xC8, // Width: 200
+            0x00, 0x00, 0x00, 0x96, // Height: 150
+            0x08, 0x06, 0x00, 0x00
+        };
+        var dimensions = BitmapHelper.GetPngDimensions(pngWithDimensions);
+        if (dimensions.HasValue)
+        {
+            Console.WriteLine($"PNG dimensions: {dimensions.Value.Width}x{dimensions.Value.Height}");
+        }
+
+        // Example 4: Detect image format
+        string detectedFormat = BitmapHelper.DetectFormat(pngData);
+        Console.WriteLine($"Detected format: {detectedFormat}"); // "png"
+
+        // Example 5: Estimate file size for a 1920x1080 PNG
+        long estimatedSize = BitmapHelper.EstimateFileSize(1920, 1080, 96f, "png");
+        Console.WriteLine($"Estimated PNG size: {estimatedSize} bytes");
+
+        // Example 6: Convert PPI to DPI
+        int dpi = BitmapHelper.GetDpiFromPpi(300);
+        Console.WriteLine($"DPI from 300 PPI: {dpi}"); // 300
+
+        // Example 7: Convert DPI to PPI
+        float ppi = BitmapHelper.ConvertDpiToPpi(96f);
+        Console.WriteLine($"PPI from 96 DPI: {ppi}"); // 96
+
+        // Example 8: Calculate physical size from pixel dimensions
+        var physicalSize = BitmapHelper.GetPhysicalSize(1920, 1080, 96f);
+        Console.WriteLine($"Physical size at 96 DPI: {physicalSize.WidthInches:F2}\" x {physicalSize.HeightInches:F2}\"");
+
+        // Example 9: Calculate pixel dimensions from physical size
+        var pixelDimensions = BitmapHelper.GetPixelDimensions(8.5, 11, 300f);
+        Console.WriteLine($"Pixel dimensions at 300 DPI: {pixelDimensions.WidthPixels}x{pixelDimensions.HeightPixels}");
+
+        // Example 10: Validate image dimensions
+        bool isValid = BitmapHelper.ValidateDimensions(1920, 1080);
+        Console.WriteLine($"Are dimensions valid? {isValid}"); // True
+
+        // Example 11: Calculate aspect ratio
+        float aspectRatio = BitmapHelper.GetAspectRatio(16, 9);
+        Console.WriteLine($"Aspect ratio (16:9): {aspectRatio:F2}"); // 1.78
+
+        // Example 12: Scale image maintaining aspect ratio
+        var scaledSize = BitmapHelper.ScaleMaintainingRatio(1920, 1080, 800, 600);
+        Console.WriteLine($"Scaled to fit 800x600: {scaledSize.ScaledWidth}x{scaledSize.ScaledHeight}");
+    }
+}
+```
+
 ## Architecture
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the component breakdown, data flow, design decisions, extension points, and known limitations. The sections below are per-type usage examples.
