@@ -1049,11 +1049,71 @@ public class CacheCleanupWorkerExample
 }
 ```
 
-## TransitionTimeline
+## TransitionOptions
 
-`TransitionTimeline` defines a sequence of chart states distributed along a time axis. Each state is captured as a `TransitionKeyframe`; the engine interpolates data values between consecutive keyframes to produce smooth animated transitions.
+`TransitionOptions` configures how chart transitions are rendered, controlling frame rate, quality, playback behavior, parallel rendering, and diagnostics. All settings are validated on property setters, and instances can be cloned to create modified copies without altering the original.
 
-The timeline can be built using a fluent API with methods like `AddKeyframe`, `AppendTransition`, `StartWith`, and `Repeat`, or created using factory methods like `Between` and `FromSteps` for common scenarios.
+The options include playback modes (`PlaybackMode.Once`, `Loop`, `Bounce`), frame rate and quality settings, pre/post delays, parallel rendering controls, and frame timing collection for performance profiling.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Animation;
+using SkiaSharpChartEngine.Models;
+
+public class TransitionOptionsExample
+{
+    public static void Main()
+    {
+        // Example 1: Create default transition options
+        var defaultOptions = new TransitionOptions();
+        Console.WriteLine(defaultOptions);
+        
+        // Example 2: Configure high-quality rendering with looping playback
+        var highQualityOptions = new TransitionOptions
+        {
+            FrameRate = 60,
+            Quality = 100,
+            Playback = PlaybackMode.Loop,
+            LoopCount = -1, // Infinite looping
+            PreDelayMs = 500, // 500ms delay before starting
+            PostDelayMs = 1000 // 1s delay after completion
+        };
+        
+        // Example 3: Enable parallel rendering for performance
+        var parallelOptions = new TransitionOptions
+        {
+            EnableParallelRendering = true,
+            MaxParallelism = 8,
+            CollectFrameTimings = true // Enable performance profiling
+        };
+        
+        // Example 4: Clone and modify existing options
+        var clonedOptions = defaultOptions.Clone();
+        clonedOptions.FrameRate = 30;
+        clonedOptions.Quality = 90;
+        
+        // Example 5: Use predefined presets
+        var previewOptions = TransitionOptions.Preview;
+        var loopingOptions = TransitionOptions.Looping;
+        var highQualityPreset = TransitionOptions.HighQuality;
+        
+        // Example 6: Validate options before use
+        try
+        {
+            highQualityOptions.Validate();
+            Console.WriteLine("Options validated successfully");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Validation failed: {ex.Message}");
+        }
+        
+        // Example 7: Calculate frame interval
+        Console.WriteLine($"Frame interval at 60fps: {highQualityOptions.FrameIntervalMs:F2}ms");
+        Console.WriteLine($"Frame interval at 30fps: {previewOptions.FrameIntervalMs:F2}ms");
+    }
+}
+```
 
 ```csharp
 using System;
