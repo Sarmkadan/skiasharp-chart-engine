@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using SkiaSharp;
 using SkiaSharpChartEngine.Models;
 
 namespace SkiaSharpChartEngine.Tests.Integration;
@@ -16,6 +18,7 @@ public static class ChartRenderingIntegrationTestsValidation
     /// </summary>
     /// <param name="configuration">The chart configuration to validate.</param>
     /// <returns>An IReadOnlyList of validation problem descriptions. Empty if valid.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if configuration is null.</exception>
     public static IReadOnlyList<string> ValidateChartConfiguration(this ChartConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
@@ -61,14 +64,12 @@ public static class ChartRenderingIntegrationTestsValidation
         }
 
         // Validate color formats
-        if (!string.IsNullOrWhiteSpace(configuration.BackgroundColor) &&
-            !IsValidColor(configuration.BackgroundColor))
+        if (!string.IsNullOrWhiteSpace(configuration.BackgroundColor) && !IsValidColor(configuration.BackgroundColor))
         {
             problems.Add("Background color is not a valid hex color format (e.g., #RRGGBB or #RGB).");
         }
 
-        if (!string.IsNullOrWhiteSpace(configuration.GridColor) &&
-            !IsValidColor(configuration.GridColor))
+        if (!string.IsNullOrWhiteSpace(configuration.GridColor) && !IsValidColor(configuration.GridColor))
         {
             problems.Add("Grid color is not a valid hex color format (e.g., #RRGGBB or #RGB).");
         }
@@ -81,6 +82,7 @@ public static class ChartRenderingIntegrationTestsValidation
     /// </summary>
     /// <param name="series">The chart series to validate.</param>
     /// <returns>An IReadOnlyList of validation problem descriptions. Empty if valid.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if series is null.</exception>
     public static IReadOnlyList<string> ValidateChartSeries(this ChartSeries series)
     {
         ArgumentNullException.ThrowIfNull(series);
@@ -148,6 +150,7 @@ public static class ChartRenderingIntegrationTestsValidation
     /// </summary>
     /// <param name="chart">The chart to validate.</param>
     /// <returns>An IReadOnlyList of validation problem descriptions. Empty if valid.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if chart is null.</exception>
     public static IReadOnlyList<string> ValidateChart(this Chart chart)
     {
         ArgumentNullException.ThrowIfNull(chart);
@@ -212,8 +215,11 @@ public static class ChartRenderingIntegrationTestsValidation
     /// </summary>
     /// <param name="color">The color string to validate.</param>
     /// <returns>True if valid color format; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if color is null.</exception>
     private static bool IsValidColor(string color)
     {
+        ArgumentNullException.ThrowIfNull(color);
+
         if (string.IsNullOrWhiteSpace(color))
         {
             return true; // null/empty is acceptable (will use default)
@@ -229,15 +235,7 @@ public static class ChartRenderingIntegrationTestsValidation
         }
 
         // Check that all characters are valid hex digits
-        foreach (var c in hex)
-        {
-            if (!Uri.IsHexDigit(c))
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return hex.All(c => Uri.IsHexDigit(c));
     }
 
     /// <summary>
@@ -245,6 +243,7 @@ public static class ChartRenderingIntegrationTestsValidation
     /// </summary>
     /// <param name="configuration">The chart configuration to check.</param>
     /// <returns>True if valid; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if configuration is null.</exception>
     public static bool IsValidChartConfiguration(this ChartConfiguration configuration)
     {
         return ValidateChartConfiguration(configuration).Count == 0;
@@ -277,6 +276,7 @@ public static class ChartRenderingIntegrationTestsValidation
     /// </summary>
     /// <param name="series">The chart series to check.</param>
     /// <returns>True if valid; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if series is null.</exception>
     public static bool IsValidChartSeries(this ChartSeries series)
     {
         return ValidateChartSeries(series).Count == 0;
@@ -309,6 +309,7 @@ public static class ChartRenderingIntegrationTestsValidation
     /// </summary>
     /// <param name="chart">The chart to check.</param>
     /// <returns>True if valid; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if chart is null.</exception>
     public static bool IsValidChart(this Chart chart)
     {
         return ValidateChart(chart).Count == 0;
