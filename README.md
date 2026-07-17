@@ -7990,3 +7990,91 @@ public class RequestMetricsExample
     }
 }
 ```
+
+## MetricsCollector
+
+`MetricsCollector` is a diagnostics utility that tracks performance metrics for chart rendering operations. It measures CPU time, memory consumption, and execution statistics across different operations, providing insights into rendering performance and resource usage patterns.
+
+The collector uses a context-based API (`StartCollection`/`EndCollection`) to track individual operations and maintains aggregated statistics including execution counts, average/min/max/median times, and memory usage. It's useful for performance monitoring, benchmarking, and identifying optimization opportunities in production environments.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Diagnostics;
+using Microsoft.Extensions.Logging;
+
+public class MetricsExample
+{
+    public static void Main()
+    {
+        // Create a metrics collector with logging
+        var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+        var metricsCollector = new MetricsCollector(loggerFactory.CreateLogger<MetricsCollector>());
+
+        // Start metrics collection for chart rendering operation
+        var renderContext = metricsCollector.StartCollection("ChartRendering");
+        
+        try
+        {
+            // Simulate chart rendering work
+            System.Threading.Thread.Sleep(100);
+            GC.Collect();
+            System.Threading.Thread.Sleep(50);
+        }
+        finally
+        {
+            // End metrics collection
+            metricsCollector.EndCollection(renderContext);
+        }
+
+        // Start another operation
+        var exportContext = metricsCollector.StartCollection("ChartExport");
+        try
+        {
+            // Simulate chart export work
+            System.Threading.Thread.Sleep(150);
+            GC.Collect();
+            System.Threading.Thread.Sleep(75);
+        }
+        finally
+        {
+            metricsCollector.EndCollection(exportContext);
+        }
+
+        // Get metrics for specific operation
+        var renderMetrics = metricsCollector.GetMetrics("ChartRendering");
+        if (renderMetrics != null)
+        {
+            Console.WriteLine($"Operation: {renderMetrics.OperationName}");
+            Console.WriteLine($" Executions: {renderMetrics.Executions.Count}");
+            Console.WriteLine($" Last execution: {renderMetrics.Executions.Last().ExecutedAt}");
+        }
+
+        // Get summary statistics
+        var summary = metricsCollector.GetSummary("ChartRendering");
+        if (summary != null)
+        {
+            Console.WriteLine($"\nSummary for ChartRendering:");
+            Console.WriteLine($"  Executions: {summary.ExecutionCount}");
+            Console.WriteLine($"  Average Time: {summary.AverageTimeMs:F1}ms");
+            Console.WriteLine($"  Min/Max Time: {summary.MinTimeMs}ms / {summary.MaxTimeMs}ms");
+            Console.WriteLine($"  Median Time: {summary.MedianTimeMs}ms");
+            Console.WriteLine($"  Memory Used: {summary.AverageMemoryBytes / 1024}KB avg");
+        }
+
+        // Get all operation summaries
+        var allSummaries = metricsCollector.GetAllSummaries();
+        Console.WriteLine($"\nAll operations tracked ({allSummaries.Count}):");
+        foreach (var opSummary in allSummaries)
+        {
+            Console.WriteLine($"  {opSummary.Key}: {opSummary.Value.ExecutionCount} executions");
+        }
+
+        // Get total operations tracked
+        Console.WriteLine($"\nTotal operations tracked: {metricsCollector.GetOperationCount()}");
+
+        // Clear metrics
+        metricsCollector.Clear();
+        Console.WriteLine($"\nMetrics cleared. Operations remaining: {metricsCollector.GetOperationCount()}");
+    }
+}
+```
