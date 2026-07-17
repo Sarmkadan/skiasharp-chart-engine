@@ -1060,6 +1060,73 @@ bool isValid = exporter.IsValidExportFormat("json");
 Console.WriteLine($"Is 'json' a valid format? {isValid}");
 ```
 
+## ChartBuilderExtensions
+
+`ChartBuilderExtensions` provides a collection of fluent extension methods for `ChartBuilder` that simplify chart configuration through a clean, readable API. These methods allow you to apply themes, set series defaults, add data points, configure export settings, and manage custom chart properties in a single fluent chain.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Utilities;
+
+public class ChartBuilderExtensionsExample
+{
+    public static void Main()
+    {
+        // Example 1: Apply a theme and configure chart
+        var chart1 = new ChartBuilder()
+            .WithTheme(ChartTheme.Dark)
+            .AddSeries("Temperature", new List<(double x, double y)>
+            {
+                (1, 22.5),
+                (2, 23.1),
+                (3, 24.8)
+            }, "#FF5733")
+            .WithExportFormat(ExportFormat.Png)
+            .WithExportDPI(300)
+            .Build();
+
+        Console.WriteLine($"Chart with theme: {chart1.Configuration.BackgroundColor}");
+
+        // Example 2: Set series defaults and add multiple series
+        var chart2 = new ChartBuilder()
+            .WithSeriesDefaults(ChartType.BarChart, lineWidth: 3.0f, color: "#2E86C1")
+            .AddSeries("Revenue", new List<(double x, double y, string label)>
+            {
+                (1, 100000, "Q1"),
+                (2, 125000, "Q2"),
+                (3, 150000, "Q3"),
+                (4, 175000, "Q4")
+            })
+            .AddSeries("Expenses", new List<(double x, double y)>
+            {
+                (1, 80000),
+                (2, 95000),
+                (3, 110000),
+                (4, 130000)
+            })
+            .Build();
+
+        Console.WriteLine($"Chart with {chart2.Series.Count} series");
+
+        // Example 3: Use AddDataPoints to add multiple points at once
+        var chart3 = new ChartBuilder()
+            .AddSeries("Sales")
+            .AddDataPoints(new List<DataPoint>
+            {
+                new DataPoint { X = 1, Y = 50000, Label = "Jan" },
+                new DataPoint { X = 2, Y = 65000, Label = "Feb" },
+                new DataPoint { X = 3, Y = 80000, Label = "Mar" }
+            })
+            .WithCustomSetting("ChartTitle", "Monthly Sales")
+            .Build();
+
+        Console.WriteLine($"Chart has {chart3.Series[0].DataPoints.Count} data points");
+    }
+}
+```
+
 ## DateTimeHelper
 
 `DateTimeHelper` provides date/time utilities for chart data processing and axis formatting. It includes methods for Unix timestamp conversion, business day calculations, period boundaries, week number extraction, and human-readable formatting.
