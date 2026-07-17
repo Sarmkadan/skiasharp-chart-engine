@@ -55,6 +55,59 @@ public class ThemeManagerExample
 }
 ```
 
+## DataPointGenerator
+
+`DataPointGenerator` is a utility class for generating test and sample data points for chart development and testing. It provides several methods to create different types of data distributions including linear, sinusoidal, random, Gaussian, exponential, and polynomial patterns. This is particularly useful when creating sample charts, testing rendering performance, or generating realistic-looking datasets without manual data entry.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Utilities;
+
+public class DataPointGeneratorExample
+{
+    public static void Main()
+    {
+        // Example 1: Generate linear data (y = x)
+        var linearData = DataPointGenerator.GenerateLinearData(count: 100);
+        
+        // Example 2: Generate sinusoidal data (sine wave)
+        var sineData = DataPointGenerator.GenerateSinusoidalData(
+            count: 100,
+            amplitude: 5,
+            frequency: 2
+        );
+        
+        // Example 3: Generate random data within a range
+        var randomData = DataPointGenerator.GenerateRandomData(
+            count: 50,
+            minValue: 0,
+            maxValue: 100
+        );
+        
+        // Example 4: Generate Gaussian (normal) distribution data
+        var gaussianData = DataPointGenerator.GenerateGaussianData(
+            count: 100,
+            mean: 50,
+            stdDev: 15
+        );
+        
+        // Example 5: Generate exponential growth data
+        var exponentialData = DataPointGenerator.GenerateExponentialData(
+            count: 50,
+            baseValue: 1,
+            growthRate: 0.05
+        );
+        
+        // Example 6: Generate polynomial data (y = 2x² + 3x + 1)
+        var polynomialData = DataPointGenerator.GeneratePolynomialData(
+            count: 100,
+            coefficients: new double[] { 1, 3, 2 } // [constant, linear, quadratic]
+        );
+    }
+}
+```
+
 ## ColorHelper
 
 `ColorHelper` is a utility class for performing common color operations and conversions. It provides methods for working with hex and RGB color formats, manipulating color brightness (lightening/darkening), validating color formats, and accessing default color palettes. This is particularly useful for chart rendering where you need to generate colors dynamically or convert between different color representations.
