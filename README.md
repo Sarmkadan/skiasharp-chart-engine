@@ -293,6 +293,70 @@ public class TemplateLibraryExample
 
 `VersionCompatibilityChecker` validates version compatibility for serialized charts and configurations. It ensures backward compatibility by checking if a version falls within the supported range (1.0.0 - 1.9.9), determines if migrations are needed, and validates version sequences. This utility is essential for maintaining data integrity when loading or saving chart configurations across different library versions.
 
+## DataTransformer
+
+`DataTransformer` provides a suite of data processing utilities for chart data manipulation. It includes methods for normalizing values, applying mathematical transformations, filtering outliers, calculating moving averages, scaling and offsetting data, and ranking data points. This transformer is particularly useful for preparing raw data before chart rendering, ensuring consistent and meaningful visualizations.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Utilities;
+
+public class DataTransformerExample
+{
+    public static void Main()
+    {
+        // Sample chart data points
+        var dataPoints = new List<DataPoint>
+        {
+            new DataPoint { Label = "Jan", Value = 100 },
+            new DataPoint { Label = "Feb", Value = 150 },
+            new DataPoint { Label = "Mar", Value = 200 },
+            new DataPoint { Label = "Apr", Value = 180 },
+            new DataPoint { Label = "May", Value = 220 }
+        };
+
+        // Initialize DataTransformer with logger
+        var logger = new NullLogger<DataTransformer>();
+        var transformer = new DataTransformer(logger);
+
+        // Example 1: Normalize values to 0-1 range
+        var normalized = transformer.NormalizeValues(dataPoints);
+        Console.WriteLine($"Normalized values: {normalized.Count} points");
+
+        // Example 2: Apply logarithmic transformation for exponential data
+        var logTransformed = transformer.ApplyLogTransformation(dataPoints);
+        Console.WriteLine($"Log transformed values: {logTransformed.Count} points");
+
+        // Example 3: Filter outliers using standard deviation
+        var filtered = transformer.FilterOutliers(dataPoints, stdDevThreshold: 1.5);
+        Console.WriteLine($"Filtered outliers: {filtered.Count} points remaining");
+
+        // Example 4: Apply moving average for smoothing
+        var smoothed = transformer.ApplyMovingAverage(dataPoints, windowSize: 3);
+        Console.WriteLine($"Smoothed with moving average: {smoothed.Count} points");
+
+        // Example 5: Scale values by multiplier
+        var scaled = transformer.ScaleValues(dataPoints, multiplier: 2.5);
+        Console.WriteLine($"Scaled values by 2.5");
+
+        // Example 6: Offset values by a constant
+        var offset = transformer.OffsetValues(dataPoints, offset: 50);
+        Console.WriteLine($"Offset values by 50");
+
+        // Example 7: Rank data points by value
+        var ranked = transformer.RankDataPoints(dataPoints);
+        Console.WriteLine($"Ranked data points:");
+        foreach (var point in ranked)
+        {
+            Console.WriteLine($"  {point.Label}: Rank {point.Rank}");
+        }
+    }
+}
+```
+
 ```csharp
 using System;
 using Microsoft.Extensions.Logging.Abstractions;
