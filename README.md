@@ -7709,3 +7709,94 @@ public class ChartValidatorExample
     }
 }
 ```
+
+
+## RenderQueueManager
+
+`RenderQueueManager` is a thread-safe queue manager that handles chart rendering operations with priority-based execution. It prevents resource exhaustion by limiting the number of concurrent renders and provides comprehensive job management capabilities including enqueueing, dequeuing, cancellation, and status tracking. The manager uses a priority queue system where higher priority jobs are processed first, and automatically tracks job lifecycle from enqueueing through completion.
+
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharp;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Utilities;
+
+public class RenderQueueManagerExample
+{
+    public static async Task Main()
+    {
+        // Create a logger (can be null for simple scenarios)
+        var logger = new NullLogger<RenderQueueManager>();
+        
+        // Create a render queue manager with max 2 concurrent renders
+        var queueManager = new RenderQueueManager(logger, maxConcurrentRenders: 2);
+        
+        // Create sample charts
+        var chart1 = new Chart("temperature-chart")
+        {
+            Configuration = new ChartConfiguration
+            {
+                Width = 800,
+                Height = 600,
+                BackgroundColor = "#ffffff"
+            }
+        };
+        
+        var chart2 = new Chart("pressure-chart")
+        {
+            Configuration = new ChartConfiguration
+            {
+                Width = 800,
+                Height = 600,
+                BackgroundColor = "#f8f9fa"
+            }
+        };
+        
+        // Enqueue jobs with different priorities
+        string jobId1 = queueManager.Enqueue(chart1, priority: 1);
+        string jobId2 = queueManager.Enqueue(chart2, priority: 2); // Higher priority
+        string jobId3 = queueManager.Enqueue(chart1, priority: 0); // Lower priority
+        
+        Console.WriteLine($"Enqueued 3 jobs: {jobId1}, {jobId2}, {jobId3}");
+        Console.WriteLine($"Queue size: {queueManager.GetQueueSize()}");
+        
+        // Process jobs (simulated)
+        var job1 = queueManager.Dequeue();
+        if (job1 != null)
+        {
+            Console.WriteLine($"Processing job: {job1.Id}, Priority: {job1.Priority}");
+            queueManager.CompleteJob(job1.Id);
+        }
+        
+        var job2 = queueManager.Dequeue();
+        if (job2 != null)
+        {
+            Console.WriteLine($"Processing job: {job2.Id}, Priority: {job2.Priority}");
+            queueManager.CompleteJob(job2.Id);
+        }
+        
+        // Get status
+        var status = queueManager.GetStatus();
+        Console.WriteLine($"\nQueue Status:");
+        Console.WriteLine($"  Queued: {status.QueuedCount}");
+        Console.WriteLine($"  Active: {status.ActiveRenders}");
+        Console.WriteLine($"  Max Concurrent: {status.MaxConcurrentRenders}");
+        
+        // Wait for queue to empty
+        await queueManager.WaitForQueueEmptyAsync();
+        Console.WriteLine("\nAll jobs completed!");
+        
+        // Cancel a job (example)
+        string jobId4 = queueManager.Enqueue(chart2, priority: 3);
+        bool cancelled = queueManager.CancelJob(jobId4);
+        Console.WriteLine($"\nCancelled job {jobId4}: {cancelled}");
+        
+        // Check job status
+        var jobStatus = queueManager.GetJobStatus(jobId1);
+        Console.WriteLine($"Job {jobId1} status: {jobStatus}");
+    }
+}
+```
