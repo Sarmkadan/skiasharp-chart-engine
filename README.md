@@ -6608,3 +6608,70 @@ public class StringFormatHelperExample
 }
 ```
 
+
+## ChartStatistics
+
+`ChartStatistics` provides comprehensive statistical analysis for chart data series, including descriptive statistics, trend analysis, and outlier detection. It calculates key metrics such as mean, median, mode, variance, standard deviation, quartiles, and skewness to help understand data distribution and identify anomalies.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Utilities;
+
+public class ChartStatisticsExample
+{
+    public static void Main()
+    {
+        // Create a sample data series
+        var dataPoints = new List<DataPoint>
+        {
+            new DataPoint { Label = "Jan", Value = 120 },
+            new DataPoint { Label = "Feb", Value = 150 },
+            new DataPoint { Label = "Mar", Value = 130 },
+            new DataPoint { Label = "Apr", Value = 180 },
+            new DataPoint { Label = "May", Value = 200 },
+            new DataPoint { Label = "Jun", Value = 170 }
+        };
+
+        var series = new ChartSeries
+        {
+            Name = "Monthly Sales",
+            DataPoints = dataPoints
+        };
+
+        // Calculate statistics
+        var chartStats = new ChartStatistics(null);
+        var stats = chartStats.CalculateSeriesStatistics(series);
+        
+        Console.WriteLine($"Series: {stats.SeriesName}");
+        Console.WriteLine($"Count: {stats.Count}");
+        Console.WriteLine($"Sum: {stats.Sum:F2}");
+        Console.WriteLine($"Mean: {stats.Mean:F2}");
+        Console.WriteLine($"Median: {stats.Median:F2}");
+        Console.WriteLine($"Mode: {stats.Mode:F2}");
+        Console.WriteLine($"Min: {stats.Min}");
+        Console.WriteLine($"Max: {stats.Max}");
+        Console.WriteLine($"Range: {stats.Range}");
+        Console.WriteLine($"Standard Deviation: {stats.StandardDeviation:F2}");
+        Console.WriteLine($"Variance: {stats.Variance:F2}");
+        Console.WriteLine($"Coefficient of Variation: {stats.CoefficientOfVariation:F2}");
+        Console.WriteLine($"Q1: {stats.Q1:F2}");
+        Console.WriteLine($"Q3: {stats.Q3:F2}");
+        Console.WriteLine($"IQR: {stats.IQR:F2}");
+        Console.WriteLine($"Skewness: {stats.Skewness:F2}");
+        
+        // Detect outliers
+        var outliers = chartStats.DetectOutliers(series);
+        Console.WriteLine($"\nOutliers detected: {outliers.Count}");
+        foreach (var outlier in outliers)
+        {
+            Console.WriteLine($"  Index {outlier.Index}: {outlier.Value} (Label: {outlier.Label})");
+        }
+        
+        // Calculate trend
+        var trend = chartStats.CalculateTrend(series);
+        Console.WriteLine($"\nTrend (slope): {trend:F4}");
+    }
+}
+```
