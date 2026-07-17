@@ -14,7 +14,7 @@ namespace SkiaSharpChartEngine.Utilities;
 /// </summary>
 public static class RenderQueueManagerJsonExtensions
 {
-    private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+    private static readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = false,
@@ -29,6 +29,7 @@ public static class RenderQueueManagerJsonExtensions
     /// <param name="indented">Whether to format the JSON with indentation.</param>
     /// <returns>A JSON string representation of the render queue manager.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+    /// <exception cref="JsonException">Thrown when serialization fails.</exception>
     public static string ToJson(this RenderQueueManager value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -46,6 +47,7 @@ public static class RenderQueueManagerJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <returns>A <see cref="RenderQueueManager"/> instance, or null if the JSON is invalid.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
     public static RenderQueueManager? FromJson(string json)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
