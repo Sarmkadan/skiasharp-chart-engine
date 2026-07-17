@@ -47,9 +47,12 @@ public static class CachePolicyJsonExtensions
     /// </summary>
     /// <param name="json">The JSON string to deserialize</param>
     /// <returns>The deserialized CachePolicy instance, or null if JSON is null or empty</returns>
+    /// <exception cref="ArgumentNullException">Thrown when json is null</exception>
     /// <exception cref="JsonException">Thrown when JSON is malformed or cannot be deserialized</exception>
     public static CachePolicy? FromJson(string json)
     {
+        ArgumentNullException.ThrowIfNull(json);
+
         if (string.IsNullOrEmpty(json))
         {
             return null;
@@ -64,8 +67,11 @@ public static class CachePolicyJsonExtensions
     /// <param name="json">The JSON string to deserialize</param>
     /// <param name="value">Receives the deserialized CachePolicy if successful</param>
     /// <returns>True if deserialization succeeded; otherwise false</returns>
+    /// <exception cref="ArgumentNullException">Thrown when json is null</exception>
     public static bool TryFromJson(string json, out CachePolicy? value)
     {
+        ArgumentNullException.ThrowIfNull(json);
+
         value = null;
 
         if (string.IsNullOrEmpty(json))
@@ -89,6 +95,14 @@ public static class CachePolicyJsonExtensions
     /// </summary>
     private sealed class CachePolicyConverter : JsonConverter<CachePolicy>
     {
+        /// <summary>
+        /// Reads and converts the JSON to type <see cref="CachePolicy"/>.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <param name="typeToConvert">The type to convert.</param>
+        /// <param name="options">The serializer options.</param>
+        /// <returns>The deserialized CachePolicy.</returns>
+        /// <exception cref="JsonException">Thrown when JSON is malformed or cannot be deserialized.</exception>
         public override CachePolicy? Read(
             ref Utf8JsonReader reader,
             Type typeToConvert,
@@ -104,20 +118,16 @@ public static class CachePolicyJsonExtensions
 
             var policy = new CachePolicy();
 
-            if (root.TryGetProperty("absoluteExpirationRelativeToNow", out var absoluteProp))
+            if (root.TryGetProperty("absoluteExpirationRelativeToNow", out var absoluteProp) &&
+                absoluteProp.ValueKind != JsonValueKind.Null)
             {
-                if (absoluteProp.ValueKind != JsonValueKind.Null)
-                {
-                    policy.AbsoluteExpirationRelativeToNow = TimeSpan.FromTicks(absoluteProp.GetInt64());
-                }
+                policy.AbsoluteExpirationRelativeToNow = TimeSpan.FromTicks(absoluteProp.GetInt64());
             }
 
-            if (root.TryGetProperty("slidingExpiration", out var slidingProp))
+            if (root.TryGetProperty("slidingExpiration", out var slidingProp) &&
+                slidingProp.ValueKind != JsonValueKind.Null)
             {
-                if (slidingProp.ValueKind != JsonValueKind.Null)
-                {
-                    policy.SlidingExpiration = TimeSpan.FromTicks(slidingProp.GetInt64());
-                }
+                policy.SlidingExpiration = TimeSpan.FromTicks(slidingProp.GetInt64());
             }
 
             if (root.TryGetProperty("priority", out var priorityProp))
@@ -128,6 +138,12 @@ public static class CachePolicyJsonExtensions
             return policy;
         }
 
+        /// <summary>
+        /// Writes a CachePolicy instance as JSON.
+        /// </summary>
+        /// <param name="writer">The writer to write to.</param>
+        /// <param name="value">The value to serialize.</param>
+        /// <param name="options">The serializer options.</param>
         public override void Write(
             Utf8JsonWriter writer,
             CachePolicy value,
