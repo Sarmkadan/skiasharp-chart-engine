@@ -1989,6 +1989,93 @@ public class ChartRenderingServiceExample
 
 The service supports both synchronous and asynchronous rendering operations, handles chart validation, manages an in-memory render cache to avoid redundant rendering operations, and provides detailed metrics about rendering performance. It's designed for both standalone usage and integration into ASP.NET Core applications via dependency injection.
 
+## ChartDiffService
+
+`ChartDiffService` computes differences between chart versions for change tracking and auditing purposes. It identifies modifications to chart properties, series data, and configuration settings, making it ideal for version control, audit logging, and change visualization workflows.
+
+The service compares two chart instances and generates a detailed diff report showing what changed between versions, including property names, old values, new values, and timestamps for each detected change.
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Services;
+
+public class ChartDiffServiceExample
+{
+    public static void Main()
+    {
+        // Initialize ChartDiffService with logger
+        var logger = new NullLogger<ChartDiffService>();
+        var diffService = new ChartDiffService(logger);
+
+        // Create original chart
+        var oldChart = new Chart("sales-chart")
+        {
+            Title = "Sales Performance Q1 2024",
+            ChartType = ChartType.LineChart
+        };
+
+        var oldSeries = new ChartSeries("Revenue")
+        {
+            LineWidth = 2.5f,
+            Color = "#2E86C1"
+        };
+        oldSeries.AddDataPoint(1.0, 100000.0);
+        oldSeries.AddDataPoint(2.0, 125000.0);
+        oldChart.AddSeries(oldSeries);
+
+        // Create modified chart
+        var newChart = new Chart("sales-chart")
+        {
+            Title = "Sales Performance Q2 2024",
+            ChartType = ChartType.LineChart
+        };
+
+        var newSeries = new ChartSeries("Revenue")
+        {
+            LineWidth = 2.5f,
+            Color = "#2E86C1"
+        };
+        newSeries.AddDataPoint(1.0, 100000.0);
+        newSeries.AddDataPoint(2.0, 125000.0);
+        newSeries.AddDataPoint(3.0, 150000.0); // Added Q3 data
+        newSeries.AddDataPoint(4.0, 175000.0); // Added Q4 data
+        newChart.AddSeries(newSeries);
+
+        // Compute diff between charts
+        var diff = diffService.ComputeDiff(oldChart, newChart);
+
+        if (diff != null && diff.HasChanges)
+        {
+            Console.WriteLine($"Chart diff computed for chart: {diff.ChartId}");
+            Console.WriteLine($"Changes detected: {diff.Changes.Count}");
+            Console.WriteLine($"Computed at: {diff.ComputedAt}");
+            Console.WriteLine();
+
+            // Display detailed changes
+            foreach (var change in diff.Changes)
+            {
+                Console.WriteLine($"Property: {change.Property}");
+                Console.WriteLine($"  Old: {change.OldValue ?? "(null)"}");
+                Console.WriteLine($"  New: {change.NewValue ?? "(null)"}");
+                Console.WriteLine($"  Changed: {change.ChangedAt}");
+                Console.WriteLine();
+            }
+
+            // Generate formatted diff report
+            string report = diffService.GenerateDiffReport(diff);
+            Console.WriteLine(report);
+        }
+        else
+        {
+            Console.WriteLine("No changes detected between charts.");
+        }
+    }
+}
+```
+
 ```csharp
 using System;
 using System.Threading.Tasks;
