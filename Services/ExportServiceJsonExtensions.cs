@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace SkiaSharpChartEngine.Services;
 
 /// <summary>
-/// Provides JSON serialization and deserialization extensions for <see cref="ExportService"/>
+/// Provides System.Text.Json serialization and deserialization extensions for <see cref="ExportService"/>
 /// </summary>
 public static class ExportServiceJsonExtensions
 {
@@ -18,7 +18,8 @@ public static class ExportServiceJsonExtensions
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = false,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
     };
 
     /// <summary>
@@ -43,27 +44,41 @@ public static class ExportServiceJsonExtensions
     /// Deserializes a JSON string to an <see cref="ExportService"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>The deserialized export service instance, or null if the JSON is invalid.</returns>
+    /// <returns>The deserialized export service instance, or null if deserialization fails.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is empty or whitespace.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is empty or consists only of white-space characters.</exception>
     public static ExportService? FromJson(string json)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
 
-        return JsonSerializer.Deserialize<ExportService>(json, _jsonOptions);
+        try
+        {
+            return JsonSerializer.Deserialize<ExportService>(json, _jsonOptions);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     /// <summary>
     /// Attempts to deserialize a JSON string to an <see cref="ExportService"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="value">Receives the deserialized export service instance if successful.</param>
+    /// <param name="value">Receives the deserialized export service instance if successful; otherwise null.</param>
     /// <returns>True if deserialization succeeded; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is empty or whitespace.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is empty or consists only of white-space characters.</exception>
     public static bool TryFromJson(string json, out ExportService? value)
     {
-        ArgumentException.ThrowIfNullOrEmpty(json);
+        ArgumentNullException.ThrowIfNull(json);
+
+        value = null;
+
+        if (string.IsNullOrEmpty(json))
+        {
+            return false;
+        }
 
         try
         {
@@ -72,7 +87,6 @@ public static class ExportServiceJsonExtensions
         }
         catch (JsonException)
         {
-            value = null;
             return false;
         }
     }
