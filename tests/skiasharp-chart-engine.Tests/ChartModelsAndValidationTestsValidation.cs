@@ -5,9 +5,9 @@
 
 using System;
 using System.Collections.Generic;
+using SkiaSharpChartEngine.Constants;
 using SkiaSharpChartEngine.Models;
 using SkiaSharpChartEngine.Utilities;
-using SkiaSharpChartEngine.Constants;
 
 namespace SkiaSharpChartEngine.Tests.Models;
 
@@ -22,7 +22,7 @@ public static class ChartModelsAndValidationTestsValidation
     /// </summary>
     /// <param name="value">The data point to validate</param>
     /// <returns>List of validation problems; empty if valid</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
     public static IReadOnlyList<string> Validate(this DataPoint value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -77,8 +77,8 @@ public static class ChartModelsAndValidationTestsValidation
     /// with a detailed message listing all validation problems if the instance is invalid.
     /// </summary>
     /// <param name="value">The data point to validate</param>
-    /// <exception cref="ArgumentException">Thrown if value is invalid</exception>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is invalid</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
     public static void EnsureValid(this DataPoint value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -98,7 +98,7 @@ public static class ChartModelsAndValidationTestsValidation
     /// </summary>
     /// <param name="value">The chart series to validate</param>
     /// <returns>List of validation problems; empty if valid</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
     public static IReadOnlyList<string> Validate(this ChartSeries value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -143,8 +143,8 @@ public static class ChartModelsAndValidationTestsValidation
     /// with a detailed message listing all validation problems if the instance is invalid.
     /// </summary>
     /// <param name="value">The chart series to validate</param>
-    /// <exception cref="ArgumentException">Thrown if value is invalid</exception>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is invalid</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
     public static void EnsureValid(this ChartSeries value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -164,7 +164,7 @@ public static class ChartModelsAndValidationTestsValidation
     /// </summary>
     /// <param name="value">The chart to validate</param>
     /// <returns>List of validation problems; empty if valid</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
     public static IReadOnlyList<string> Validate(this Chart value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -202,6 +202,8 @@ public static class ChartModelsAndValidationTestsValidation
             problems.Add("Chart must contain at least one data point across all series");
         }
 
+    if (value.Configuration != null)
+    {
         try
         {
             value.Configuration.Validate();
@@ -210,6 +212,7 @@ public static class ChartModelsAndValidationTestsValidation
         {
             problems.Add(ex.Message);
         }
+    }
 
         return problems.AsReadOnly();
     }
@@ -229,8 +232,8 @@ public static class ChartModelsAndValidationTestsValidation
     /// with a detailed message listing all validation problems if the instance is invalid.
     /// </summary>
     /// <param name="value">The chart to validate</param>
-    /// <exception cref="ArgumentException">Thrown if value is invalid</exception>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is invalid</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
     public static void EnsureValid(this Chart value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -250,7 +253,7 @@ public static class ChartModelsAndValidationTestsValidation
     /// </summary>
     /// <param name="value">The chart configuration to validate</param>
     /// <returns>List of validation problems; empty if valid</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
     public static IReadOnlyList<string> Validate(this ChartConfiguration value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -320,26 +323,15 @@ public static class ChartModelsAndValidationTestsValidation
     /// </summary>
     /// <param name="value">The chart configuration to check</param>
     /// <returns>True if valid; false otherwise</returns>
-    public static bool IsValid(this ChartConfiguration value)
-    {
-        try
-        {
-            Validate(value);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
-    }
+public static bool IsValid(this ChartConfiguration value) => Validate(value).Count == 0;
 
     /// <summary>
     /// Validates the specified <see cref="ChartConfiguration"/> instance and throws an <see cref="ArgumentException"/>
     /// with a detailed message listing all validation problems if the instance is invalid.
     /// </summary>
     /// <param name="value">The chart configuration to validate</param>
-    /// <exception cref="ArgumentException">Thrown if value is invalid</exception>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is invalid</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
     public static void EnsureValid(this ChartConfiguration value)
     {
         ArgumentNullException.ThrowIfNull(value);
