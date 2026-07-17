@@ -83,6 +83,83 @@ public class RenderResultCacheExample
 }
 ```
 
+## CachePolicy
+
+`CachePolicy` is a configuration class that defines caching behavior for chart rendering operations. It controls expiration policies, priority-based eviction, and post-eviction callbacks, enabling fine-grained control over cache management strategies.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Caching;
+
+public class CachePolicyExample
+{
+    public static void Main()
+    {
+        // Example 1: Create a cache policy with absolute expiration (1 hour from now)
+        var absoluteExpirationPolicy = new CachePolicy
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1),
+            Priority = CachePriority.Normal
+        };
+
+        Console.WriteLine($"Absolute expiration policy created: {absoluteExpirationPolicy.GetAbsoluteExpiration}");
+
+        // Example 2: Create a cache policy with sliding expiration (30 minutes sliding window)
+        var slidingExpirationPolicy = new CachePolicy
+        {
+            SlidingExpiration = TimeSpan.FromMinutes(30),
+            Priority = CachePriority.High
+        };
+
+        Console.WriteLine($"Sliding expiration policy created: {slidingExpirationPolicy.GetAbsoluteExpiration}");
+
+        // Example 3: Create a cache policy with both absolute and sliding expiration
+        var combinedExpirationPolicy = new CachePolicy
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24),
+            SlidingExpiration = TimeSpan.FromMinutes(15),
+            Priority = CachePriority.Normal
+        };
+
+        Console.WriteLine($"Combined expiration policy created: {combinedExpirationPolicy.GetAbsoluteExpiration}");
+
+        // Example 4: Use factory methods for common scenarios
+        var minutesPolicy = CachePolicy.ExpiresAfterMinutes(30);
+        Console.WriteLine($"30-minute expiration policy: {minutesPolicy.GetAbsoluteExpiration}");
+
+        var hoursPolicy = CachePolicy.ExpiresAfterHours(2);
+        Console.WriteLine($"2-hour expiration policy: {hoursPolicy.GetAbsoluteExpiration}");
+
+        // Example 5: Configure post-eviction callback
+        var policyWithCallback = new CachePolicy
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1),
+            Priority = CachePriority.Normal,
+            PostEvictionCallbacks = key =>
+            {
+                Console.WriteLine($"Cache entry evicted: {key}");
+                // Additional cleanup logic can be added here
+            }
+        };
+
+        Console.WriteLine("Policy with eviction callback configured");
+
+        // Example 6: Check policy validity
+        Console.WriteLine($"Is absolute expiration policy valid: {absoluteExpirationPolicy.IsValid}");
+        Console.WriteLine($"Is sliding expiration policy valid: {slidingExpirationPolicy.IsValid}");
+
+        // Example 7: Access cache policy properties
+        Console.WriteLine($"\nCache policy properties:");
+        Console.WriteLine($"  Key: {absoluteExpirationPolicy.Key}");
+        Console.WriteLine($"  CreatedAt: {absoluteExpirationPolicy.CreatedAt}");
+        Console.WriteLine($"  Priority: {absoluteExpirationPolicy.Priority}");
+        Console.WriteLine($"  Age: {absoluteExpirationPolicy.GetAge}");
+        Console.WriteLine($"  Is expired: {absoluteExpirationPolicy.IsExpired}");
+        Console.WriteLine($"  Time to expiration: {absoluteExpirationPolicy.GetTimeToExpiration}");
+    }
+}
+```
+
 ## TemplateController
 
 `TemplateController` is a REST API controller that handles template management operations. It provides endpoints for retrieving, creating, updating, and deleting chart templates.
