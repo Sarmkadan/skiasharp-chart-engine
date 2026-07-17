@@ -7926,3 +7926,67 @@ public class RenderQueueManagerExample
     }
 }
 ```
+
+## RequestMetricsCollector
+
+`RequestMetricsCollector` is a metrics collection utility that tracks and aggregates request-level performance data across API endpoints. It provides detailed insights into request patterns, success rates, response times, and data transfer statistics, enabling performance monitoring and optimization of chart rendering operations.
+
+The collector maintains a rolling window of recent metrics for each endpoint and offers methods to retrieve aggregated statistics, including percentiles (median, P95, P99), success rates, and size metrics. It's useful for monitoring API health, identifying performance bottlenecks, and tracking usage patterns in production environments.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Diagnostics;
+
+public class RequestMetricsExample
+{
+    public static void Main()
+    {
+        // Create a new metrics collector
+        var metricsCollector = new RequestMetricsCollector();
+        
+        // Record sample requests
+        metricsCollector.RecordRequest("/api/charts/render", 200, 150, 2048, 8192);
+        metricsCollector.RecordRequest("/api/charts/render", 200, 180, 2560, 10240);
+        metricsCollector.RecordRequest("/api/charts/render", 500, 320, 3072, 5120);
+        metricsCollector.RecordRequest("/api/charts/export", 200, 220, 4096, 12288);
+        metricsCollector.RecordRequest("/api/charts/export", 200, 250, 4608, 14336);
+        
+        // Get metrics for a specific endpoint
+        var renderMetrics = metricsCollector.GetEndpointMetrics("/api/charts/render");
+        if (renderMetrics != null)
+        {
+            Console.WriteLine($"Endpoint: {renderMetrics.Endpoint}");
+            Console.WriteLine($"  Requests: {renderMetrics.RequestCount}");
+            Console.WriteLine($"  Success: {renderMetrics.SuccessCount}/{renderMetrics.ErrorCount}");
+            Console.WriteLine($"  Success Rate: {renderMetrics.SuccessRate:F1}%");
+            Console.WriteLine($"  Response Times: Avg={renderMetrics.AverageResponseTimeMs}ms, " +
+                            $"Min={renderMetrics.MinResponseTimeMs}ms, Max={renderMetrics.MaxResponseTimeMs}ms");
+            Console.WriteLine($"  Percentiles: Median={renderMetrics.MedianResponseTimeMs}ms, " +
+                            $"P95={renderMetrics.P95ResponseTimeMs}ms, P99={renderMetrics.P99ResponseTimeMs}ms");
+            Console.WriteLine($"  Data: Avg Request={renderMetrics.AverageRequestSize}B, " +
+                            $"Avg Response={renderMetrics.AverageResponseSize}B");
+        }
+        
+        // Get metrics for all endpoints
+        var allMetrics = metricsCollector.GetAllEndpointMetrics();
+        Console.WriteLine($"\nAll monitored endpoints ({allMetrics.Count}):");
+        foreach (var metric in allMetrics)
+        {
+            Console.WriteLine($"  {metric}");
+        }
+        
+        // Get system-wide metrics
+        var systemMetrics = metricsCollector.GetSystemMetrics();
+        Console.WriteLine($"\nSystem Metrics:");
+        Console.WriteLine($"  Total Requests: {systemMetrics.TotalRequests}");
+        Console.WriteLine($"  Success Rate: {systemMetrics.OverallSuccessRate:F1}%");
+        Console.WriteLine($"  Average Response Time: {systemMetrics.AverageResponseTimeMs}ms");
+        Console.WriteLine($"  Monitored Endpoints: {systemMetrics.MonitoredEndpoints}");
+        Console.WriteLine($"  Sample Period: {systemMetrics.SamplePeriod.TotalMinutes:F1} minutes");
+        
+        // Clear metrics
+        metricsCollector.Clear();
+        Console.WriteLine($"\nMetrics cleared. Remaining endpoints: {metricsCollector.GetAllEndpointMetrics().Count}");
+    }
+}
+```
