@@ -157,6 +157,60 @@ public class MathHelperExample
 }
 ```
 
+## ChartExporter
+
+`ChartExporter` provides functionality to export charts to various formats including JSON, CSV, and generates export summaries with metadata. It's useful for sharing charts, archiving data, and generating reports.
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Utilities;
+
+// Initialize exporter with logger
+var logger = new NullLogger<ChartExporter>();
+var exporter = new ChartExporter(logger);
+
+// Create a sample chart
+var chart = new Chart("sales-chart-2024");
+chart.Title = "Quarterly Sales 2024";
+chart.ChartType = ChartType.Line;
+
+var series = new ChartSeries("Revenue")
+{
+    LineWidth = 2.5f,
+    Color = "#2E86C1"
+};
+series.AddDataPoint("Q1", 100000.0);
+series.AddDataPoint("Q2", 125000.0);
+series.AddDataPoint("Q3", 150000.0);
+series.AddDataPoint("Q4", 175000.0);
+chart.AddSeries(series);
+
+// Export to JSON format
+var jsonExport = await exporter.ExportToJsonAsync(chart);
+Console.WriteLine($"JSON export size: {jsonExport.Length} bytes");
+
+// Export to CSV format
+var csvExport = await exporter.ExportToCsvAsync(chart);
+Console.WriteLine($"CSV export size: {csvExport.Length} bytes");
+
+// Generate export summary with metadata
+var summary = exporter.GenerateExportSummary(chart);
+Console.WriteLine($"Chart exported: {summary.Title}");
+Console.WriteLine($"  - Type: {summary.ChartType}");
+Console.WriteLine($"  - Series: {summary.SeriesCount}");
+Console.WriteLine($"  - Data points: {summary.TotalDataPoints}");
+Console.WriteLine($"  - Value range: [{summary.MinValue}, {summary.MaxValue}]");
+Console.WriteLine($"  - Created: {summary.CreatedAt}");
+Console.WriteLine($"  - Exported: {summary.ExportedAt}");
+
+// Validate export format
+bool isValid = exporter.IsValidExportFormat("json");
+Console.WriteLine($"Is 'json' a valid format? {isValid}");
+```
+
 ## DateTimeHelper
 
 `DateTimeHelper` provides date/time utilities for chart data processing and axis formatting. It includes methods for Unix timestamp conversion, business day calculations, period boundaries, week number extraction, and human-readable formatting.
