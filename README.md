@@ -1480,6 +1480,64 @@ public class TransitionEasingCalculatorExample
 }
 ```
 
+## StreamingChartOptions
+
+`StreamingChartOptions` provides configuration for real-time chart data streaming operations. It controls buffering behavior, sliding window sizing, auto-render intervals, and series update strategies to optimize performance for streaming scenarios.
+
+The options include maximum buffer size to prevent memory pressure, sliding window size for limiting historical data retention, flush interval for controlling render frequency, and a replace-on-update flag to control whether new data replaces existing series or appends to it.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Streaming;
+
+public class StreamingChartOptionsExample
+{
+    public static void Main()
+    {
+        // Example 1: Create default streaming options
+        var defaultOptions = new StreamingChartOptions();
+        Console.WriteLine($"Default buffer size: {defaultOptions.MaxBufferSize}");
+        Console.WriteLine($"Default window size: {defaultOptions.WindowSize}");
+        Console.WriteLine($"Default flush interval: {defaultOptions.FlushIntervalMs}ms");
+        Console.WriteLine($"Replace on update: {defaultOptions.ReplaceOnUpdate}");
+
+        // Example 2: Configure high-performance streaming with large buffer
+        var highPerfOptions = new StreamingChartOptions
+        {
+            MaxBufferSize = 5000,           // Allow up to 5000 buffered items
+            WindowSize = 1000,               // Keep only last 1000 data points per series
+            FlushIntervalMs = 50,            // Render at 20fps
+            ReplaceOnUpdate = false           // Append new data to existing series
+        };
+
+        // Example 3: Configure for real-time monitoring with windowing
+        var monitoringOptions = new StreamingChartOptions
+        {
+            MaxBufferSize = 2000,
+            WindowSize = 500,                // Show only recent 500 points
+            FlushIntervalMs = 100,           // Render at 10fps
+            ReplaceOnUpdate = true            // Replace entire series on each update
+        };
+
+        // Example 4: Validate options before use
+        try
+        {
+            var testOptions = new StreamingChartOptions { MaxBufferSize = 100 };
+            testOptions.Validate(); // Throws if invalid
+            Console.WriteLine("Options validated successfully");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Validation failed: {ex.Message}");
+        }
+
+        // Example 5: Clone and modify existing options
+        var clonedOptions = defaultOptions with { WindowSize = 250 };
+        Console.WriteLine($"Cloned options window size: {clonedOptions.WindowSize}");
+    }
+}
+```
+
 ## ChartEventPublisher
 
 `ChartEventPublisher` implements the publish-subscribe pattern for chart events in the SkiaSharp chart engine. It allows components to subscribe to various chart events (creation, update, deletion, rendering, export, and errors) and notifies all registered subscribers when these events occur. The publisher provides thread-safe subscription management and asynchronous event broadcasting with comprehensive logging.
