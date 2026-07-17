@@ -1,17 +1,21 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 
 namespace SkiaSharpChartEngine.Tests;
 
 /// <summary>
-/// Provides validation helpers for <see cref="ChartEngineTests"/> instances.
+/// Provides validation extension methods for <see cref="ChartEngineTests"/> instances.
 /// </summary>
 public static class ChartEngineTestsValidation
 {
     /// <summary>
     /// Validates the specified <see cref="ChartEngineTests"/> instance.
     /// </summary>
+    /// <remarks>
+    /// ChartEngineTests is a test fixture class with no public state to validate.
+    /// This validation method ensures the instance is not null and that it's a valid test fixture.
+    /// For a non-null ChartEngineTests instance, validation always succeeds.
+    /// </remarks>
     /// <param name="value">The instance to validate.</param>
     /// <returns>A list of validation problems; empty if the instance is valid.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
@@ -19,13 +23,7 @@ public static class ChartEngineTestsValidation
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var problems = new List<string>();
-
-        // ChartEngineTests is a test fixture class with no public state to validate
-        // The validation is primarily about ensuring the instance itself is not null
-        // and that it's a valid test fixture (which is always true for a non-null instance)
-
-        return problems.AsReadOnly();
+        return Array.Empty<string>();
     }
 
     /// <summary>
@@ -33,18 +31,7 @@ public static class ChartEngineTestsValidation
     /// </summary>
     /// <param name="value">The instance to check.</param>
     /// <returns><see langword="true"/> if the instance is valid; otherwise, <see langword="false"/>.</returns>
-    public static bool IsValid(this ChartEngineTests value)
-    {
-        try
-        {
-            _ = value.Validate();
-            return true;
-        }
-        catch (ArgumentException)
-        {
-            return false;
-        }
-    }
+    public static bool IsValid(this ChartEngineTests value) => value.Validate() is not null;
 
     /// <summary>
     /// Ensures that the specified <see cref="ChartEngineTests"/> instance is valid.
