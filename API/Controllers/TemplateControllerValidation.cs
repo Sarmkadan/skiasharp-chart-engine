@@ -5,6 +5,9 @@
 // Validation helpers for TemplateController to ensure API input parameters
 // meet business rules before processing. Validates null/empty strings,
 // out-of-range numbers, default dates, and structural integrity.
+//
+// This class provides extension-style validation methods for TemplateController
+// and related chart configuration objects.
 // =============================================================================
 
 using System;
@@ -33,8 +36,8 @@ public static class TemplateControllerValidation
 
         var problems = new List<string>();
 
-        // Validate controller's internal state
-        if (value._templates == null)
+        // Validate controller's internal state using pattern matching
+        if (value._templates is null)
         {
             problems.Add("TemplateController._templates collection is null");
         }
@@ -47,10 +50,7 @@ public static class TemplateControllerValidation
     /// </summary>
     /// <param name="value">The controller instance to check.</param>
     /// <returns>True if the controller is valid; otherwise, false.</returns>
-    public static bool IsValid(this TemplateController value)
-    {
-        return Validate(value).Count == 0;
-    }
+    public static bool IsValid(this TemplateController value) => Validate(value).Count == 0;
 
     /// <summary>
     /// Ensures that the specified <see cref="TemplateController"/> instance is valid.
@@ -77,8 +77,11 @@ public static class TemplateControllerValidation
     /// <param name="name">The template name to validate.</param>
     /// <param name="paramName">The name of the parameter being validated.</param>
     /// <returns>A list of validation problems; empty if valid.</returns>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="paramName"/> is null or empty.</exception>
     public static IReadOnlyList<string> ValidateTemplateName(string? name, string paramName = "name")
     {
+        ArgumentException.ThrowIfNullOrEmpty(paramName);
+
         var problems = new List<string>();
 
         if (string.IsNullOrWhiteSpace(name))
@@ -103,8 +106,11 @@ public static class TemplateControllerValidation
     /// <param name="templateId">The template ID to validate.</param>
     /// <param name="paramName">The name of the parameter being validated.</param>
     /// <returns>A list of validation problems; empty if valid.</returns>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="paramName"/> is null or empty.</exception>
     public static IReadOnlyList<string> ValidateTemplateId(string? templateId, string paramName = "templateId")
     {
+        ArgumentException.ThrowIfNullOrEmpty(paramName);
+
         var problems = new List<string>();
 
         if (string.IsNullOrWhiteSpace(templateId))
@@ -125,17 +131,20 @@ public static class TemplateControllerValidation
     /// <param name="config">The chart configuration to validate.</param>
     /// <param name="paramName">The name of the parameter being validated.</param>
     /// <returns>A list of validation problems; empty if valid.</returns>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="paramName"/> is null or empty.</exception>
     public static IReadOnlyList<string> ValidateChartConfiguration(ChartConfiguration? config, string paramName = "config")
     {
+        ArgumentException.ThrowIfNullOrEmpty(paramName);
+
         var problems = new List<string>();
 
-        if (config == null)
+        if (config is null)
         {
             problems.Add($"{paramName} cannot be null");
         }
         else
         {
-            // Validate chart dimensions
+            // Validate chart dimensions using pattern matching
             if (config.Width < ChartConstants.MinimumChartWidth || config.Width > ChartConstants.MaximumChartWidth)
             {
                 problems.Add($"{paramName}.Width must be between {ChartConstants.MinimumChartWidth} and {ChartConstants.MaximumChartWidth} pixels");
@@ -146,7 +155,7 @@ public static class TemplateControllerValidation
                 problems.Add($"{paramName}.Height must be between {ChartConstants.MinimumChartHeight} and {ChartConstants.MaximumChartHeight} pixels");
             }
 
-            // Validate margins
+            // Validate margins using switch expression for consistency
             if (config.MarginTop < 0)
             {
                 problems.Add($"{paramName}.MarginTop cannot be negative");
@@ -214,11 +223,14 @@ public static class TemplateControllerValidation
     /// <param name="template">The chart template to validate.</param>
     /// <param name="paramName">The name of the parameter being validated.</param>
     /// <returns>A list of validation problems; empty if valid.</returns>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="paramName"/> is null or empty.</exception>
     public static IReadOnlyList<string> ValidateChartTemplate(ChartTemplate? template, string paramName = "template")
     {
+        ArgumentException.ThrowIfNullOrEmpty(paramName);
+
         var problems = new List<string>();
 
-        if (template == null)
+        if (template is null)
         {
             problems.Add($"{paramName} cannot be null");
         }
@@ -244,7 +256,7 @@ public static class TemplateControllerValidation
                 problems.Add($"{paramName}.TemplateId cannot exceed 100 characters");
             }
 
-            // Validate chart type
+            // Validate chart type using pattern matching
             if (template.ChartType < ChartType.LineChart || template.ChartType > ChartType.ColumnChart)
             {
                 problems.Add($"{paramName}.ChartType has an invalid value");
@@ -261,7 +273,7 @@ public static class TemplateControllerValidation
             }
 
             // Validate default series
-            if (template.DefaultSeries == null)
+            if (template.DefaultSeries is null)
             {
                 problems.Add($"{paramName}.DefaultSeries cannot be null");
             }
@@ -289,15 +301,18 @@ public static class TemplateControllerValidation
     }
 
     /// <summary>
-    /// Validates cancellation token parameter.
+    /// Validates a cancellation token parameter.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token to validate.</param>
     /// <returns>A list of validation problems; empty if valid.</returns>
-    public static IReadOnlyList<string> ValidateCancellationToken(bool isCancellationRequested)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="cancellationToken"/> is null.</exception>
+    public static IReadOnlyList<string> ValidateCancellationToken(CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(cancellationToken);
+
         var problems = new List<string>();
 
-        if (isCancellationRequested)
+        if (cancellationToken.IsCancellationRequested)
         {
             problems.Add("Operation was cancelled");
         }
