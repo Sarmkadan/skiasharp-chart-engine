@@ -9106,4 +9106,48 @@ public class HttpChartClientJsonExtensionsExample
     }
 }
 ```
+
+## CachePolicyJsonExtensions
+
+The CachePolicyJsonExtensions type provides methods for converting CachePolicy objects to and from JSON strings.
+
+Example usage:
+```csharp
+using System;
+using SkiaSharpChartEngine.Caching;
+
+public class CachePolicyJsonExample
+{
+    public static void Main()
+    {
+        // Serialize a CachePolicy to JSON
+        var policy = new CachePolicy
+        {
+            Duration = TimeSpan.FromMinutes(30),
+            Enabled = true,
+            MaxSize = 100
+        };
+        
+        string json = policy.ToJson();
+        Console.WriteLine(json);
+        
+        // Deserialize from JSON
+        string jsonConfig = @"{
+            "Duration": "00:30:00",
+            "Enabled": true,
+            "MaxSize": 100
+        }";
+        var deserialized = CachePolicyJsonExtensions.FromJson(jsonConfig);
+        Console.WriteLine(deserialized?.Duration); // 00:30:00
+        
+        // Try-deserialize with error handling
+        string invalidJson = "{invalid}";
+        if (CachePolicyJsonExtensions.TryFromJson(invalidJson, out var result))
+        {
+            Console.WriteLine("Successfully deserialized");
+        }
+    }
+}
+```
+``````
 ```
