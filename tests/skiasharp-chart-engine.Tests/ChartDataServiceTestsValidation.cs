@@ -22,6 +22,7 @@ public static class ChartDataServiceTestsValidation
     /// </summary>
     /// <param name="value">The instance to validate</param>
     /// <returns>List of validation problems; empty if valid</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/></exception>
     public static IReadOnlyList<string> Validate(this ChartDataServiceTests value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -39,8 +40,10 @@ public static class ChartDataServiceTestsValidation
     /// </summary>
     /// <param name="value">The instance to check</param>
     /// <returns>True if valid; false otherwise</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/></exception>
     public static bool IsValid(this ChartDataServiceTests value)
     {
+        ArgumentNullException.ThrowIfNull(value);
         return Validate(value).Count == 0;
     }
 
@@ -48,6 +51,7 @@ public static class ChartDataServiceTestsValidation
     /// Ensures that a <see cref="ChartDataServiceTests"/> instance is valid, throwing an exception if not.
     /// </summary>
     /// <param name="value">The instance to validate</param>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/></exception>
     /// <exception cref="ArgumentException">Thrown when the instance is invalid</exception>
     public static void EnsureValid(this ChartDataServiceTests value)
     {
@@ -63,7 +67,13 @@ public static class ChartDataServiceTestsValidation
 
     private static void ValidateChartDataServiceTests(ChartDataServiceTests value, List<string> problems)
     {
-        // Validate ChartDataServiceTests is not null (already checked by public methods)
-        // Validate ChartDataServiceTests members if they exist (none shown in public API)
+        // ChartDataServiceTests currently has no instance members to validate
+        // This method exists for future extensibility
+
+        if (value == null)
+        {
+            problems.Add("ChartDataServiceTests instance cannot be null.");
+            return;
+        }
     }
 }
