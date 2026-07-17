@@ -165,6 +165,48 @@ public class TemplateLibraryExample
 }
 ```
 
+## VersionCompatibilityChecker
+
+`VersionCompatibilityChecker` validates version compatibility for serialized charts and configurations. It ensures backward compatibility by checking if a version falls within the supported range (1.0.0 - 1.9.9), determines if migrations are needed, and validates version sequences. This utility is essential for maintaining data integrity when loading or saving chart configurations across different library versions.
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Utilities;
+
+public class VersionCompatibilityCheckerExample
+{
+    public static void Main()
+    {
+        // Initialize with a logger
+        var logger = new NullLogger<VersionCompatibilityChecker>();
+        var checker = new VersionCompatibilityChecker(logger);
+
+        // Example 1: Check if a version is compatible
+        bool isCompatible = checker.IsCompatible("1.0.0");
+        Console.WriteLine($"Version 1.0.0 is compatible: {isCompatible}");
+
+        // Example 2: Get current version
+        string currentVersion = checker.GetCurrentVersion();
+        Console.WriteLine($"Current version: {currentVersion}");
+
+        // Example 3: Check if migration is needed
+        bool needsMigration = checker.MigrationNeeded("0.9.0");
+        Console.WriteLine($"Migration needed from 0.9.0: {needsMigration}");
+
+        // Example 4: Get version information
+        var versionInfo = checker.GetVersionInfo();
+        Console.WriteLine($"Version Info: {versionInfo}");
+        Console.WriteLine($"Supported range: {versionInfo.MinSupportedVersion} - {versionInfo.MaxSupportedVersion}");
+        Console.WriteLine($"Checked at: {versionInfo.CheckedAt}");
+
+        // Example 5: Validate version sequence
+        bool isValidSequence = checker.ValidateVersionSequence("1.0.0", "1.1.0", "1.2.0");
+        Console.WriteLine($"Version sequence is valid: {isValidSequence}");
+    }
+}
+```
+
 ## BatchProcessor
 
 
