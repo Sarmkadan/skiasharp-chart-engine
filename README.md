@@ -850,6 +850,121 @@ public class ChartInteractionHandler
 }
 ```
 
+## ChartTransitionEngine
+
+`ChartTransitionEngine` is the production implementation of `IChartTransitionEngine` that handles animated transitions between chart states. It renders smooth animations by interpolating between chart configurations and data points across multiple frames, producing PNG-encoded frames that can be combined into video or displayed sequentially.
+
+The engine supports both simple two-chart transitions and complex multi-keyframe animations through `TransitionTimeline`. It handles frame scheduling, easing functions, parallel rendering for performance, and comprehensive error handling with detailed logging.
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Animation;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Services;
+
+public class ChartTransitionEngineExample
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize services
+        var logger = new NullLogger<ChartTransitionEngine>();
+        var renderer = new ChartRenderingService();
+        var transitionEngine = new ChartTransitionEngine(renderer, logger);
+
+        // Example 1: Create a simple transition between two charts
+        var chartA = new Chart("initial-chart")
+        {
+            Title = "Starting Chart",
+            Configuration = new ChartConfiguration
+            {
+                Width = 800,
+                Height = 600,
+                BackgroundColor = "#FFFFFF"
+            }
+        };
+        
+        var seriesA = new ChartSeries("Revenue")
+        {
+            LineWidth = 2.5f,
+            Color = "#2E86C1"
+        };
+        seriesA.AddDataPoint(1.0, 100000.0);
+        seriesA.AddDataPoint(2.0, 125000.0);
+        seriesA.AddDataPoint(3.0, 150000.0);
+        chartA.AddSeries(seriesA);
+
+        var chartB = new Chart("final-chart")
+        {
+            Title = "Final Chart",
+            Configuration = new ChartConfiguration
+            {
+                Width = 800,
+                Height = 600,
+                BackgroundColor = "#FFFFFF"
+            }
+        };
+        
+        var seriesB = new ChartSeries("Revenue")
+        {
+            LineWidth = 2.5f,
+            Color = "#E74C3C" // Changed color for transition effect
+        };
+        seriesB.AddDataPoint(1.0, 150000.0);
+        seriesB.AddDataPoint(2.0, 180000.0);
+        seriesB.AddDataPoint(3.0, 210000.0);
+        chartB.AddSeries(seriesB);
+
+        // Render transition with default settings
+        var transitionResult = await transitionEngine.RenderTransitionAsync(
+            chartA, 
+            chartB, 
+            settings: new AnimationSettings { DurationMs = 1000, EasingType = EasingFunction.EaseOutBack },
+            options: new TransitionOptions { FrameRate = 30, Quality = 90 }
+        );
+
+        if (transitionResult.Success)
+        {
+            Console.WriteLine($"Transition rendered successfully!");
+            Console.WriteLine($"Duration: {transitionResult.TotalDurationMs}ms");
+            Console.WriteLine($"Frames: {transitionResult.Frames.Count}");
+            Console.WriteLine($"Metadata: {transitionResult.Metadata.Count} items");
+            
+            // Save frames to files (in real app, you'd combine them into video)
+            for (int i = 0; i < transitionResult.Frames.Count; i++)
+            {
+                string framePath = $"./transition-frames/frame-{i:D4}.png";
+                await File.WriteAllBytesAsync(framePath, transitionResult.Frames[i].ImageData);
+            }
+        }
+        else
+        {
+            Console.WriteLine($"Transition failed: {transitionResult.ErrorMessage}");
+        }
+
+        // Example 2: Create a transition timeline with multiple keyframes
+        var timeline = transitionEngine.CreateTimeline();
+        timeline.StartWith(chartA)
+                .AppendTransition(chartB, durationMs: 500, TransitionEasing.Spring)
+                .AppendTransition(chartA, durationMs: 500, TransitionEasing.EaseOutBounce);
+
+        var multiFrameResult = await transitionEngine.RenderTransitionAsync(timeline);
+        Console.WriteLine($"Multi-frame timeline rendered: {multiFrameResult.Frames.Count} frames");
+
+        // Example 3: Render a single frame at specific progress
+        byte[] singleFrame = await transitionEngine.RenderFrameAsync(
+            chartA, 
+            chartB, 
+            progress: 0.5, // 50% through the transition
+            easing: TransitionEasing.EaseInOutElastic
+        );
+        Console.WriteLine($"Single frame rendered: {singleFrame.Length} bytes");
+    }
+}
+```
+
 ## TransitionServiceExtensions
 
 `TransitionServiceExtensions` provides extension methods for configuring the SkiaSharp Chart Engine's animated transitions subsystem and creating transition timelines directly from chart instances. It offers both dependency injection registration methods for setting up the transition engine in ASP.NET Core applications, and fluent API methods for building chart transition animations inline.
