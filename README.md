@@ -98,6 +98,51 @@ public class ThemeManagerExample
         };
         themeManager.RegisterTheme("corporate", customTheme);
 
+## CompressionHelperExtensions
+
+CompressionHelperExtensions contains methods for compressing and decompressing byte arrays and strings.
+
+Example usage:
+```csharp
+var compressionHelper = new CompressionHelper();
+
+// Compress multiple byte arrays into a single compressed result
+var dataChunks = new byte[]
+{
+    System.Text.Encoding.UTF8.GetBytes("First chunk"),
+    System.Text.Encoding.UTF8.GetBytes("Second chunk"),
+    System.Text.Encoding.UTF8.GetBytes("Third chunk")
+};
+byte[] compressedMany = await compressionHelper.CompressManyAsync(dataChunks);
+
+// Decompress back to individual chunks
+var decompressedChunks = await compressionHelper.DecompressManyAsync(compressedMany);
+foreach (var chunk in decompressedChunks)
+{
+    Console.WriteLine(System.Text.Encoding.UTF8.GetString(chunk));
+}
+
+// Compress multiple strings into a single compressed base64 string
+var texts = new[] { "Hello", "World", "Compression" };
+string compressedStrings = await compressionHelper.CompressManyStringsAsync(texts);
+
+// Decompress back to individual strings
+var decompressedTexts = await compressionHelper.DecompressManyStringsAsync(compressedStrings);
+foreach (var text in decompressedTexts)
+{
+    Console.WriteLine(text);
+}
+
+// Compress a stream
+using var memoryStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("Stream data to compress"));
+byte[] compressedStream = await compressionHelper.CompressStreamAsync(memoryStream);
+
+// Decompress a stream
+using var compressedStream2 = new MemoryStream(compressedStream);
+byte[] decompressedStream = await compressionHelper.DecompressStreamAsync(compressedStream2);
+Console.WriteLine(System.Text.Encoding.UTF8.GetString(decompressedStream)); // Stream data to compress
+```
+
         // Example 4: Switch to the new theme
         themeManager.SetCurrentTheme("corporate");
         Console.WriteLine($"Switched to: {themeManager.GetCurrentTheme().Name}");
