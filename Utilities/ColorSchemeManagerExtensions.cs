@@ -11,15 +11,16 @@ public static class ColorSchemeManagerExtensions
     /// <summary>
     /// Gets a color from a scheme with optional alpha/transparency value.
     /// </summary>
-    /// <param nameof the color=""/>
+    /// <param name="manager">The <see cref="ColorSchemeManager"/> instance.</param>
     /// <param name="schemeName">Name of the color scheme.</param>
     /// <param name="index">Index of the color in the scheme.</param>
     /// <param name="alpha">Alpha/transparency value (0-255). If null, uses the color's original alpha.</param>
     /// <returns>The color from the scheme with the specified alpha value.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="schemeName"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="manager"/> or <paramref name="schemeName"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when <paramref name="schemeName"/> is empty or whitespace.</exception>
     public static SKColor GetColorWithAlpha(this ColorSchemeManager manager, string schemeName, int index, byte? alpha = null)
     {
+        ArgumentNullException.ThrowIfNull(manager);
         ArgumentException.ThrowIfNullOrEmpty(schemeName);
 
         var color = manager.GetColor(schemeName, index);
@@ -35,7 +36,7 @@ public static class ColorSchemeManagerExtensions
     /// <param name="endIndex">Index of the end color in the scheme.</param>
     /// <param name="steps">Number of gradient steps (including start and end colors). Must be at least 2.</param>
     /// <returns>An array of colors forming a gradient from start to end color.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="schemeName"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="manager"/> or <paramref name="schemeName"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when <paramref name="schemeName"/> is empty or whitespace.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="steps"/> is less than 2.</exception>
     public static SKColor[] GetGradientColors(this ColorSchemeManager manager, string schemeName, int startIndex, int endIndex, int steps = 10)
