@@ -1,7 +1,7 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =============================================================================
+// =====================================================================
 
 using System;
 using System.Text.Json;
@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 namespace SkiaSharpChartEngine.Services;
 
 /// <summary>
-/// Provides System.Text.Json serialization extensions for <see cref="ConfigurationService"/>
+/// Provides System.Text.Json serialization extensions for <see cref="ConfigurationService"/>.
 /// </summary>
 public static class ConfigurationServiceJsonExtensions
 {
@@ -44,19 +44,25 @@ public static class ConfigurationServiceJsonExtensions
     /// Deserializes a JSON string to a <see cref="ConfigurationService"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>The deserialized configuration service instance, or null if the JSON is invalid.</returns>
+    /// <returns>The deserialized configuration service instance, or null if the JSON is null, empty, or deserialization fails.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is invalid and cannot be deserialized.</exception>
     public static ConfigurationService? FromJson(string json)
     {
         ArgumentNullException.ThrowIfNull(json);
+
+        if (string.IsNullOrEmpty(json))
+        {
+            return null;
+        }
 
         try
         {
             return JsonSerializer.Deserialize<ConfigurationService>(json, _jsonOptions);
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
-            return null;
+            throw new JsonException("Failed to deserialize ConfigurationService from JSON", ex);
         }
     }
 
@@ -71,6 +77,13 @@ public static class ConfigurationServiceJsonExtensions
     {
         ArgumentNullException.ThrowIfNull(json);
 
+        value = null;
+
+        if (string.IsNullOrEmpty(json))
+        {
+            return false;
+        }
+
         try
         {
             value = JsonSerializer.Deserialize<ConfigurationService>(json, _jsonOptions);
@@ -78,7 +91,6 @@ public static class ConfigurationServiceJsonExtensions
         }
         catch (JsonException)
         {
-            value = null;
             return false;
         }
     }
