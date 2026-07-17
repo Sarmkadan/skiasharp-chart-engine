@@ -5126,3 +5126,100 @@ public class AlertMonitor
     }
 }
 ```
+
+## ExportService
+
+`ExportService` provides functionality for exporting charts to various file formats including PNG, SVG, JPEG, and WEBP. It supports both asynchronous and synchronous export operations with comprehensive error handling and format validation. The service integrates with the chart rendering pipeline to produce high-quality chart exports suitable for reports, presentations, and web applications.
+
+```csharp
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Services;
+using SkiaSharpChartEngine.Constants;
+
+public class ExportServiceExample
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize ExportService with required dependencies
+        var logger = new NullLogger<ExportService>();
+        var renderingService = new ChartRenderingService(
+            logger,
+            new ChartDataService(logger),
+            new RenderCacheService(logger, maxCacheSize: 100)
+        );
+        
+        var exportService = new ExportService(renderingService, logger);
+
+        // Example 1: Check supported export formats
+        var supportedFormats = exportService.GetSupportedFormats();
+        Console.WriteLine("Supported export formats:");
+        foreach (var format in supportedFormats)
+        {
+            Console.WriteLine($"- {format}");
+        }
+
+        // Example 2: Export chart asynchronously to PNG
+        var chart = new Chart("sales-chart")
+        {
+            Title = "Quarterly Sales Performance"
+        };
+        
+        var series = new ChartSeries("Revenue")
+        {
+            LineWidth = 2.5f,
+            Color = "#2E86C1"
+        };
+        series.AddDataPoint(1.0, 100000.0);
+        series.AddDataPoint(2.0, 125000.0);
+        series.AddDataPoint(3.0, 150000.0);
+        series.AddDataPoint(4.0, 175000.0);
+        chart.AddSeries(series);
+
+        var exportOptions = new ExportOptions
+        {
+            Format = ExportFormat.PNG,
+            OutputPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "sales-chart.png"),
+            Width = 1920,
+            Height = 1080,
+            Scale = 1.0f
+        };
+
+        var result = await exportService.ExportAsync(chart, exportOptions);
+        
+        if (result.Success)
+        {
+            Console.WriteLine($"Chart exported successfully to: {result.OutputPath}");
+            Console.WriteLine($"File size: {new FileInfo(result.OutputPath).Length} bytes");
+        }
+        else
+        {
+            Console.WriteLine($"Export failed: {result.ErrorMessage}");
+        }
+
+        // Example 3: Export chart synchronously to SVG
+        var svgOptions = new ExportOptions
+        {
+            Format = ExportFormat.SVG,
+            OutputPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "sales-chart.svg"),
+            Width = 800,
+            Height = 600
+        };
+
+        var syncResult = exportService.Export(chart, svgOptions);
+        
+        if (syncResult.Success)
+        {
+            Console.WriteLine($"SVG export successful: {syncResult.OutputPath}");
+        }
+
+        // Example 4: Check if a format is supported
+        bool supportsJpeg = exportService.SupportsFormat(ExportFormat.JPEG);
+        Console.WriteLine($"JPEG format supported: {supportsJpeg}");
+    }
+}
+```
