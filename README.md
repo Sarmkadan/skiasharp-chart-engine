@@ -83,6 +83,55 @@ public class RenderResultCacheExample
 }
 ```
 
+## ConcurrencyLimiter
+
+`ConcurrencyLimiter` provides a semaphore-based mechanism to throttle concurrent operations. It is particularly useful for limiting resource-intensive tasks such as chart rendering to prevent excessive CPU or memory consumption.
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Utilities;
+
+public class ConcurrencyLimiterExample
+{
+    public static async Task Main()
+    {
+        var logger = new NullLogger<ConcurrencyLimiter>();
+        // Limit concurrency to 2 simultaneous operations
+        var limiter = new ConcurrencyLimiter(2, logger);
+
+        // Example 1: Async operation with return value
+        var result = await limiter.ExecuteAsync(async () =>
+        {
+            await Task.Delay(100);
+            return "Task completed";
+        });
+        Console.WriteLine(result);
+
+        // Example 2: Async operation without return value
+        await limiter.ExecuteAsync(async () =>
+        {
+            await Task.Delay(100);
+            Console.WriteLine("Task executed");
+        });
+
+        // Example 3: Sync operation
+        var syncResult = limiter.Execute(() => 42);
+        Console.WriteLine($"Sync result: {syncResult}");
+
+        // Example 4: Check capacity
+        Console.WriteLine($"Available slots: {limiter.GetAvailableSlots()}");
+        Console.WriteLine($"Used slots: {limiter.GetUsedSlots()}");
+
+        // Example 5: Wait until a slot becomes available
+        await limiter.WaitAsync();
+
+        limiter.Dispose();
+    }
+}
+```
+
 ## CachePolicy
 
 `CachePolicy` is a configuration class that defines caching behavior for chart rendering operations. It controls expiration policies, priority-based eviction, and post-eviction callbacks, enabling fine-grained control over cache management strategies.
