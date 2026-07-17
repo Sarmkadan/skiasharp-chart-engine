@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using SkiaSharp;
 using SkiaSharpChartEngine.Constants;
 using SkiaSharpChartEngine.Models;
 
@@ -18,10 +19,10 @@ public static class ChartBuilderExtensions
     /// <summary>
     /// Applies a predefined theme to the chart configuration
     /// </summary>
-    /// <param name="builder">The chart builder instance</param>
-    /// <param name="theme">The theme to apply</param>
-    /// <returns>The configured chart builder for fluent chaining</returns>
-    /// <exception cref="ArgumentNullException">Thrown when builder is null</exception>
+    /// <param name="builder">The chart builder instance.</param>
+    /// <param name="theme">The theme to apply.</param>
+    /// <returns>The configured chart builder for fluent chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="theme"/> is null.</exception>
     public static ChartBuilder WithTheme(this ChartBuilder builder, ChartTheme theme)
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -44,12 +45,12 @@ public static class ChartBuilderExtensions
     /// <summary>
     /// Configures default properties for all series added to the chart
     /// </summary>
-    /// <param name="builder">The chart builder instance</param>
-    /// <param name="seriesType">The default series type</param>
-    /// <param name="lineWidth">The default line width</param>
-    /// <param name="color">The default series color</param>
-    /// <returns>The configured chart builder for fluent chaining</returns>
-    /// <exception cref="ArgumentNullException">Thrown when builder is null</exception>
+    /// <param name="builder">The chart builder instance.</param>
+    /// <param name="seriesType">The default series type.</param>
+    /// <param name="lineWidth">The default line width.</param>
+    /// <param name="color">The default series color.</param>
+    /// <returns>The configured chart builder for fluent chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null.</exception>
     public static ChartBuilder WithSeriesDefaults(
         this ChartBuilder builder,
         ChartType seriesType = ChartType.LineChart,
@@ -60,7 +61,9 @@ public static class ChartBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
 
         if (color != null && !ColorHelper.IsValidHexColor(color))
+        {
             throw new ArgumentException("Invalid hex color format", nameof(color));
+        }
 
         // Store defaults in custom settings for retrieval when adding series
         builder.WithCustomSetting("SeriesDefaults_Type", seriesType);
@@ -74,11 +77,11 @@ public static class ChartBuilderExtensions
     /// <summary>
     /// Adds multiple data points to the last series in a single call
     /// </summary>
-    /// <param name="builder">The chart builder instance</param>
-    /// <param name="dataPoints">Collection of data points to add</param>
-    /// <returns>The configured chart builder for fluent chaining</returns>
-    /// <exception cref="ArgumentNullException">Thrown when builder or dataPoints is null</exception>
-    /// <exception cref="InvalidOperationException">Thrown when no series exists</exception>
+    /// <param name="builder">The chart builder instance.</param>
+    /// <param name="dataPoints">Collection of data points to add.</param>
+    /// <returns>The configured chart builder for fluent chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="dataPoints"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when no series exists.</exception>
     public static ChartBuilder AddDataPoints(
         this ChartBuilder builder,
         IEnumerable<DataPoint> dataPoints
@@ -88,7 +91,9 @@ public static class ChartBuilderExtensions
         ArgumentNullException.ThrowIfNull(dataPoints);
 
         if (builder.Build().Series.Count == 0)
+        {
             throw new InvalidOperationException("No series available. Add a series first.");
+        }
 
         foreach (var point in dataPoints)
         {
@@ -101,11 +106,11 @@ public static class ChartBuilderExtensions
     /// <summary>
     /// Sets a custom configuration property on the chart
     /// </summary>
-    /// <param name="builder">The chart builder instance</param>
-    /// <param name="key">The property key</param>
-    /// <param name="value">The property value</param>
-    /// <returns>The configured chart builder for fluent chaining</returns>
-    /// <exception cref="ArgumentNullException">Thrown when builder or key is null</exception>
+    /// <param name="builder">The chart builder instance.</param>
+    /// <param name="key">The property key.</param>
+    /// <param name="value">The property value.</param>
+    /// <returns>The configured chart builder for fluent chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="key"/> is null.</exception>
     public static ChartBuilder WithCustomSetting(
         this ChartBuilder builder,
         string key,
@@ -125,10 +130,10 @@ public static class ChartBuilderExtensions
     /// <summary>
     /// Sets the chart export format
     /// </summary>
-    /// <param name="builder">The chart builder instance</param>
-    /// <param name="format">The export format</param>
-    /// <returns>The configured chart builder for fluent chaining</returns>
-    /// <exception cref="ArgumentNullException">Thrown when builder is null</exception>
+    /// <param name="builder">The chart builder instance.</param>
+    /// <param name="format">The export format.</param>
+    /// <returns>The configured chart builder for fluent chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null.</exception>
     public static ChartBuilder WithExportFormat(this ChartBuilder builder, ExportFormat format)
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -140,16 +145,19 @@ public static class ChartBuilderExtensions
     /// <summary>
     /// Sets the chart export DPI
     /// </summary>
-    /// <param name="builder">The chart builder instance</param>
-    /// <param name="dpi">The DPI value</param>
-    /// <returns>The configured chart builder for fluent chaining</returns>
-    /// <exception cref="ArgumentNullException">Thrown when builder is null</exception>
+    /// <param name="builder">The chart builder instance.</param>
+    /// <param name="dpi">The DPI value.</param>
+    /// <returns>The configured chart builder for fluent chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="dpi"/> is not between 72 and 600.</exception>
     public static ChartBuilder WithExportDPI(this ChartBuilder builder, int dpi)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
         if (dpi < 72 || dpi > 600)
+        {
             throw new ArgumentOutOfRangeException(nameof(dpi), "DPI must be between 72 and 600");
+        }
 
         builder.WithCustomSetting("ExportDPI", dpi);
         return builder;
@@ -158,12 +166,12 @@ public static class ChartBuilderExtensions
     /// <summary>
     /// Adds a series with data points created from value tuples
     /// </summary>
-    /// <param name="builder">The chart builder instance</param>
-    /// <param name="seriesName">The name of the series</param>
-    /// <param name="data">Collection of (x, y) value tuples</param>
-    /// <param name="color">Optional series color</param>
-    /// <returns>The configured chart builder for fluent chaining</returns>
-    /// <exception cref="ArgumentNullException">Thrown when builder, seriesName, or data is null</exception>
+    /// <param name="builder">The chart builder instance.</param>
+    /// <param name="seriesName">The name of the series.</param>
+    /// <param name="data">Collection of (x, y) value tuples.</param>
+    /// <param name="color">Optional series color.</param>
+    /// <returns>The configured chart builder for fluent chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/>, <paramref name="seriesName"/>, or <paramref name="data"/> is null.</exception>
     public static ChartBuilder AddSeries(
         this ChartBuilder builder,
         string seriesName,
@@ -188,12 +196,12 @@ public static class ChartBuilderExtensions
     /// <summary>
     /// Adds a series with data points created from value tuples and labels
     /// </summary>
-    /// <param name="builder">The chart builder instance</param>
-    /// <param name="seriesName">The name of the series</param>
-    /// <param name="data">Collection of (x, y, label) value tuples</param>
-    /// <param name="color">Optional series color</param>
-    /// <returns>The configured chart builder for fluent chaining</returns>
-    /// <exception cref="ArgumentNullException">Thrown when builder, seriesName, or data is null</exception>
+    /// <param name="builder">The chart builder instance.</param>
+    /// <param name="seriesName">The name of the series.</param>
+    /// <param name="data">Collection of (x, y, label) value tuples.</param>
+    /// <param name="color">Optional series color.</param>
+    /// <returns>The configured chart builder for fluent chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/>, <paramref name="seriesName"/>, or <paramref name="data"/> is null.</exception>
     public static ChartBuilder AddSeries(
         this ChartBuilder builder,
         string seriesName,
