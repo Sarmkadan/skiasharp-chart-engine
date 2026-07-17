@@ -77,13 +77,15 @@ public static class ChartEngineExceptionExtensions
     }
 
     /// <summary>
-    /// Gets the error code from the exception. Returns -1 if the exception is null or doesn't have an ErrorCode property.
+    /// Gets the error code from the exception.
     /// </summary>
     /// <param name="exception">The exception to get the error code from.</param>
-    /// <returns>The error code, or -1 if not available.</returns>
+    /// <returns>The error code from the exception.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if exception is null.</exception>
     public static int GetErrorCode(this ChartEngineException exception)
     {
-        return exception?.ErrorCode ?? -1;
+        ArgumentNullException.ThrowIfNull(exception);
+        return exception.ErrorCode;
     }
 
     /// <summary>
@@ -93,6 +95,7 @@ public static class ChartEngineExceptionExtensions
     /// <param name="newMessage">The new message to use.</param>
     /// <returns>A new exception instance with the updated message.</returns>
     /// <exception cref="ArgumentNullException">Thrown if exception is null.</exception>
+    /// <exception cref="ArgumentException">Thrown if newMessage is null or empty.</exception>
     public static ChartEngineException WithMessage(this ChartEngineException exception, string newMessage)
     {
         ArgumentNullException.ThrowIfNull(exception);
@@ -162,17 +165,16 @@ public static class ChartEngineExceptionExtensions
         ArgumentNullException.ThrowIfNull(exception);
 
         var current = exception;
-        while (current != null)
+        while (current.InnerException is ChartEngineException innerChartException)
         {
-            if (current.ErrorCode == errorCode)
+            if (innerChartException.ErrorCode == errorCode)
             {
                 return true;
             }
-
-            current = current.InnerException as ChartEngineException;
+            current = innerChartException;
         }
 
-        return false;
+        return current.ErrorCode == errorCode;
     }
 
     /// <summary>
@@ -182,14 +184,25 @@ public static class ChartEngineExceptionExtensions
     /// <returns>A formatted string with error details.</returns>
     /// <exception cref="ArgumentNullException">Thrown if exception is null.</exception>
     public static string FormatErrorDetails(this ChartEngineException exception)
+        => FormatErrorDetails(exception, " | ");
+
+    /// <summary>
+    /// Gets the formatted error details including error code, type, and message with a custom separator.
+    /// </summary>
+    /// <param name="exception">The exception to format.</param>
+    /// <param name="messageSeparator">The separator to use between messages.</param>
+    /// <returns>A formatted string with error details.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if exception is null.</exception>
+    public static string FormatErrorDetails(this ChartEngineException exception, string messageSeparator)
     {
         ArgumentNullException.ThrowIfNull(exception);
+        ArgumentException.ThrowIfNullOrEmpty(messageSeparator);
 
         var typeName = exception.GetType().Name;
         var errorCode = exception.GetErrorCode();
         var messages = exception.GetAllMessages();
 
-        var message = string.Join(" | ", messages);
+        var message = string.Join(messageSeparator, messages);
 
         return string.Format(
             CultureInfo.InvariantCulture,
