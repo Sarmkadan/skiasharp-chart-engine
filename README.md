@@ -388,6 +388,119 @@ public class XmlChartSerializerExample
 }
 ```
 
+## ChartMetricsFormatter
+
+`ChartMetricsFormatter` formats chart metrics and statistics for display and reporting. It converts internal metrics to human-readable formats, enabling developers to generate detailed render metrics, chart configurations, summaries, comparisons, and memory statistics. The formatter supports multiple output formats including plain text, JSON, and byte size formatting.
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Formatters;
+using SkiaSharpChartEngine.Models;
+
+public class ChartMetricsFormatterExample
+{
+    public static void Main()
+    {
+        // Initialize ChartMetricsFormatter with a logger
+        var logger = new NullLogger<ChartMetricsFormatter>();
+        var formatter = new ChartMetricsFormatter(logger);
+
+        // Example 1: Format render metrics
+        var metrics = new RenderMetrics
+        {
+            ChartId = "sales-chart-2024",
+            RenderTimeMs = 142,
+            MemoryUsedBytes = 4523456,
+            OutputSizeBytes = 125678,
+            DataPointCount = 150,
+            SeriesCount = 3,
+            Timestamp = DateTime.UtcNow
+        };
+        
+        string formattedMetrics = formatter.FormatRenderMetrics(metrics);
+        Console.WriteLine(formattedMetrics);
+
+        // Example 2: Format render metrics as JSON
+        string jsonMetrics = formatter.FormatRenderMetricsAsJson(metrics);
+        Console.WriteLine(jsonMetrics);
+
+        // Example 3: Format chart configuration
+        var config = new ChartConfiguration
+        {
+            Width = 800,
+            Height = 600,
+            Theme = "light",
+            ShowLegend = true,
+            ShowGrid = true,
+            Title = "Quarterly Sales"
+        };
+        
+        string formattedConfig = formatter.FormatChartConfiguration(config);
+        Console.WriteLine(formattedConfig);
+
+        // Example 4: Format chart summary
+        var chart = new Chart
+        {
+            Id = "sales-chart-2024",
+            Title = "Quarterly Sales 2024",
+            ChartType = "Bar",
+            Series = new System.Collections.Generic.List<ChartSeries>
+            {
+                new ChartSeries
+                {
+                    Name = "Q1 Sales",
+                    DataPoints = new System.Collections.Generic.List<DataPoint>
+                    {
+                        new DataPoint { Value = 120000 },
+                        new DataPoint { Value = 135000 },
+                        new DataPoint { Value = 142000 }
+                    }
+                }
+            }
+        };
+        
+        string chartSummary = formatter.FormatChartSummary(chart);
+        Console.WriteLine(chartSummary);
+
+        // Example 5: Format comparison between two metrics
+        var metrics2 = new RenderMetrics
+        {
+            ChartId = "sales-chart-2024",
+            RenderTimeMs = 128,
+            MemoryUsedBytes = 4210567,
+            OutputSizeBytes = 118923,
+            DataPointCount = 150,
+            SeriesCount = 3,
+            Timestamp = DateTime.UtcNow.AddMilliseconds(-100)
+        };
+        
+        string comparison = formatter.FormatComparison(metrics, metrics2);
+        Console.WriteLine(comparison);
+
+        // Example 6: Format data point
+        var dataPoint = new DataPoint { Value = 125000, Label = "Q1", Category = "Sales" };
+        string formattedPoint = formatter.FormatDataPoint(dataPoint);
+        Console.WriteLine(formattedPoint);
+
+        // Example 7: Format bytes
+        string formattedBytes = ChartMetricsFormatter.FormatBytes(4523456);
+        Console.WriteLine(formattedBytes); // 4.3MB
+
+        // Example 8: Format memory statistics
+        var memoryStats = new MemoryStatistics
+        {
+            TotalMemory = 16106127360, // 15GB
+            UsedMemory = 4523456789,
+            AvailableMemory = 11582670571
+        };
+        
+        string memoryStatsFormatted = formatter.FormatMemoryStatistics(memoryStats);
+        Console.WriteLine(memoryStatsFormatted);
+    }
+}
+```
+
 ## PathHelper
 
 `PathHelper` provides utility methods for file system operations, path manipulation, and directory management. It includes path validation to prevent directory traversal attacks, safe filename generation, unique filename generation, directory existence checks, path combination utilities, and file cleanup operations.
