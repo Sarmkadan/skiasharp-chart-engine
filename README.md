@@ -1989,6 +1989,101 @@ public class ChartRenderingServiceExample
 
 The service supports both synchronous and asynchronous rendering operations, handles chart validation, manages an in-memory render cache to avoid redundant rendering operations, and provides detailed metrics about rendering performance. It's designed for both standalone usage and integration into ASP.NET Core applications via dependency injection.
 
+## ChartDataService
+
+`ChartDataService` is a core service that provides chart data validation, transformation, and normalization capabilities. It ensures data integrity by validating chart structures, series configurations, and individual data points, while also offering utilities for data transformation and filtering to prepare charts for rendering.
+
+The service handles synchronous and asynchronous validation, calculates appropriate axis ranges for different scale types, normalizes data points to [0, 1] ranges, and provides transformation pipelines for chart data manipulation.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Services;
+
+public class ChartDataServiceExample
+{
+    public static void Main()
+    {
+        // Initialize ChartDataService with logger
+        var logger = new NullLogger<ChartDataService>();
+        var chartDataService = new ChartDataService(logger);
+
+        // Example 1: Validate a chart before rendering
+        var chart = new Chart("sales-chart")
+        {
+            Title = "Quarterly Sales Performance"
+        };
+
+        var series = new ChartSeries("Revenue")
+        {
+            LineWidth = 2.5f,
+            Color = "#2E86C1"
+        };
+
+        series.AddDataPoint(1.0, 100000.0);
+        series.AddDataPoint(2.0, 125000.0);
+        series.AddDataPoint(3.0, 150000.0);
+        series.AddDataPoint(4.0, 175000.0);
+        chart.AddSeries(series);
+
+        // Validate chart structure and data
+        try
+        {
+            chartDataService.ValidateChart(chart);
+            Console.WriteLine("Chart validation passed successfully");
+        }
+        catch (InvalidChartDataException ex)
+        {
+            Console.WriteLine($"Validation failed: {ex.Message}");
+        }
+
+        // Example 2: Validate chart asynchronously
+        var validationTask = chartDataService.ValidateChartAsync(chart);
+        bool isValid = validationTask.Result;
+        Console.WriteLine($"Async validation result: {isValid}");
+
+        // Example 3: Calculate axis range for chart rendering
+        var xValues = new List<double> { 1.0, 2.0, 3.0, 4.0 };
+        var yValues = new List<double> { 100000.0, 125000.0, 150000.0, 175000.0 };
+
+        var (xMin, xMax) = chartDataService.CalculateAxisRange(xValues, AxisScaleType.Linear);
+        var (yMin, yMax) = chartDataService.CalculateAxisRange(yValues, AxisScaleType.Linear);
+
+        Console.WriteLine($"X-axis range: [{xMin:F2}, {xMax:F2}]");
+        Console.WriteLine($"Y-axis range: [{yMin:F2}, {yMax:F2}]");
+
+        // Example 4: Normalize data points for consistent rendering
+        var dataPoints = new List<DataPoint>
+        {
+            new DataPoint(1.0, 100000.0),
+            new DataPoint(2.0, 125000.0),
+            new DataPoint(3.0, 150000.0),
+            new DataPoint(4.0, 175000.0)
+        };
+
+        chartDataService.NormalizeDataPoints(dataPoints);
+        Console.WriteLine("Data points normalized to [0, 1] range");
+
+        // Example 5: Transform chart data using a custom function
+        Chart transformedChart = chartDataService.TransformChartData(
+            chart,
+            point => new DataPoint(point.X * 2, point.Y * 1.1) // Scale X by 2, Y by 1.1
+        );
+        Console.WriteLine("Chart data transformed successfully");
+
+        // Example 6: Filter data points based on a condition
+        var filteredPoints = chartDataService.FilterDataPoints(
+            dataPoints,
+            point => point.Y > 120000.0 // Only keep points above 120,000
+        );
+        Console.WriteLine($"Filtered {filteredPoints.Count} points above threshold");
+    }
+}
+```
+
 ## ChartDiffService
 
 `ChartDiffService` computes differences between chart versions for change tracking and auditing purposes. It identifies modifications to chart properties, series data, and configuration settings, making it ideal for version control, audit logging, and change visualization workflows.
