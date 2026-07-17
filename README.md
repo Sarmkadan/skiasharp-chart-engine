@@ -1273,6 +1273,111 @@ public class CacheCleanupWorkerExample
 }
 ```
 
+## DistributedCacheService
+
+`DistributedCacheService` is an in-memory distributed cache service designed for chart rendering operations. It provides thread-safe caching with support for expiration policies, sliding expiration, priority-based eviction, and comprehensive monitoring. The service automatically cleans up expired entries and maintains cache statistics to help monitor memory usage and performance.
+
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Caching;
+using SkiaSharpChartEngine.Models;
+
+public class DistributedCacheServiceExample
+{
+public static void Main()
+{
+// Initialize logger and cache service with 100MB maximum size
+var logger = new NullLogger<DistributedCacheService>();
+var cacheService = new DistributedCacheService(logger, maxSizeBytes: 100_000_000);
+
+Console.WriteLine("Distributed cache service initialized");
+
+// Example 1: Set a cache entry with default policy
+var chartData = new Chart("sales-chart")
+{
+Title = "Quarterly Sales Report",
+Configuration = new ChartConfiguration { Width = 1920, Height = 1080 }
+};
+
+cacheService.Set("chart-sales-2024", chartData);
+Console.WriteLine("Cache entry set: chart-sales-2024");
+
+// Example 2: Set a cache entry with custom expiration policy
+var chartWithExpiration = new Chart("expense-chart");
+var policy = new CachePolicy
+{
+AbsoluteExpiration = DateTime.UtcNow.AddHours(1),
+SlidingExpiration = TimeSpan.FromMinutes(30),
+Priority = CachePriority.High
+};
+
+cacheService.Set("chart-expenses-2024", chartWithExpiration, policy);
+Console.WriteLine("Cache entry set with custom policy: chart-expenses-2024");
+
+// Example 3: Try to get a cached entry
+if (cacheService.TryGet<Chart>("chart-sales-2024", out var cachedChart))
+{
+Console.WriteLine($"Cache hit! Retrieved chart: {cachedChart.Title}");
+Console.WriteLine($"Chart ID: {cachedChart.Id}");
+Console.WriteLine($"Chart type: {cachedChart.Type}");
+}
+else
+{
+Console.WriteLine("Cache miss - entry not found or expired");
+}
+
+// Example 4: Remove a specific cache entry
+cacheService.Remove("chart-sales-2024");
+Console.WriteLine("Cache entry removed: chart-sales-2024");
+
+// Example 5: Remove all entries matching a pattern
+int removedCount = cacheService.RemovePattern("chart-*");
+Console.WriteLine($"Removed {removedCount} entries matching pattern 'chart-*'");
+
+// Example 6: Clear all cache entries
+cacheService.Clear();
+Console.WriteLine("All cache entries cleared");
+
+// Example 7: Get cache statistics
+var stats = cacheService.GetStatistics();
+Console.WriteLine($"\nCache Statistics:");
+Console.WriteLine($"  Entries: {stats.EntryCount}");
+Console.WriteLine($"  Size: {stats.SizeInBytes:N0} bytes");
+Console.WriteLine($"  Max size: {stats.MaxSizeInBytes:N0} bytes");
+Console.WriteLine($"  Utilization: {stats.UtilizationPercentage:F1}%");
+
+// Example 8: Get metadata for all entries
+var metadataList = cacheService.GetMetadata();
+Console.WriteLine($"\nMetadata for {metadataList.Count} entries:");
+foreach (var metadata in metadataList)
+{
+Console.WriteLine($"  Key: {metadata.Key}");
+Console.WriteLine($"    Type: {metadata.ValueType}");
+Console.WriteLine($"    Created: {metadata.CreatedAt}");
+Console.WriteLine($"    Last accessed: {metadata.LastAccessedAt}");
+Console.WriteLine($"    Priority: {metadata.Priority}");
+Console.WriteLine($"    Size: {metadata.SizeInBytes} bytes");
+}
+
+// Example 9: Set multiple entries with different priorities
+cacheService.Set("chart-priority-low", new Chart("low-priority"), 
+new CachePolicy { Priority = CachePriority.Low });
+cacheService.Set("chart-priority-normal", new Chart("normal-priority"),
+new CachePolicy { Priority = CachePriority.Normal });
+cacheService.Set("chart-priority-high", new Chart("high-priority"),
+new CachePolicy { Priority = CachePriority.High });
+Console.WriteLine("Set entries with different priorities");
+
+// Example 10: Dispose the cache service (automatically cleans up resources)
+cacheService.Dispose();
+Console.WriteLine("Cache service disposed");
+}
+}
+```
+
 ## TransitionOptions
 
 `TransitionOptions` configures how chart transitions are rendered, controlling frame rate, quality, playback behavior, parallel rendering, and diagnostics. All settings are validated on property setters, and instances can be cloned to create modified copies without altering the original.
