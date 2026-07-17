@@ -15,6 +15,7 @@ namespace SkiaSharpChartEngine.Diagnostics;
 /// </summary>
 public static class MetricsCollectorJsonExtensions
 {
+
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -48,20 +49,14 @@ public static class MetricsCollectorJsonExtensions
     /// Deserializes a JSON string into a <see cref="MetricsCollector"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>A deserialized <see cref="MetricsCollector"/> instance, or null if deserialization fails.</returns>
+    /// <returns>A deserialized <see cref="MetricsCollector"/> instance if successful; otherwise, null.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
     public static MetricsCollector? FromJson(string json)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
 
-        try
-        {
-            return JsonSerializer.Deserialize<MetricsCollector>(json, _jsonSerializerOptions);
-        }
-        catch (JsonException)
-        {
-            return null;
-        }
+        return JsonSerializer.Deserialize<MetricsCollector>(json, _jsonSerializerOptions);
     }
 
     /// <summary>
