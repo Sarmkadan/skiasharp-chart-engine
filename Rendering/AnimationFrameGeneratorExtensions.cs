@@ -15,9 +15,7 @@ namespace Rendering
         /// <returns>The progress multiplied by 100.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="generator"/> is <c>null</c>.</exception>
         public static double GetProgressPercentage(this AnimationFrameGenerator generator) =>
-            ArgumentNullException.ThrowIfNull(generator) is null
-                ? throw new ArgumentNullException(nameof(generator))
-                : generator.Progress * 100.0;
+            ArgumentNullException.ThrowIfNull(generator).Progress * 100.0;
 
         /// <summary>
         /// Retrieves the chart that corresponds to the current <see cref="AnimationFrameGenerator.FrameNumber"/>.
@@ -47,9 +45,7 @@ namespace Rendering
         /// <returns>An <see cref="IReadOnlyList{AnimationFrame}"/> representing the generated frames.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="generator"/> is <c>null</c>.</exception>
         public static IReadOnlyList<AnimationFrame> GetAnimationFrames(this AnimationFrameGenerator generator) =>
-            ArgumentNullException.ThrowIfNull(generator) is null
-                ? throw new ArgumentNullException(nameof(generator))
-                : generator.GenerateDataFrames;
+            ArgumentNullException.ThrowIfNull(generator).GenerateDataFrames;
 
         /// <summary>
         /// Returns the numeric values produced by the generator as a read‑only list.
@@ -58,8 +54,6 @@ namespace Rendering
         /// <returns>An <see cref="IReadOnlyList{Double}"/> of the generated values.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="generator"/> is <c>null</c>.</exception>
         public static IReadOnlyList<double> GetValues(this AnimationFrameGenerator generator) =>
-            ArgumentNullException.ThrowIfNull(generator) is null
-                ? throw new ArgumentNullException(nameof(generator))
-                : generator.Values;
+            ArgumentNullException.ThrowIfNull(generator).Values;
     }
 }
