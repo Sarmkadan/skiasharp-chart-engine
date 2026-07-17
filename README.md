@@ -7991,6 +7991,46 @@ public class RequestMetricsExample
 }
 ```
 
+## HealthCheckService
+
+`HealthCheckService` is a monitoring component that tracks the health and operational status of the chart engine. It allows registering custom health checks, executing them on demand, and retrieving the overall system health status. The service aggregates results from all registered checks and provides a unified health status (`Healthy`, `Degraded`, or `Unhealthy`).
+
+
+
+
+
+
+```csharp
+using Microsoft.Extensions.Logging;
+using SkiaSharpChartEngine.Diagnostics;
+
+// Example: Setting up health monitoring
+var logger = new NullLogger<HealthCheckService>();
+var healthCheckService = new HealthCheckService(logger);
+
+// Register custom health checks
+healthCheckService.RegisterCheck(new BasicHealthCheck("Database Connectivity", 
+    async () => await CheckDatabaseConnection()));
+
+healthCheckService.RegisterCheck(new BasicHealthCheck("Chart Rendering",
+    async () => await CheckRenderingCapabilities()));
+
+// Perform health check
+var result = await healthCheckService.CheckHealthAsync();
+
+Console.WriteLine($"Overall Status: {result.Status}");
+Console.WriteLine($"Checks Performed: {result.Entries.Count}");
+Console.WriteLine($"Healthy Checks: {result.Entries.Count(e => e.Status == HealthStatus.Healthy)}");
+
+// Get last known status
+var lastStatus = healthCheckService.GetLastStatus();
+Console.WriteLine($"Last Status: {lastStatus}");
+
+// Get check count
+var checkCount = healthCheckService.GetCheckCount();
+Console.WriteLine($"Registered Checks: {checkCount}");
+```
+
 ## MetricsCollector
 
 `MetricsCollector` is a diagnostics utility that tracks performance metrics for chart rendering operations. It measures CPU time, memory consumption, and execution statistics across different operations, providing insights into rendering performance and resource usage patterns.
