@@ -30,7 +30,7 @@ public static class RenderMetricsJsonExtensions
     /// <param name="value">The metrics to serialize.</param>
     /// <param name="indented">Whether to format the JSON with indentation for readability.</param>
     /// <returns>A JSON string representation of the metrics.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
     public static string ToJson(this RenderMetrics value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -49,8 +49,9 @@ public static class RenderMetricsJsonExtensions
     /// Deserializes a JSON string to a <see cref="RenderMetrics"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>The deserialized <see cref="RenderMetrics"/> instance, or null if the JSON is null or empty.</returns>
+    /// <returns>The deserialized <see cref="RenderMetrics"/> instance, or <see langword="null"/> if the JSON is <see langword="null"/> or empty.</returns>
     /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
+/// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
     public static RenderMetrics? FromJson(string json)
     {
         if (string.IsNullOrWhiteSpace(json))
