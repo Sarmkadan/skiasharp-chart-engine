@@ -238,6 +238,68 @@ public class CsvDataSerializerExample
 
 `JsonChartSerializer` provides functionality for serializing and deserializing `Chart` objects to and from JSON format. It supports both single chart serialization and collection serialization, with built-in validation and formatting capabilities. The serializer uses camelCase property naming and handles null values efficiently.
 
+## ChartEngineExceptionExtensions
+
+`ChartEngineExceptionExtensions` provides utility methods for working with `ChartEngineException` and its derived types. It offers functionality for exception type checking, error code retrieval, message extraction, exception transformation, and formatted error reporting. This is particularly useful for centralized exception handling, error analysis, and creating user-friendly error messages in chart rendering applications.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Exceptions;
+
+public class ChartEngineExceptionExtensionsExample
+{
+    public static void Main()
+    {
+        try
+        {
+            // Simulate chart rendering with error
+            throw new ChartRenderingException("Failed to render chart: invalid dimensions", 
+                new InvalidChartDataException("Data series contains null values"))
+            {
+                ErrorCode = 5003
+            };
+        }
+        catch (ChartEngineException ex)
+        {
+            // Example 1: Check exception type
+            bool isRenderingError = ex.IsRenderingError();
+            bool isInvalidChartData = ex.IsInvalidChartData();
+            Console.WriteLine($"Is rendering error: {isRenderingError}");
+            Console.WriteLine($"Is invalid chart data: {isInvalidChartData}");
+
+            // Example 2: Get error code
+            int errorCode = ex.GetErrorCode();
+            Console.WriteLine($"Error code: {errorCode}");
+
+            // Example 3: Get all messages in hierarchy
+            var allMessages = ex.GetAllMessages();
+            Console.WriteLine("All messages:");
+            foreach (var msg in allMessages)
+            {
+                Console.WriteLine($"  - {msg}");
+            }
+
+            // Example 4: Get root cause
+            Exception rootCause = ex.GetRootCause();
+            Console.WriteLine($"Root cause type: {rootCause.GetType().Name}");
+
+            // Example 5: Check for specific error code
+            bool hasErrorCode = ex.HasErrorCode(5003);
+            Console.WriteLine($"Has error code 5003: {hasErrorCode}");
+
+            // Example 6: Format error details
+            string formattedError = ex.FormatErrorDetails();
+            Console.WriteLine($"Formatted error: {formattedError}");
+
+            // Example 7: Create new exception with updated message
+            var newEx = ex.WithMessage("Custom error message: Chart rendering failed");
+            Console.WriteLine($"New exception type: {newEx.GetType().Name}");
+            Console.WriteLine($"New exception message: {newEx.Message}");
+        }
+    }
+}
+```
+
 ## DataControllerValidation
 
 The `DataControllerValidation` class provides validation helpers for `DataController` operations. It validates method parameters and data integrity before processing, ensuring that series IDs, data points, and aggregation parameters meet expected criteria. The validation methods return error messages for invalid inputs or throw exceptions when using the `EnsureValid` variants.
