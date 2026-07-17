@@ -6,6 +6,83 @@ A .NET chart rendering library (SkiaSharp-based) with an ASP.NET Core Web API ho
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the component breakdown, data flow, design decisions, extension points, and known limitations. The sections below are per-type usage examples.
 
+## RenderResultCache
+
+`RenderResultCache` is an in-memory cache specifically designed for storing rendered chart results. It automatically tracks cache hits/misses, evicts stale entries based on time-to-live (TTL), and maintains comprehensive statistics about cache usage. The cache uses a least-recently-used (LRU) eviction policy when approaching maximum size limits and includes a background timer for periodic cleanup of expired entries.
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Caching;
+using SkiaSharpChartEngine.Models;
+
+public class RenderResultCacheExample
+{
+    public static void Main()
+    {
+        // Initialize logger and cache with 100MB maximum size
+        var logger = new NullLogger<RenderResultCache>();
+        var cache = new RenderResultCache(logger, maxCacheSizeBytes: 100_000_000);
+
+        // Example 1: Create a render result to cache
+        var renderResult = new RenderResult
+        {
+            ImageData = new byte[1024 * 1024], // 1MB of image data
+            Width = 1920,
+            Height = 1080,
+            Format = "PNG"
+        };
+
+        // Example 2: Cache the render result with default 1-hour TTL
+        string cacheKey = "chart-sales-2024-line-1920x1080";
+        cache.Cache(cacheKey, renderResult);
+        Console.WriteLine("Render result cached successfully");
+
+        // Example 3: Cache with custom TTL (24 hours)
+        cache.Cache(
+            "chart-sales-2024-line-800x600",
+            renderResult,
+            TimeSpan.FromHours(24)
+        );
+
+        // Example 4: Retrieve cached result
+        var cachedResult = cache.Get(cacheKey);
+        if (cachedResult != null)
+        {
+            Console.WriteLine($"Cache hit! Retrieved render result: {cachedResult.Width}x{cachedResult.Height}");
+            Console.WriteLine($"Format: {cachedResult.Format}");
+        }
+        else
+        {
+            Console.WriteLine("Cache miss - entry not found or expired");
+        }
+
+        // Example 5: Remove specific cache entry
+        bool removed = cache.Remove(cacheKey);
+        Console.WriteLine($"Cache entry removed: {removed}");
+
+        // Example 6: Get cache statistics
+        var stats = cache.GetStatistics();
+        Console.WriteLine($"\nCache Statistics:");
+        Console.WriteLine($" Total entries: {stats.TotalEntries}");
+        Console.WriteLine($" Total size: {stats.TotalSize:N0} bytes ({stats.TotalSize / 1024 / 1024} MB)");
+        Console.WriteLine($" Max size: {stats.MaxSize:N0} bytes ({stats.MaxSize / 1024 / 1024} MB)");
+        Console.WriteLine($" Total hits: {stats.TotalHits}");
+        Console.WriteLine($" Total evictions: {stats.EvictionCount}");
+        Console.WriteLine($" Oldest entry: {stats.OldestEntry}");
+        Console.WriteLine($" Newest entry: {stats.NewestEntry}");
+
+        // Example 7: Clear all cache entries
+        cache.Clear();
+        Console.WriteLine("All cache entries cleared");
+
+        // Dispose cache when done
+        cache.Dispose();
+    }
+}
+```
+
 ## TemplateController
 
 `TemplateController` is a REST API controller that handles template management operations. It provides endpoints for retrieving, creating, updating, and deleting chart templates.
