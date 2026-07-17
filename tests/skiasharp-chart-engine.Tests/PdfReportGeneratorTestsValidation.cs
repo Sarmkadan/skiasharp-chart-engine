@@ -27,24 +27,35 @@ public static class PdfReportGeneratorTestsValidation
 
         var problems = new List<string>();
 
-        // Validate private mock dependencies using reflection
-        var renderMockField = value.GetType().GetField("_renderMock", BindingFlags.NonPublic | BindingFlags.Instance);
-        if (renderMockField?.GetValue(value) is null)
+        try
         {
-            problems.Add("Render mock dependency is null.");
-        }
+            // Validate private mock dependencies using reflection
+            var renderMockField = value.GetType().GetField("_renderMock", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (renderMockField?.GetValue(value) is null)
+            {
+                problems.Add("Render mock dependency is null.");
+            }
 
-        var loggerMockField = value.GetType().GetField("_loggerMock", BindingFlags.NonPublic | BindingFlags.Instance);
-        if (loggerMockField?.GetValue(value) is null)
-        {
-            problems.Add("Logger mock dependency is null.");
-        }
+            var loggerMockField = value.GetType().GetField("_loggerMock", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (loggerMockField?.GetValue(value) is null)
+            {
+                problems.Add("Logger mock dependency is null.");
+            }
 
-        // Validate private PdfReportGenerator instance
-        var generatorField = value.GetType().GetField("_generator", BindingFlags.NonPublic | BindingFlags.Instance);
-        if (generatorField?.GetValue(value) is null)
+            // Validate private PdfReportGenerator instance
+            var generatorField = value.GetType().GetField("_generator", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (generatorField?.GetValue(value) is null)
+            {
+                problems.Add("PdfReportGenerator instance is null.");
+            }
+        }
+        catch (TargetInvocationException ex)
         {
-            problems.Add("PdfReportGenerator instance is null.");
+            problems.Add($"Reflection-based validation failed: {ex.InnerException?.Message ?? ex.Message}");
+        }
+        catch (Exception ex) when (ex is not ArgumentNullException)
+        {
+            problems.Add($"Unexpected error during validation: {ex.Message}");
         }
 
         return problems.AsReadOnly();
@@ -55,9 +66,10 @@ public static class PdfReportGeneratorTestsValidation
     /// </summary>
     /// <param name="value">The instance to check.</param>
     /// <returns><see langword="true"/> if the instance is valid; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
     public static bool IsValid(this PdfReportGeneratorTests? value)
     {
-        return Validate(value).Count == 0;
+        return value is null ? throw new ArgumentNullException(nameof(value)) : Validate(value).Count == 0;
     }
 
     /// <summary>
@@ -74,7 +86,7 @@ public static class PdfReportGeneratorTestsValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                $"PdfReportGeneratorTests instance is not valid. Problems: {string.Join(" ", problems)}");
+                $"PdfReportGeneratorTests instance is not valid. Problems: {string.Join(", ", problems)}");
         }
     }
 }
