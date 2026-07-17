@@ -2,6 +2,59 @@
 
 A .NET chart rendering library (SkiaSharp-based) with an ASP.NET Core Web API host. Usable standalone via `ChartEngine.Create()` or as a service through `AddSkiaSharpChartEngine()`.
 
+## ThemeManager
+
+`ThemeManager` provides a centralized system for managing chart themes and color schemes. It allows developers to register custom themes, switch the active theme at runtime, and retrieve theme properties (such as background/foreground colors, font settings, and series colors) to ensure consistent styling across generated charts.
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharp;
+using SkiaSharpChartEngine.Utilities;
+
+public class ThemeManagerExample
+{
+    public static void Main()
+    {
+        // Initialize ThemeManager with a logger
+        var logger = new NullLogger<ThemeManager>();
+        var themeManager = new ThemeManager(logger);
+
+        // Example 1: List all available theme names
+        Console.WriteLine("Available themes: " + string.Join(", ", themeManager.GetAvailableThemes()));
+
+        // Example 2: Retrieve and inspect the current theme
+        var currentTheme = themeManager.GetCurrentTheme();
+        Console.WriteLine($"Current theme: {currentTheme.Name}");
+        Console.WriteLine($"Background Color: {currentTheme.BackgroundColor}");
+        Console.WriteLine($"Series Colors count: {currentTheme.SeriesColors.Length}");
+
+        // Example 3: Register a custom theme
+        var customTheme = new ChartTheme
+        {
+            Name = "Corporate Blue",
+            BackgroundColor = SKColors.WhiteSmoke,
+            ForegroundColor = SKColors.Black,
+            GridColor = SKColors.LightGray,
+            AxisColor = SKColors.DarkBlue,
+            TextColor = SKColors.DarkBlue,
+            SeriesColors = new[] { SKColors.DodgerBlue, SKColors.MidnightBlue },
+            FontSize = 14f,
+            LineWidth = 3f
+        };
+        themeManager.RegisterTheme("corporate", customTheme);
+
+        // Example 4: Switch to the new theme
+        themeManager.SetCurrentTheme("corporate");
+        Console.WriteLine($"Switched to: {themeManager.GetCurrentTheme().Name}");
+
+        // Example 5: Get a specific theme
+        var darkTheme = themeManager.GetTheme("dark");
+        Console.WriteLine($"Retrieved theme: {darkTheme.Name}, Axis Color: {darkTheme.AxisColor}");
+    }
+}
+```
+
 ## Architecture
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the component breakdown, data flow, design decisions, extension points, and known limitations. The sections below are per-type usage examples.
