@@ -1480,6 +1480,100 @@ public class TransitionEasingCalculatorExample
 }
 ```
 
+## ChartStreamingService
+
+`ChartStreamingService` is the default implementation of `IChartStreamingService` that provides real-time data streaming capabilities for charts. It enables dynamic chart updates by buffering incoming data points and rendering frames at configurable intervals, making it ideal for live dashboards, monitoring applications, and real-time data visualization scenarios.
+
+The service maintains a separate channel for each registered chart, allowing lock-free concurrent publishing of data points while efficiently managing memory usage through configurable buffer sizes and sliding window constraints. It supports both synchronous and asynchronous rendering modes, with automatic cleanup of old data points to prevent unbounded memory growth.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Streaming;
+
+public class ChartStreamingServiceExample
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize services
+        var logger = new NullLogger<ChartStreamingService>();
+        var renderingService = new ChartRenderingService();
+        var streamingService = new ChartStreamingService(renderingService, logger);
+
+        // Example 1: Register a chart for streaming
+        var chart = new Chart("live-sales-chart")
+        {
+            Title = "Live Sales Dashboard",
+            Configuration = new ChartConfiguration
+            {
+                Width = 1920,
+                Height = 1080,
+                BackgroundColor = "#FFFFFF"
+            }
+        };
+
+        var streamingOptions = new StreamingChartOptions
+        {
+            MaxBufferSize = 1000, // Maximum buffered data points
+            WindowSize = 500,      // Keep only last 500 data points
+            FlushIntervalMs = 100,  // Render at 10fps
+            ReplaceOnUpdate = false  // Append new data to existing series
+        };
+
+        streamingService.Register(chart, streamingOptions);
+        Console.WriteLine("Chart registered for streaming");
+
+        // Example 2: Publish data points to the chart
+        var dataPoints = new List<StreamDataPoint>
+        {
+            new StreamDataPoint("Revenue", 1.0, 100000.0, "Q1"),
+            new StreamDataPoint("Revenue", 2.0, 125000.0, "Q2"),
+            new StreamDataPoint("Revenue", 3.0, 150000.0, "Q3"),
+            new StreamDataPoint("Revenue", 4.0, 175000.0, "Q4"),
+            new StreamDataPoint("Expenses", 1.0, 85000.0, "Q1"),
+            new StreamDataPoint("Expenses", 2.0, 92000.0, "Q2"),
+            new StreamDataPoint("Expenses", 3.0, 98000.0, "Q3"),
+            new StreamDataPoint("Expenses", 4.0, 105000.0, "Q4")
+        };
+
+        int publishedCount = streamingService.PublishBatch("live-sales-chart", dataPoints);
+        Console.WriteLine($"Published {publishedCount} data points");
+
+        // Example 3: Get current snapshot of the chart
+        var snapshot = streamingService.GetSnapshot("live-sales-chart");
+        Console.WriteLine($"Snapshot retrieved: {snapshot.Series.Count} series, {snapshot.GetTotalDataPointCount()} total data points");
+
+        // Example 4: Flush buffered data and render a frame
+        int flushedCount = await streamingService.FlushAsync("live-sales-chart");
+        Console.WriteLine($"Flushed {flushedCount} buffered data points");
+
+        // Example 5: Stream frames asynchronously (simulated with timeout)
+        Console.WriteLine("Starting frame streaming...");
+        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        
+        await foreach (var frame in streamingService.RenderFramesAsync("live-sales-chart", cts.Token))
+        {
+            Console.WriteLine($"Frame {frame.FrameNumber}: {frame.ImageData.Length} bytes, rendered in {frame.RenderTimeMs}ms");
+            
+            // In a real application, you would:
+            // - Save the frame to disk
+            // - Send it over a network connection
+            // - Display it in a UI element
+            // - Combine frames into a video
+            break; // Only process one frame for this example
+        }
+
+        // Example 6: Unregister chart when done
+        streamingService.Unregister("live-sales-chart");
+        Console.WriteLine("Chart unregistered from streaming");
+    }
+}
+```
+
 ## StreamingChartOptions
 
 `StreamingChartOptions` provides configuration for real-time chart data streaming operations. It controls buffering behavior, sliding window sizing, auto-render intervals, and series update strategies to optimize performance for streaming scenarios.
