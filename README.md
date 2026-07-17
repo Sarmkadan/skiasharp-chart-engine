@@ -921,6 +921,82 @@ public class ChartProcessingWorkerExample
 }
 ```
 
+## MetricsAggregatorWorker
+
+`MetricsAggregatorWorker` is a background worker that aggregates performance metrics at regular intervals. It collects metric values, calculates statistics (count, sum, average, min, max, median, standard deviation), detects anomalies, and raises events for monitoring and alerting purposes. The worker runs on a configurable interval (default: 5 minutes) and maintains comprehensive statistics for all recorded metrics.
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Workers;
+
+public class MetricsAggregatorWorkerExample
+{
+    public static void Main()
+    {
+        // Initialize logger
+        var logger = new NullLogger<MetricsAggregatorWorker>();
+        
+        // Create metrics aggregator worker with default 5-minute interval
+        using var metricsAggregator = new MetricsAggregatorWorker(logger);
+        
+        // Subscribe to metrics aggregated events
+        metricsAggregator.MetricsAggregated += (sender, e) =>
+        {
+            Console.WriteLine($"Metrics aggregated at {e.AggregatedAt}");
+            Console.WriteLine($"Total metrics: {e.Statistics.Count}");
+            Console.WriteLine($"Anomalies detected: {e.Anomalies.Count}");
+            
+            foreach (var stat in e.Statistics.Values)
+            {
+                Console.WriteLine($"\nMetric: {stat.Name}");
+                Console.WriteLine($"  Count: {stat.Count}");
+                Console.WriteLine($"  Sum: {stat.Sum:F2}");
+                Console.WriteLine($"  Average: {stat.Average:F2}");
+                Console.WriteLine($"  Min: {stat.Min:F2}");
+                Console.WriteLine($"  Max: {stat.Max:F2}");
+                Console.WriteLine($"  Median: {stat.Median:F2}");
+                Console.WriteLine($"  StdDev: {stat.StdDev:F2}");
+                Console.WriteLine($"  Tags: {stat.Tags}");
+            }
+        };
+        
+        // Start the worker
+        metricsAggregator.Start();
+        Console.WriteLine("Metrics aggregator worker started...");
+        
+        // Record some metrics
+        metricsAggregator.RecordMetric("ResponseTime", 125.5, "api=userservice");
+        metricsAggregator.RecordMetric("ResponseTime", 135.2, "api=userservice");
+        metricsAggregator.RecordMetric("ResponseTime", 118.7, "api=userservice");
+        metricsAggregator.RecordMetric("ResponseTime", 142.3, "api=userservice");
+        metricsAggregator.RecordMetric("MemoryUsage", 156.8, "type=heap");
+        metricsAggregator.RecordMetric("MemoryUsage", 162.1, "type=heap");
+        metricsAggregator.RecordMetric("MemoryUsage", 159.4, "type=heap");
+        
+        // Get individual metric statistics
+        var responseTimeStats = metricsAggregator.GetMetricStatistics("ResponseTime");
+        Console.WriteLine($"\nResponseTime stats: Count={responseTimeStats?.Count}, Avg={responseTimeStats?.Average:F2}ms");
+        
+        // Get all metrics
+        var allMetrics = metricsAggregator.GetAllMetrics();
+        Console.WriteLine($"\nTotal metrics tracked: {allMetrics.Count}");
+        
+        // Get metrics count
+        Console.WriteLine($"Metrics count: {metricsAggregator.GetMetricsCount()}");
+        
+        // Wait for aggregation cycle
+        Console.WriteLine("Waiting for aggregation cycle...");
+        System.Threading.Thread.Sleep(10000);
+        
+        // Stop the worker
+        metricsAggregator.Stop();
+        Console.WriteLine("Metrics aggregator worker stopped");
+    }
+}
+```
+
 ## CacheCleanupWorker
 
 `CacheCleanupWorker` is a background worker that maintains cache health by periodically cleaning up expired entries and managing memory usage. It automatically removes expired cache entries, monitors cache utilization, and removes low-priority entries when cache usage exceeds 90% to prevent memory pressure. The worker runs on a configurable interval (default: 10 minutes) and provides comprehensive statistics about cleanup operations.
