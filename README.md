@@ -6524,3 +6524,38 @@ public class ExportServiceExample
     }
 }
 ```
+
+## StringFormatHelper
+
+`StringFormatHelper` provides a set of static utility methods for efficient string formatting, transformation, and sanitization, designed to minimize allocations in high-performance chart rendering scenarios. It includes methods for formatting numbers into human-readable units, converting between naming conventions, sanitizing input text, and generating CSV-formatted lines.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Utilities;
+
+public class StringFormatHelperExample
+{
+    public static void Main()
+    {
+        // Example 1: Formatting numbers and percentages
+        Console.WriteLine(StringFormatHelper.FormatNumberWithUnits(1250000.5)); // "1.3M"
+        Console.WriteLine(StringFormatHelper.FormatCurrency(99.99));            // "$99.99"
+        Console.WriteLine(StringFormatHelper.FormatPercentage(0.75, 1));        // "75.0%"
+
+        // Example 2: String transformations
+        Console.WriteLine(StringFormatHelper.TruncateWithEllipsis("Very long chart label text", 15)); // "Very long..."
+        Console.WriteLine(StringFormatHelper.CamelCaseToTitleCase("myChartLabel"));              // "My Chart Label"
+        Console.WriteLine(StringFormatHelper.SnakeCaseToTitleCase("data_series_name"));          // "Data Series Name"
+
+        // Example 3: Sanitization and alignment
+        Console.WriteLine(StringFormatHelper.Sanitize("Hello <World>!", false)); // "Hello World"
+        Console.WriteLine(StringFormatHelper.PadForAlignment("123", 5, '0', true)); // "00123"
+
+        // Example 4: Formatting and utilities
+        Console.WriteLine(StringFormatHelper.FormatTimespan(TimeSpan.FromSeconds(125))); // "2.1m"
+        Console.WriteLine(StringFormatHelper.Repeat("-", 10));                          // "----------"
+        Console.WriteLine(StringFormatHelper.ToCsvLine("Data", 100, true));             // "Data,100,True"
+    }
+}
+```
+
