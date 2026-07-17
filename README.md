@@ -55,6 +55,57 @@ public class ThemeManagerExample
 }
 ```
 
+## ColorHelper
+
+`ColorHelper` is a utility class for performing common color operations and conversions. It provides methods for working with hex and RGB color formats, manipulating color brightness (lightening/darkening), validating color formats, and accessing default color palettes. This is particularly useful for chart rendering where you need to generate colors dynamically or convert between different color representations.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Utilities;
+
+public class ColorHelperExample
+{
+    public static void Main()
+    {
+        // Example 1: Get a color from the default palette by index
+        string colorAtIndex = ColorHelper.GetColorAtIndex(0);
+        Console.WriteLine($"Color at index 0: {colorAtIndex}"); // #1f77b4
+
+        // Example 2: Get the complete default color palette
+        var palette = ColorHelper.GetDefaultColorPalette();
+        Console.WriteLine($"Default palette has {palette.Count} colors");
+
+        // Example 3: Convert hex color to RGB/RGBA format
+        string hexColor = "#3498db";
+        string rgb = ColorHelper.HexToRgb(hexColor);
+        Console.WriteLine($"Hex to RGB: {rgb}"); // rgb(52, 152, 219)
+
+        string hexWithAlpha = "#3498db80";
+        string rgba = ColorHelper.HexToRgb(hexWithAlpha);
+        Console.WriteLine($"Hex to RGBA: {rgba}"); // rgba(52, 152, 219, 0.50)
+
+        // Example 4: Convert RGB values to hex format
+        string hexFromRgb = ColorHelper.RgbToHex(255, 99, 71);
+        Console.WriteLine($"RGB to Hex: {hexFromRgb}"); // #ff6347
+
+        // Example 5: Lighten a color by a factor
+        string lightened = ColorHelper.LightenColor("#3498db", 0.3f);
+        Console.WriteLine($"Lightened color: {lightened}"); // #6bb5f3
+
+        // Example 6: Darken a color by a factor
+        string darkened = ColorHelper.DarkenColor("#3498db", 0.3f);
+        Console.WriteLine($"Darkened color: {darkened}"); // #246a9a
+
+        // Example 7: Validate a hex color
+        bool isValid = ColorHelper.IsValidHexColor("#ff5733");
+        Console.WriteLine($"Is #ff5733 valid? {isValid}"); // True
+        
+        bool isInvalid = ColorHelper.IsValidHexColor("not-a-color");
+        Console.WriteLine($"Is 'not-a-color' valid? {isInvalid}"); // False
+    }
+}
+```
+
 ## Architecture
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the component breakdown, data flow, design decisions, extension points, and known limitations. The sections below are per-type usage examples.
