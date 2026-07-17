@@ -1201,6 +1201,97 @@ public class ColorSchemeManagerExample
 }
 ```
 
+## InputValidator
+
+The `InputValidator` class provides comprehensive validation for chart data and configuration, ensuring data integrity and preventing invalid operations during rendering. It validates charts, series, data points, and configuration settings while collecting detailed error and warning messages.
+
+
+
+
+### Public Members
+
+- `InputValidator(ILogger<InputValidator> logger)` - Constructor
+- `ValidationResult ValidateChart(Chart chart)` - Validates a complete chart
+- `ValidationResult ValidateSeriesData(List<ChartSeries> series)` - Validates chart series data
+- `ValidationResult ValidateConfiguration(ChartConfiguration? config)` - Validates chart configuration
+- `ValidationResult ValidateDataPoints(List<DataPoint> dataPoints)` - Validates data points
+- `void AddRule(ValidationRule rule)` - Adds a custom validation rule
+- `List<string> Errors` - Collection of error messages
+- `List<string> Warnings` - Collection of warning messages
+- `void AddError(string message)` - Adds an error message
+- `void AddWarning(string message)` - Adds a warning message
+- `override string ToString()` - Returns formatted validation result
+- `string Name` - Rule name (from ValidationRule)
+- `string Description` - Rule description (from ValidationRule)
+- `Func<Chart, bool>? Rule` - Validation function (from ValidationRule)
+
+
+
+
+### Example Usage
+
+```csharp
+using Microsoft.Extensions.Logging;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Validation;
+
+// Create validator with logger
+var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+var logger = loggerFactory.CreateLogger<InputValidator>();
+var validator = new InputValidator(logger);
+
+// Validate a complete chart
+var chart = new Chart
+{
+    Id = "sales-chart",
+    Title = "Quarterly Sales",
+    Series = new List<ChartSeries>
+    {
+        new ChartSeries
+        {
+            Name = "Revenue",
+            DataPoints = new List<DataPoint>
+            {
+                new DataPoint { Value = 1250.50f },
+                new DataPoint { Value = 1380.75f },
+                new DataPoint { Value = 1520.25f }
+            }
+        }
+    },
+    Configuration = new ChartConfiguration
+    {
+        Width = 800,
+        Height = 600
+    }
+};
+
+var validationResult = validator.ValidateChart(chart);
+
+if (!validationResult.IsValid)
+{
+    Console.WriteLine("Validation failed:");
+    foreach (var error in validationResult.Errors)
+    {
+        Console.WriteLine($"  ERROR: {error}");
+    }
+    foreach (var warning in validationResult.Warnings)
+    {
+        Console.WriteLine($"  WARNING: {warning}");
+    }
+}
+
+// Add custom validation rule
+validator.AddRule(new ValidationRule
+{
+    Name = "PositiveValuesOnly",
+    Description = "All data points must have positive values",
+    Rule = c => c.Series?.All(s => s.DataPoints?.All(dp => dp.Value > 0) ?? false) ?? false
+});
+
+// Validate series data separately
+var seriesValidation = validator.ValidateSeriesData(chart.Series);
+```
+
 ## CachePolicy
 
 `CachePolicy` is a configuration class that defines caching behavior for chart rendering operations. It controls expiration policies, priority-based eviction, and post-eviction callbacks, enabling fine-grained control over cache management strategies.
