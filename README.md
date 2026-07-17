@@ -1908,6 +1908,168 @@ using Microsoft.Extensions.Logging.Abstractions;
 using SkiaSharpChartEngine.Models;
 using SkiaSharpChartEngine.Services;
 
+public class ConfigurationServiceExample
+{
+    public static void Main()
+    {
+        // Initialize ConfigurationService with logger
+        var logger = new NullLogger<ConfigurationService>();
+        var configService = new ConfigurationService(logger);
+
+        // Example 1: Create a new configuration
+        var lineChartConfig = configService.CreateConfiguration(ChartType.LineChart);
+        Console.WriteLine($"Created line chart config: {lineChartConfig.Name}");
+
+        // Example 2: Save configuration
+        configService.SaveConfiguration(lineChartConfig);
+        Console.WriteLine("Configuration saved successfully");
+
+        // Example 3: Retrieve saved configuration
+        var retrievedConfig = configService.GetConfiguration("LineChart");
+        Console.WriteLine(retrievedConfig != null 
+            ? $"Retrieved config: {retrievedConfig.Name}"
+            : "Configuration not found");
+
+        // Example 4: List all configurations
+        var allConfigs = configService.ListConfigurations();
+        Console.WriteLine($"Total configurations: {allConfigs.Count}");
+    }
+}
+```
+
+## RenderPipelineService
+
+`RenderPipelineService` orchestrates the chart rendering pipeline with validation, caching, and processing stages. It implements the pipeline pattern to provide flexible rendering workflows that can be extended with custom stages for data validation, transformation, and rendering operations.
+
+The service manages a sequence of pipeline stages that process chart data sequentially, tracking execution metrics and providing detailed results for each stage. It's designed for scenarios requiring multi-step chart processing with comprehensive error handling and performance monitoring.
+
+```csharp
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Services;
+
+public class RenderPipelineServiceExample
+{
+    public static async Task Main(string[] args)
+    {
+        // Initialize RenderPipelineService with logger
+        var logger = new NullLogger<RenderPipelineService>();
+        var pipelineService = new RenderPipelineService(logger);
+
+        // Create a sample chart
+        var chart = new Chart("sales-chart")
+        {
+            Title = "Quarterly Sales Performance"
+        };
+
+        var series = new ChartSeries("Revenue")
+        {
+            LineWidth = 2.5f,
+            Color = "#2E86C1"
+        };
+        series.AddDataPoint(1.0, 100000.0);
+        series.AddDataPoint(2.0, 125000.0);
+        series.AddDataPoint(3.0, 150000.0);
+        series.AddDataPoint(4.0, 175000.0);
+        chart.AddSeries(series);
+
+        // Example 1: Add custom pipeline stages
+        pipelineService.AddStage(new DataValidationStage());
+        pipelineService.AddStage(new ChartTransformationStage());
+
+        // Example 2: Execute the rendering pipeline
+        var result = await pipelineService.ExecuteAsync(chart);
+
+        // Example 3: Check pipeline execution results
+        Console.WriteLine($"Pipeline completed: {result.Success}");
+        Console.WriteLine($"Chart ID: {result.ChartId}");
+        Console.WriteLine($"Total duration: {result.TotalElapsedMs}ms");
+        Console.WriteLine($"Started at: {result.StartedAt}");
+        Console.WriteLine($"Completed at: {result.CompletedAt}");
+
+        if (!result.Success)
+        {
+            Console.WriteLine($"Error: {result.Error}");
+        }
+
+        // Example 4: Access stage-specific results
+        foreach (var stageResult in result.StageResults)
+        {
+            Console.WriteLine($"Stage '{stageResult.StageName}': {stageResult.Success} in {stageResult.ElapsedMs}ms");
+            if (!stageResult.Success && stageResult.Message != null)
+            {
+                Console.WriteLine($"  Error: {stageResult.Message}");
+            }
+        }
+
+        // Example 5: Get all pipeline stages
+        var stages = pipelineService.GetStages();
+        Console.WriteLine($"Pipeline has {stages.Count} stages");
+
+        // Example 6: Clear all stages
+        pipelineService.Clear();
+        Console.WriteLine("All pipeline stages cleared");
+    }
+}
+
+// Example pipeline stage implementation
+public class DataValidationStage : IPipelineStage
+{
+    public string Name => "DataValidation";
+
+    public async Task<PipelineStageResult> ExecuteAsync(Chart chart)
+    {
+        // Validate chart has data
+        if (chart.Series.Count == 0)
+        {
+            return PipelineStageResult.Failure("Chart has no series data");
+        }
+
+        // Validate each series has data points
+        foreach (var series in chart.Series)
+        {
+            if (series.DataPoints.Count == 0)
+            {
+                return PipelineStageResult.Failure($"Series '{series.Name}' has no data points");
+            }
+        }
+
+        return PipelineStageResult.Success("Data validated successfully", chart);
+    }
+}
+
+// Example pipeline stage for chart transformations
+public class ChartTransformationStage : IPipelineStage
+{
+    public string Name => "ChartTransformation";
+
+    public async Task<PipelineStageResult> ExecuteAsync(Chart chart)
+    {
+        // Apply chart transformations (e.g., normalize data, apply styles)
+        foreach (var series in chart.Series)
+        {
+            // Example: Set consistent colors
+            if (string.IsNullOrEmpty(series.Color))
+            {
+                series.Color = "#2E86C1";
+            }
+        }
+
+        return PipelineStageResult.Success("Chart transformed successfully", chart);
+    }
+}
+```
+
+## ChartConfiguration
+using System;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Services;
+
 public class ChartRenderingServiceExample
 {
     public static void Main()
