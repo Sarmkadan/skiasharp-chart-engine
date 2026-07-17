@@ -4,7 +4,6 @@
 // =============================================================================
 
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -15,7 +14,7 @@ namespace SkiaSharpChartEngine.Utilities;
 /// </summary>
 public static class VersionCompatibilityCheckerJsonExtensions
 {
-    private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
+    private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = false,
@@ -34,10 +33,7 @@ public static class VersionCompatibilityCheckerJsonExtensions
         ArgumentNullException.ThrowIfNull(value);
 
         var options = indented
-            ? new JsonSerializerOptions(_jsonSerializerOptions)
-            {
-                WriteIndented = true
-            }
+            ? new JsonSerializerOptions(_jsonSerializerOptions) { WriteIndented = true }
             : _jsonSerializerOptions;
 
         return JsonSerializer.Serialize(value, options);
@@ -47,7 +43,7 @@ public static class VersionCompatibilityCheckerJsonExtensions
     /// Deserializes a JSON string to a <see cref="VersionCompatibilityChecker"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>A deserialized <see cref="VersionCompatibilityChecker"/> instance, or null if the JSON is invalid.</returns>
+    /// <returns>A deserialized <see cref="VersionCompatibilityChecker"/> instance if successful; otherwise, null.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
     public static VersionCompatibilityChecker? FromJson(string json)
     {
@@ -67,7 +63,7 @@ public static class VersionCompatibilityCheckerJsonExtensions
     /// Attempts to deserialize a JSON string to a <see cref="VersionCompatibilityChecker"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="value">Receives the deserialized instance if successful, otherwise null.</param>
+    /// <param name="value">Receives the deserialized instance if successful; otherwise, null.</param>
     /// <returns>True if deserialization succeeded; otherwise, false.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
     public static bool TryFromJson(string json, out VersionCompatibilityChecker? value)
