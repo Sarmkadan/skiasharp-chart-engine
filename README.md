@@ -9002,4 +9002,54 @@ public class MetricsExample
         Console.WriteLine($"\nMetrics cleared. Operations remaining: {metricsCollector.GetOperationCount()}");
     }
 }
+
+
+## HttpChartClientJsonExtensions
+
+`HttpChartClientJsonExtensions` provides System.Text.Json serialization and deserialization extensions for `HttpChartClient`, enabling easy conversion between HTTP chart client configurations and JSON strings. It supports both strict and forgiving deserialization patterns, making it ideal for configuration management, API communication, and state persistence scenarios.
+
+
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Integration;
+
+public class HttpChartClientJsonExtensionsExample
+{
+    public static void Main()
+    {
+        // Example 1: Serialize HttpChartClient to JSON
+        var client = new HttpChartClient("https://api.example.com/charts", null!, null!);
+        string json = client.ToJson();
+        Console.WriteLine(json);
+        // Output: {"baseUrl":"https://api.example.com/charts"}
+
+        // Example 2: Serialize with indentation for readability
+        string prettyJson = client.ToJson(indented: true);
+        Console.WriteLine(prettyJson);
+        /* Output:
+        {
+          "baseUrl": "https://api.example.com/charts"
+        }
+        */
+
+        // Example 3: Deserialize from JSON
+        string jsonConfig = "{\"baseUrl\":\"https://api.chart-service.dev/v1\"}";
+        var deserializedClient = HttpChartClientJsonExtensions.FromJson(jsonConfig);
+        Console.WriteLine(deserializedClient?.BaseUrl);
+        // Output: https://api.chart-service.dev/v1
+
+        // Example 4: Try-deserialize with error handling
+        string invalidJson = "{invalid}";
+        if (HttpChartClientJsonExtensions.TryFromJson(invalidJson, out var result))
+        {
+            Console.WriteLine("Successfully deserialized");
+        }
+        else
+        {
+            Console.WriteLine("Failed to deserialize invalid JSON");
+        }
+    }
+}
+```
 ```
