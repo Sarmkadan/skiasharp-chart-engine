@@ -1,4 +1,4 @@
-namespace Skiasharp.ChartEngine.API.Controllers;
+namespace SkiaSharpChartEngine.API.Controllers;
 
 /// <summary>
 /// Extension methods for <see cref="ChartController"/>.
@@ -12,45 +12,56 @@ public static class ChartControllerExtensions
     /// <param name="id">The ID of the chart to retrieve.</param>
     /// <returns>A task that yields an <see cref="ApiResponse{ChartDto}"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="controller"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="id"/> is null or empty.</exception>
     public static async Task<ApiResponse<ChartDto>> GetChartByIdAsync(this ChartController controller, string id)
     {
         ArgumentNullException.ThrowIfNull(controller);
-        if (controller.Id != id)
-        {
-            return ApiResponse<ChartDto>.NotFound("Chart not found");
-        }
-        return await controller.GetChartAsync();
+        ArgumentException.ThrowIfNullOrEmpty(id);
+
+        return await controller.GetChartAsync(id);
     }
 
     /// <summary>
     /// Updates a chart's configuration.
     /// </summary>
     /// <param name="controller">The <see cref="ChartController"/> instance.</param>
+    /// <param name="id">The ID of the chart to update.</param>
     /// <param name="configuration">The new configuration.</param>
     /// <returns>A task that yields an <see cref="ApiResponse{bool}"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="controller"/> or <paramref name="configuration"/> is null.</exception>
-    public static async Task<ApiResponse<bool>> UpdateChartConfigurationAsync(this ChartController controller, ChartConfiguration configuration)
+    /// <exception cref="ArgumentException">Thrown when <paramref name="id"/> is null or empty.</exception>
+    public static async Task<ApiResponse<bool>> UpdateChartConfigurationAsync(
+        this ChartController controller,
+        string id,
+        ChartConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(controller);
         ArgumentNullException.ThrowIfNull(configuration);
-        controller.Configuration = configuration;
-        return await controller.UpdateChartAsync();
+        ArgumentException.ThrowIfNullOrEmpty(id);
+
+        var updateRequest = new UpdateChartRequest
+        {
+            Configuration = configuration
+        };
+
+        return await controller.UpdateChartAsync(id, updateRequest);
     }
 
     /// <summary>
     /// Deletes a chart and its associated data.
     /// </summary>
     /// <param name="controller">The <see cref="ChartController"/> instance.</param>
+    /// <param name="id">The ID of the chart to delete.</param>
     /// <returns>A task that yields an <see cref="ApiResponse{bool}"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="controller"/> is null.</exception>
-    public static async Task<ApiResponse<bool>> DeleteChartAndDataAsync(this ChartController controller)
+    /// <exception cref="ArgumentException">Thrown when <paramref name="id"/> is null or empty.</exception>
+    public static async Task<ApiResponse<bool>> DeleteChartAndDataAsync(
+        this ChartController controller,
+        string id)
     {
         ArgumentNullException.ThrowIfNull(controller);
-        var deleteResponse = await controller.DeleteChartAsync();
-        if (deleteResponse.IsSuccess)
-        {
-            // Additional logic to delete associated data can be added here
-        }
-        return deleteResponse;
+        ArgumentException.ThrowIfNullOrEmpty(id);
+
+        return await controller.DeleteChartAsync(id);
     }
 }
