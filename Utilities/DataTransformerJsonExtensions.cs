@@ -1,7 +1,7 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =====================================================================
+// ===================================================================
 
 using System;
 using System.Text.Json;
@@ -32,11 +32,9 @@ public static class DataTransformerJsonExtensions
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var options = indented
+        return JsonSerializer.Serialize(value, indented
             ? new JsonSerializerOptions(_jsonOptions) { WriteIndented = true }
-            : _jsonOptions;
-
-        return JsonSerializer.Serialize(value, options);
+            : _jsonOptions);
     }
 
     /// <summary>
@@ -44,15 +42,15 @@ public static class DataTransformerJsonExtensions
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
     /// <returns>A DataTransformer instance if successful; otherwise, null.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
     /// <exception cref="JsonException">Thrown when the JSON is invalid.</exception>
     public static DataTransformer? FromJson(string json)
     {
-        if (string.IsNullOrEmpty(json))
-        {
-            return null;
-        }
+        ArgumentNullException.ThrowIfNull(json);
 
-        return JsonSerializer.Deserialize<DataTransformer>(json, _jsonOptions);
+        return string.IsNullOrEmpty(json)
+            ? null
+            : JsonSerializer.Deserialize<DataTransformer>(json, _jsonOptions);
     }
 
     /// <summary>
@@ -61,8 +59,11 @@ public static class DataTransformerJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <param name="value">Output parameter receiving the deserialized DataTransformer if successful.</param>
     /// <returns>True if deserialization succeeded; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
     public static bool TryFromJson(string json, out DataTransformer? value)
     {
+        ArgumentNullException.ThrowIfNull(json);
+
         value = null;
 
         if (string.IsNullOrEmpty(json))
