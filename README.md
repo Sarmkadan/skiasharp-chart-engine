@@ -157,6 +157,79 @@ public class MathHelperExample
 }
 ```
 
+## DateTimeHelper
+
+`DateTimeHelper` provides date/time utilities for chart data processing and axis formatting. It includes methods for Unix timestamp conversion, business day calculations, period boundaries, week number extraction, and human-readable formatting.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Utilities;
+
+public class DateTimeHelperExample
+{
+    public static void Main()
+    {
+        // Example 1: Format datetime for chart axis labels
+        var date1 = new DateTime(2024, 3, 15, 14, 30, 0);
+        var date2 = new DateTime(2024, 3, 15, 9, 15, 0);
+        var formatted1 = DateTimeHelper.FormatForAxis(date1, date2, new DateTime(2024, 3, 20));
+        Console.WriteLine($"Formatted axis label: {formatted1}"); // "14:30"
+
+        // Example 2: Convert Unix timestamp to DateTime
+        var timestamp = 1710508800L; // 2024-03-15 00:00:00 UTC
+        var fromUnix = DateTimeHelper.FromUnixTimestamp(timestamp);
+        Console.WriteLine($"From Unix timestamp: {fromUnix}");
+
+        // Example 3: Convert DateTime to Unix timestamp
+        var toUnix = DateTimeHelper.ToUnixTimestamp(new DateTime(2024, 3, 15));
+        Console.WriteLine($"To Unix timestamp: {toUnix}");
+
+        // Example 4: Calculate business days between two dates
+        var startDate = new DateTime(2024, 3, 1);
+        var endDate = new DateTime(2024, 3, 15);
+        var businessDays = DateTimeHelper.GetBusinessDaysBetween(startDate, endDate);
+        Console.WriteLine($"Business days between: {businessDays}");
+
+        // Example 5: Get period start (day, week, month, year)
+        var periodStart = DateTimeHelper.GetPeriodStart(new DateTime(2024, 3, 15), DateTimePeriod.Month);
+        Console.WriteLine($"Month start: {periodStart}"); // "2024-03-01 00:00:00"
+
+        // Example 6: Get period end
+        var periodEnd = DateTimeHelper.GetPeriodEnd(new DateTime(2024, 3, 15), DateTimePeriod.Month);
+        Console.WriteLine($"Month end: {periodEnd}"); // "2024-03-31 23:59:59"
+
+        // Example 7: Get week number
+        var weekNumber = DateTimeHelper.GetWeekNumber(new DateTime(2024, 3, 15));
+        Console.WriteLine($"Week number: {weekNumber}"); // 11
+
+        // Example 8: Check if date is weekend
+        var isWeekend = DateTimeHelper.IsWeekend(new DateTime(2024, 3, 16)); // Saturday
+        Console.WriteLine($"Is weekend: {isWeekend}"); // True
+
+        // Example 9: Get next occurrence of a day of week
+        var nextMonday = DateTimeHelper.GetNextDayOfWeek(new DateTime(2024, 3, 15), DayOfWeek.Monday);
+        Console.WriteLine($"Next Monday: {nextMonday}"); // "2024-03-18 00:00:00"
+
+        // Example 10: Format timespan in human-readable format
+        var timespan = TimeSpan.FromMinutes(90) + TimeSpan.FromSeconds(45);
+        var formattedTimespan = DateTimeHelper.FormatTimespan(timespan);
+        Console.WriteLine($"Formatted timespan: {formattedTimespan}"); // "1h 30m"
+
+        // Example 11: Calculate age in years
+        var birthDate = new DateTime(1990, 5, 20);
+        var age = DateTimeHelper.GetAgeInYears(birthDate);
+        Console.WriteLine($"Age: {age} years");
+
+        // Example 12: Check if two dates are on the same day
+        var sameDay = DateTimeHelper.IsSameDay(
+            new DateTime(2024, 3, 15, 10, 0, 0),
+            new DateTime(2024, 3, 15, 20, 0, 0)
+        );
+        Console.WriteLine($"Same day: {sameDay}"); // True
+    }
+}
+```
+
 ## Architecture
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the component breakdown, data flow, design decisions, extension points, and known limitations. The sections below are per-type usage examples.
