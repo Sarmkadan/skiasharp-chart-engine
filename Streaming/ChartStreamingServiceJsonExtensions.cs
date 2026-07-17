@@ -31,11 +31,9 @@ public static class ChartStreamingServiceJsonExtensions
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var options = indented
+        return JsonSerializer.Serialize(value, indented
             ? new JsonSerializerOptions(_jsonOptions) { WriteIndented = true }
-            : _jsonOptions;
-
-        return JsonSerializer.Serialize(value, options);
+            : _jsonOptions);
     }
 
     /// <summary>
@@ -43,10 +41,15 @@ public static class ChartStreamingServiceJsonExtensions
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
     /// <returns>A deserialized <see cref="ChartStreamingService"/> instance, or null if the JSON is invalid.</returns>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
     public static ChartStreamingService? FromJson(string json)
     {
-        ArgumentException.ThrowIfNullOrEmpty(json);
+        ArgumentNullException.ThrowIfNull(json);
+
+        if (string.IsNullOrEmpty(json))
+        {
+            return null;
+        }
 
         try
         {
@@ -64,19 +67,24 @@ public static class ChartStreamingServiceJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <param name="value">Receives the deserialized instance if successful; otherwise, null.</param>
     /// <returns>True if deserialization succeeded; otherwise, false.</returns>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
     public static bool TryFromJson(string json, out ChartStreamingService? value)
     {
-        ArgumentException.ThrowIfNullOrEmpty(json);
+        ArgumentNullException.ThrowIfNull(json);
+        value = null;
+
+        if (string.IsNullOrEmpty(json))
+        {
+            return false;
+        }
 
         try
         {
             value = JsonSerializer.Deserialize<ChartStreamingService>(json, _jsonOptions);
-            return true;
+            return value is not null;
         }
         catch (JsonException)
         {
-            value = null;
             return false;
         }
     }
