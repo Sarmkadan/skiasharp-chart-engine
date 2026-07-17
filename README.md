@@ -6,7 +6,63 @@ A .NET chart rendering library (SkiaSharp-based) with an ASP.NET Core Web API ho
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the component breakdown, data flow, design decisions, extension points, and known limitations. The sections below are per-type usage examples.
 
+## TemplateLibrary
+
+`TemplateLibrary` provides a centralized repository for managing reusable chart templates. It allows developers to register, query, and instantiate chart templates, facilitating the rapid creation of standardized charts across the application.
+
+```csharp
+using System;
+using System.Linq;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Utilities;
+using SkiaSharpChartEngine.Models;
+
+public class TemplateLibraryExample
+{
+    public static void Main()
+    {
+        // Initialize template library with a logger
+        var logger = new NullLogger<TemplateLibrary>();
+        var library = new TemplateLibrary(logger);
+
+        // Example 1: List all available template names
+        Console.WriteLine("Available templates: " + string.Join(", ", library.ListTemplateNames()));
+
+        // Example 2: Retrieve a specific template
+        var template = library.GetTemplate("simple_line");
+        if (template != null)
+        {
+            Console.WriteLine($"Retrieved template: {template.Name} (Category: {template.Category})");
+        }
+
+        // Example 3: Get all templates by category
+        var lineTemplates = library.GetTemplatesByCategory("Line");
+        Console.WriteLine($"Found {lineTemplates.Count} line templates");
+
+        // Example 4: Add a custom template
+        var customTemplate = new ChartTemplate 
+        { 
+            Name = "Custom Area Chart", 
+            Category = "Area",
+            ChartConfiguration = new ChartConfiguration { ChartType = ChartType.Area } 
+        };
+        library.AddTemplate("custom_area", customTemplate);
+        
+        // Example 5: Instantiate a chart from a template
+        var chart = library.CreateChartFromTemplate("custom_area", "my-custom-chart-id");
+        if (chart != null)
+        {
+            Console.WriteLine($"Created chart: {chart.Title} (Type: {chart.ChartType})");
+        }
+
+        // Example 6: Get total template count
+        Console.WriteLine($"Total templates in library: {library.GetTemplateCount()}");
+    }
+}
+```
+
 ## BatchProcessor
+
 
 `BatchProcessor` processes items in batches, providing an efficient way to handle bulk operations with configurable batch sizing and timeout settings. It is designed to manage large collections by breaking them into manageable chunks, ensuring timely processing, and tracking metrics such as total items, processed items, failed items, and elapsed time.
 
