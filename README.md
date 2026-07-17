@@ -2029,6 +2029,39 @@ public class ChartEngineOptionsExample
 }
 ```
 
+## SkiasharpChartEngineOptions
+
+`SkiasharpChartEngineOptions` is a configuration class that defines fundamental properties for the SkiaSharp chart rendering engine. It manages rendering behavior (such as antialiasing and default background colors), default chart dimensions, caching settings, and data series limits. Developers can customize these options to control both output quality and engine resource utilization.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Configuration;
+
+public class SkiasharpChartEngineOptionsExample
+{
+    public static void Main()
+    {
+        // Instantiating and configuring SkiasharpChartEngineOptions
+        var options = new SkiasharpChartEngineOptions
+        {
+            CacheEnabled = "true",
+            CacheDurationSeconds = 3600,
+            MaxConcurrentRenders = 10,
+            DefaultChartWidth = 800,
+            DefaultChartHeight = 600,
+            DefaultBackgroundColor = "#FFFFFF",
+            UseAntiAliasing = true,
+            MaxDataPointsPerSeries = 1000,
+            MaxSeriesPerChart = 10,
+            ValidateDataOnLoad = true
+        };
+
+        Console.WriteLine($"Default Chart Dimensions: {options.DefaultChartWidth}x{options.DefaultChartHeight}");
+        Console.WriteLine($"Cache Enabled: {options.CacheEnabled}, Duration: {options.CacheDurationSeconds}s");
+    }
+}
+```
+
 ## RenderPipelineService
 
 `RenderPipelineService` orchestrates the chart rendering pipeline with validation, caching, and processing stages. It implements the pipeline pattern to provide flexible rendering workflows that can be extended with custom stages for data validation, transformation, and rendering operations.
