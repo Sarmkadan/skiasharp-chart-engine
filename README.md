@@ -106,6 +106,57 @@ public class ColorHelperExample
 }
 ```
 
+## MathHelper
+
+`MathHelper` provides mathematical utilities for chart calculations, including data normalization, interpolation, statistical analysis, and axis tick generation. These functions are optimized for performance with both `IEnumerable<float>` and `ReadOnlySpan<float>` overloads to minimize allocations.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Utilities;
+
+public class MathHelperExample
+{
+    public static void Main()
+    {
+        // Example 1: Find min/max values in a data series
+        var data = new float[] { 1.2f, 3.4f, 5.6f, 2.1f, 4.8f };
+        var (min, max) = MathHelper.GetMinMax(data);
+        Console.WriteLine($"Data range: {min} to {max}");
+
+        // Example 2: Normalize data to 0-1 range for chart scaling
+        var normalized = data.Select(v => MathHelper.Normalize(v, min, max)).ToArray();
+
+        // Example 3: Generate readable axis ticks
+        var ticks = MathHelper.GenerateAxisTicks(min, max, desiredTickCount: 6);
+
+        // Example 4: Calculate statistics for data analysis
+        var average = MathHelper.Average(data);
+        var stdDev = MathHelper.StandardDeviation(data);
+        Console.WriteLine($"Average: {average:F2}, StdDev: {stdDev:F2}");
+
+        // Example 5: Linear interpolation for smooth animations
+        var interpolatedValue = MathHelper.Lerp(0f, 100f, 0.5f);
+        Console.WriteLine($"Lerp(0, 100, 0.5) = {interpolatedValue}");
+
+        // Example 6: Clamp values to valid ranges
+        var clampedValue = MathHelper.Clamp(-10f, 0f, 100f);
+        Console.WriteLine($"Clamp(-10, 0, 100) = {clampedValue}");
+
+        // Example 7: Check if values are approximately equal (floating point safe)
+        var isEqual = MathHelper.ApproximatelyEqual(0.1f + 0.2f, 0.3f);
+        Console.WriteLine($"0.1 + 0.2 ≈ 0.3? {isEqual}");
+
+        // Example 8: Round to nearest magnitude for axis labels
+        var rounded = MathHelper.RoundToMagnitude(1234.56f);
+        Console.WriteLine($"RoundToMagnitude(1234.56) = {rounded}");
+
+        // Example 9: Scale normalized values to target range
+        var scaled = MathHelper.ScaleToRange(0.75f, 0f, 1000f);
+        Console.WriteLine($"ScaleToRange(0.75, 0, 1000) = {scaled}");
+    }
+}
+```
+
 ## Architecture
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the component breakdown, data flow, design decisions, extension points, and known limitations. The sections below are per-type usage examples.
