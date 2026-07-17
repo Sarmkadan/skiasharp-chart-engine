@@ -1145,6 +1145,68 @@ public class ChartSeriesExample
 }
 ```
 
+
+
+## ChartBuilder
+
+The `ChartBuilder` class provides a fluent interface for creating and configuring charts with a clean, method-chained API. It allows you to define chart properties such as title, size, margins, axes, colors, and series through a builder pattern before finalizing the chart with the `Build()` method.
+
+
+
+### Example Usage
+
+```csharp
+using SkiaSharpChartEngine;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Utilities;
+
+// Create a line chart with multiple series
+var chart = new ChartBuilder(ChartType.LineChart)
+    .WithTitle("Sales Performance 2024")
+    .WithSubtitle("Quarterly revenue comparison")
+    .WithSize(800, 600)
+    .WithMargins(40, 60, 40, 60)
+    .WithAxisLabels("Quarter", "Revenue ($)")
+    .WithAxisScales(AxisScaleType.Linear, AxisScaleType.Linear)
+    .WithAxisRange(null, null, 0, 100000)
+    .WithBackgroundColor("#FFFFFF")
+    .WithGridColor("#E0E0E0")
+    .ShowGrid(true)
+    .ShowLegend(true)
+    .ShowAxisLabels(true)
+    .ShowDataPointLabels(true)
+    .EnableAnimation(true)
+    .WithAnimationDuration(1500)
+    .EnableAntiAliasing(true)
+    .AddSeries("Q1 2024", "#2E86C1")
+    .AddDataPointToLastSeries(1, 45000, "Jan")
+    .AddDataPointToLastSeries(2, 52000, "Feb")
+    .AddDataPointToLastSeries(3, 61000, "Mar")
+    .AddSeries("Q2 2024", "#E74C3C")
+    .AddDataPointToLastSeries(1, 58000, "Apr")
+    .AddDataPointToLastSeries(2, 63000, "May")
+    .AddDataPointToLastSeries(3, 72000, "Jun")
+    .Build();
+```
+
+### Alternative Usage with Predefined Data
+
+```csharp
+// Create a chart with predefined data points
+var dataPoints = new List<DataPoint>
+{
+    new DataPoint(1, 45000),
+    new DataPoint(2, 52000),
+    new DataPoint(3, 61000)
+};
+
+var chart = new ChartBuilder(ChartType.BarChart)
+    .WithTitle("Product Sales")
+    .WithSize(600, 400)
+    .AddSeriesWithData("Product A", dataPoints, "#3498DB")
+    .Build();
+```
+
 ## AnimationFrameGenerator
 
 ```csharp
