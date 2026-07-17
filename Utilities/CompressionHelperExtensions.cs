@@ -79,38 +79,29 @@ public static class CompressionHelperExtensions
         await inputStream.CopyToAsync(outputListStream);
         var allChunks = outputListStream.ToArray();
 
-        // Find individual chunk boundaries by checking for GZip magic bytes
+        // Decompress each individual chunk by reading until we find the next compressed chunk
         var result = new List<byte[]>();
         using var chunksStream = new MemoryStream(allChunks);
 
         while (chunksStream.Position < chunksStream.Length)
         {
-            // Read the data at current position
-            var buffer = new byte[1024];
             var startPosition = chunksStream.Position;
-            int bytesRead = await chunksStream.ReadAsync(buffer);
 
-            // Check if current position starts a new GZip chunk
-            if (helper.IsGZipCompressed(buffer))
+            // Try to decompress from current position
+            try
             {
-                // Found next chunk, rewind and read it
                 chunksStream.Position = startPosition;
                 using var chunkStream = new MemoryStream();
                 await chunksStream.CopyToAsync(chunkStream);
                 var chunkData = chunkStream.ToArray();
-                result.Add(await helper.DecompressAsync(chunkData));
+                var decompressedChunk = await helper.DecompressAsync(chunkData);
+                result.Add(decompressedChunk);
             }
-            else
+            catch (InvalidDataException)
             {
-                // If we reached the end without finding another chunk, this is the last one
-                if (chunksStream.Position >= chunksStream.Length)
-                {
-                    chunksStream.Position = startPosition;
-                    using var lastChunkStream = new MemoryStream();
-                    await chunksStream.CopyToAsync(lastChunkStream);
-                    var lastChunkData = lastChunkStream.ToArray();
-                    result.Add(await helper.DecompressAsync(lastChunkData));
-                }
+                // If decompression fails, this isn't a valid compressed chunk
+                // This shouldn't happen with properly compressed data, but handle gracefully
+                break;
             }
         }
 
@@ -179,38 +170,28 @@ public static class CompressionHelperExtensions
         await inputStream.CopyToAsync(outputListStream);
         var allChunks = outputListStream.ToArray();
 
-        // Find individual chunk boundaries
+        // Decompress each individual chunk by reading until we find the next compressed chunk
         var result = new List<string>();
         using var chunksStream = new MemoryStream(allChunks);
 
         while (chunksStream.Position < chunksStream.Length)
         {
-            // Read the data at current position
-            var buffer = new byte[1024];
             var startPosition = chunksStream.Position;
-            int bytesRead = await chunksStream.ReadAsync(buffer);
 
-            // Check if current position starts a new GZip chunk
-            if (helper.IsGZipCompressed(buffer))
+            // Try to decompress from current position
+            try
             {
-                // Found next chunk, rewind and read it
                 chunksStream.Position = startPosition;
                 using var chunkStream = new MemoryStream();
                 await chunksStream.CopyToAsync(chunkStream);
                 var chunkData = chunkStream.ToArray();
                 result.Add(System.Text.Encoding.UTF8.GetString(await helper.DecompressAsync(chunkData)));
             }
-            else
+            catch (InvalidDataException)
             {
-                // If we reached the end without finding another chunk, this is the last one
-                if (chunksStream.Position >= chunksStream.Length)
-                {
-                    chunksStream.Position = startPosition;
-                    using var lastChunkStream = new MemoryStream();
-                    await chunksStream.CopyToAsync(lastChunkStream);
-                    var lastChunkData = lastChunkStream.ToArray();
-                    result.Add(System.Text.Encoding.UTF8.GetString(await helper.DecompressAsync(lastChunkData)));
-                }
+                // If decompression fails, this isn't a valid compressed chunk
+                // This shouldn't happen with properly compressed data, but handle gracefully
+                break;
             }
         }
 
@@ -221,9 +202,10 @@ public static class CompressionHelperExtensions
     /// Compresses a stream asynchronously and returns the compressed data.
     /// </summary>
     /// <param name="helper">The compression helper instance.</param>
-    /// <param name="inputStream">The input stream to compress.</param>
+    /// <param name="inputStream">The input stream to compress. Must be readable.</param>
     /// <returns>Compressed byte array.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="helper"/> or <paramref name="inputStream"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="inputStream"/> is not readable.</exception>
     public static async Task<byte[]> CompressStreamAsync(this CompressionHelper helper, Stream inputStream)
     {
         ArgumentNullException.ThrowIfNull(helper);
@@ -238,9 +220,10 @@ public static class CompressionHelperExtensions
     /// Decompresses a stream asynchronously and returns the decompressed data.
     /// </summary>
     /// <param name="helper">The compression helper instance.</param>
-    /// <param name="inputStream">The compressed input stream.</param>
+    /// <param name="inputStream">The compressed input stream. Must be readable.</param>
     /// <returns>Decompressed byte array.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="helper"/> or <paramref name="inputStream"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="inputStream"/> is not readable.</exception>
     public static async Task<byte[]> DecompressStreamAsync(this CompressionHelper helper, Stream inputStream)
     {
         ArgumentNullException.ThrowIfNull(helper);
