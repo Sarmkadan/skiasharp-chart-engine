@@ -850,6 +850,58 @@ public class ChartInteractionHandler
 }
 ```
 
+## CacheCleanupWorker
+
+`CacheCleanupWorker` is a background worker that maintains cache health by periodically cleaning up expired entries and managing memory usage. It automatically removes expired cache entries, monitors cache utilization, and removes low-priority entries when cache usage exceeds 90% to prevent memory pressure. The worker runs on a configurable interval (default: 10 minutes) and provides comprehensive statistics about cleanup operations.
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Workers;
+using SkiaSharpChartEngine.Caching;
+
+public class CacheCleanupWorkerExample
+{
+    public static void Main()
+    {
+        // Initialize logger and cache service
+        var logger = new NullLogger<CacheCleanupWorker>();
+        var cacheService = new DistributedCacheService(logger, maxSizeBytes: 10 * 1024 * 1024); // 10MB cache
+        
+        // Create cache cleanup worker with default 10-minute interval
+        using var cleanupWorker = new CacheCleanupWorker(logger, cacheService);
+        
+        Console.WriteLine("Cache cleanup worker started...");
+        
+        // Example 1: Get current cleanup statistics
+        var stats = cleanupWorker.GetStatistics();
+        Console.WriteLine($"Initial stats: {stats}");
+        Console.WriteLine($"Current cache size: {stats.CurrentCacheSize} bytes");
+        Console.WriteLine($"Cache utilization: {stats.CacheUtilizationPercentage:F1}%");
+        
+        // Example 2: Manually trigger a cleanup cycle
+        cleanupWorker.TriggerCleanup();
+        
+        // Example 3: Wait and check updated statistics
+        System.Threading.Thread.Sleep(5000); // Wait for cleanup to complete
+        
+        var updatedStats = cleanupWorker.GetStatistics();
+        Console.WriteLine($"\nUpdated stats after cleanup: {updatedStats}");
+        Console.WriteLine($"Total cleanups performed: {updatedStats.TotalCleanups}");
+        Console.WriteLine($"Total entries removed: {updatedStats.TotalEntriesRemoved}");
+        
+        // Example 4: Monitor cache statistics over time
+        for (int i = 0; i < 3; i++)
+        {
+            var currentStats = cleanupWorker.GetStatistics();
+            Console.WriteLine($"\nCache state {i + 1}: {currentStats.CurrentCacheSize}/{currentStats.MaxCacheSize} bytes ({currentStats.CacheUtilizationPercentage:F1}%)");
+            System.Threading.Thread.Sleep(2000);
+        }
+    }
+}
+```
+
 ## ChartEventPublisher
 
 `ChartEventPublisher` implements the publish-subscribe pattern for chart events in the SkiaSharp chart engine. It allows components to subscribe to various chart events (creation, update, deletion, rendering, export, and errors) and notifies all registered subscribers when these events occur. The publisher provides thread-safe subscription management and asynchronous event broadcasting with comprehensive logging.
