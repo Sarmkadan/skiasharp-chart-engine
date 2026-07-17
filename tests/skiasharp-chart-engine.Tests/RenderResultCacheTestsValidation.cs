@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 
 namespace SkiaSharpChartEngine.Tests.Caching;
 
@@ -22,10 +21,6 @@ public static class RenderResultCacheTestsValidation
 
         var problems = new List<string>();
 
-        // Validate logger mock - should not be null
-        // Note: _loggerMock is initialized in constructor, so we can't easily validate it here
-        // without reflection. We'll skip it as it's set up by the test infrastructure.
-
         return problems.AsReadOnly();
     }
 
@@ -34,10 +29,7 @@ public static class RenderResultCacheTestsValidation
     /// </summary>
     /// <param name="value">The test instance to check.</param>
     /// <returns><see langword="true"/> if the instance is valid; otherwise, <see langword="false"/>.</returns>
-    public static bool IsValid(this RenderResultCacheTests value)
-    {
-        return value?.Validate().Count == 0;
-    }
+    public static bool IsValid(this RenderResultCacheTests value) => value?.Validate().Count == 0;
 
     /// <summary>
     /// Ensures that the specified <see cref="RenderResultCacheTests"/> instance is valid.
@@ -56,4 +48,5 @@ public static class RenderResultCacheTestsValidation
                 $"RenderResultCacheTests instance is not valid. Problems:\n{string.Join("\n", problems)}");
         }
     }
+
 }
