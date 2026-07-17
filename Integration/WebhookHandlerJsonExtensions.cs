@@ -10,9 +10,12 @@ using System.Text.Json.Serialization;
 namespace SkiaSharpChartEngine.Integration;
 
 /// <summary>
-/// Provides System.Text.Json serialization extensions for <see cref="WebhookHandler"/>
+/// Provides extension methods for serializing and deserializing <see cref="WebhookHandler"/> instances to and from JSON.
 /// </summary>
-public static class WebhookHandlerJsonExtensions
+/// <remarks>
+/// This static class cannot be inherited.
+/// </remarks>
+public static sealed class WebhookHandlerJsonExtensions
 {
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new(JsonSerializerDefaults.Web)
     {
@@ -48,23 +51,25 @@ public static class WebhookHandlerJsonExtensions
     /// Deserializes a JSON string to a <see cref="WebhookHandler"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>The deserialized webhook handler instance, or null if deserialization fails.</returns>
+    /// <returns>The deserialized webhook handler instance.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
-    public static WebhookHandler? FromJson(string json)
+/// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized to <see cref="WebhookHandler"/>.</exception>
+    public static WebhookHandler FromJson(string json)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
 
-        return JsonSerializer.Deserialize<WebhookHandler>(json, _jsonSerializerOptions);
+        return JsonSerializer.Deserialize<WebhookHandler>(json, _jsonSerializerOptions) ?? throw new JsonException("Deserialization returned null");
     }
 
     /// <summary>
     /// Attempts to deserialize a JSON string to a <see cref="WebhookHandler"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="value">The deserialized webhook handler instance, or null if deserialization fails.</param>
+    /// <param name="value">When this method returns, contains the deserialized webhook handler instance if deserialization succeeds; otherwise, null.</param>
     /// <returns>True if deserialization succeeds; otherwise, false.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
-    public static bool TryFromJson(string json, out WebhookHandler? value)
+/// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized to <see cref="WebhookHandler"/>.</exception>
+    public static bool TryFromJson(string json, out WebhookHandler value)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
 
@@ -75,7 +80,7 @@ public static class WebhookHandlerJsonExtensions
         }
         catch (JsonException)
         {
-            value = null;
+            value = default;
             return false;
         }
     }
