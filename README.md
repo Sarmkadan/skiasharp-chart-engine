@@ -106,6 +106,63 @@ public class ColorHelperExample
 }
 ```
 
+## PathHelper
+
+`PathHelper` provides utility methods for file system operations, path manipulation, and directory management. It includes path validation to prevent directory traversal attacks, safe filename generation, unique filename generation, directory existence checks, path combination utilities, and file cleanup operations.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Utilities;
+
+public class PathHelperExample
+{
+    public static void Main()
+    {
+        // Validate a path is safe and doesn't escape intended directory
+        bool isValid = PathHelper.IsValidPath("charts/export.png", "/home/user/project");
+        Console.WriteLine($"Is path valid? {isValid}"); // True
+
+        // Get a safe filename by removing invalid characters
+        string safeFilename = PathHelper.GetSafeFilename("chart:data?.png");
+        Console.WriteLine($"Safe filename: {safeFilename}"); // "chart_data_.png"
+
+        // Generate a unique filename if file exists
+        string uniqueFilename = PathHelper.GetUniqueFilename("/tmp/charts", "chart.png");
+        Console.WriteLine($"Unique filename: {uniqueFilename}");
+
+        // Ensure directory exists, creating it if necessary
+        bool dirCreated = PathHelper.EnsureDirectoryExists("/tmp/charts/export");
+        Console.WriteLine($"Directory created: {dirCreated}");
+
+        // Get file extension for export format
+        string extension = PathHelper.GetFileExtension("png");
+        Console.WriteLine($"Extension: {extension}"); // ".png"
+
+        // Get MIME type for format
+        string mimeType = PathHelper.GetMimeType("svg");
+        Console.WriteLine($"MIME type: {mimeType}"); // "image/svg+xml"
+
+        // Combine path segments safely
+        string combinedPath = PathHelper.CombinePath("charts", "exports", "chart.png");
+        Console.WriteLine($"Combined path: {combinedPath}");
+
+        // Get relative path from base directory
+        string relativePath = PathHelper.GetRelativePath(
+            "/home/user/project/charts",
+            "/home/user/project/charts/exports/chart.png");
+        Console.WriteLine($"Relative path: {relativePath}");
+
+        // Normalize path separators for current platform
+        string normalizedPath = PathHelper.NormalizePath("charts/exports\\chart.png");
+        Console.WriteLine($"Normalized path: {normalizedPath}");
+
+        // Clean up old files in directory
+        int deletedCount = PathHelper.CleanupOldFiles("/tmp/old-charts", TimeSpan.FromDays(7));
+        Console.WriteLine($"Deleted {deletedCount} old files");
+    }
+}
+```
+
 ## MathHelper
 
 `MathHelper` provides mathematical utilities for chart calculations, including data normalization, interpolation, statistical analysis, and axis tick generation. These functions are optimized for performance with both `IEnumerable<float>` and `ReadOnlySpan<float>` overloads to minimize allocations.
