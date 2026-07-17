@@ -310,6 +310,84 @@ public class JsonChartSerializerExample
 }
 ```
 
+## XmlChartSerializer
+
+`XmlChartSerializer` provides functionality for serializing and deserializing `Chart` objects to and from XML format. It includes validation, formatting, element extraction, and chart merging capabilities. The serializer uses standard .NET XML serialization and handles null values and malformed XML gracefully.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Serializers;
+
+public class XmlChartSerializerExample
+{
+    public static void Main()
+    {
+        // Initialize XmlChartSerializer with a logger
+        var logger = new NullLogger<XmlChartSerializer>();
+        var serializer = new XmlChartSerializer(logger);
+
+        // Example 1: Create a sample chart
+        var chart = new Chart
+        {
+            Id = "temperature-chart",
+            Title = "Daily Temperature",
+            ChartType = "Line",
+            Series = new List<ChartSeries>
+            {
+                new ChartSeries
+                {
+                    Name = "Temperature (°C)",
+                    DataPoints = new List<DataPoint>
+                    {
+                        new DataPoint { Value = 22.5 },
+                        new DataPoint { Value = 23.1 },
+                        new DataPoint { Value = 24.8 }
+                    }
+                }
+            }
+        };
+
+        // Example 2: Serialize chart to XML
+        string xmlData = serializer.Serialize(chart);
+        Console.WriteLine("Serialized XML:");
+        Console.WriteLine(xmlData);
+
+        // Example 3: Deserialize XML back to chart
+        var deserializedChart = serializer.Deserialize(xmlData);
+        Console.WriteLine($"Deserialized chart ID: {deserializedChart?.Id}");
+
+        // Example 4: Validate XML
+        bool isValid = serializer.IsValidXml(xmlData);
+        Console.WriteLine($"Is valid XML: {isValid}");
+
+        // Example 5: Pretty print XML
+        string prettyXml = serializer.PrettyPrint(xmlData);
+        Console.WriteLine("Pretty printed XML:");
+        Console.WriteLine(prettyXml);
+
+        // Example 6: Extract element from XML
+        string? title = serializer.ExtractElement(xmlData, "Title");
+        Console.WriteLine($"Extracted title: {title}");
+
+        // Example 7: Merge multiple charts
+        var chart2 = new Chart
+        {
+            Id = "humidity-chart",
+            Title = "Humidity Levels",
+            ChartType = "Line"
+        };
+        
+        string xmlData2 = serializer.Serialize(chart2);
+        string mergedXml = serializer.MergeCharts(new List<string> { xmlData, xmlData2 });
+        Console.WriteLine("Merged XML:");
+        Console.WriteLine(mergedXml);
+    }
+}
+```
+
 ## PathHelper
 
 `PathHelper` provides utility methods for file system operations, path manipulation, and directory management. It includes path validation to prevent directory traversal attacks, safe filename generation, unique filename generation, directory existence checks, path combination utilities, and file cleanup operations.
