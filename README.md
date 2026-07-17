@@ -850,6 +850,115 @@ public class ChartInteractionHandler
 }
 ```
 
+## TransitionServiceExtensions
+
+`TransitionServiceExtensions` provides extension methods for configuring the SkiaSharp Chart Engine's animated transitions subsystem and creating transition timelines directly from chart instances. It offers both dependency injection registration methods for setting up the transition engine in ASP.NET Core applications, and fluent API methods for building chart transition animations inline.
+
+The extension methods allow you to:
+
+- Register the `IChartTransitionEngine` and default `TransitionOptions` with the DI container
+- Configure transition settings during registration
+- Create transition timelines from charts using fluent syntax
+- Bridge between legacy animation settings and the new transition engine
+
+```csharp
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using SkiaSharpChartEngine;
+using SkiaSharpChartEngine.Animation;
+using SkiaSharpChartEngine.Models;
+
+public class TransitionServiceExtensionsExample
+{
+    public static void ConfigureServices(IServiceCollection services)
+    {
+        // Example 1: Register transitions with default options
+        services.AddChartTransitions();
+
+        // Example 2: Register transitions with custom configuration
+        services.AddChartTransitions(options =>
+        {
+            options.FrameRate = 60;
+            options.Quality = 100;
+            options.Playback = PlaybackMode.Loop;
+        });
+
+        // Example 3: Register the complete chart engine with transitions in one call
+        services.AddSkiaSharpChartEngineWithTransitions(
+            configureEngine: engineOptions =>
+            {
+                engineOptions.DefaultChartWidth = 1920;
+                engineOptions.DefaultChartHeight = 1080;
+            },
+            configureTransitions: transitionOptions =>
+            {
+                transitionOptions.FrameRate = 30;
+                transitionOptions.EnableParallelRendering = true;
+            }
+        );
+    }
+
+    public static void CreateTransitionAnimations()
+    {
+        // Example 4: Create a transition timeline from a chart
+        var chartA = new Chart("initial-chart")
+        {
+            Title = "Initial State"
+        };
+
+        var timeline = chartA.BeginTransition()
+            .AppendTransition(
+                new Chart("final-chart") { Title = "Final State" },
+                durationMs: 500,
+                TransitionEasing.EaseOutBack
+            )
+            .AppendTransition(
+                new Chart("intermediate-chart") { Title = "Intermediate State" },
+                durationMs: 400,
+                TransitionEasing.Spring
+            );
+
+        Console.WriteLine($"Created timeline with {timeline.TotalDurationMs}ms duration");
+
+        // Example 5: Create a two-keyframe transition between charts
+        var chart1 = new Chart("chart-1")
+        {
+            Title = "Chart 1",
+            Configuration = new ChartConfiguration
+            {
+                AnimationDurationMs = 300
+            }
+        };
+
+        var chart2 = new Chart("chart-2")
+        {
+            Title = "Chart 2",
+            Configuration = new ChartConfiguration
+            {
+                AnimationDurationMs = 300
+            }
+        };
+
+        var transition = chart1.TransitionTo(chart2, durationMs: 600, TransitionEasing.EaseInOutElastic);
+        Console.WriteLine($"Created transition: {transition.TotalDurationMs}ms with elastic easing");
+
+        // Example 6: Create timeline using chart's animation duration
+        var autoTimeline = chart1.ToAnimatedTimeline(chart2, TransitionEasing.EaseOutBounce);
+        Console.WriteLine($"Auto-duration timeline: {autoTimeline.TotalDurationMs}ms using chart config");
+
+        // Example 7: Bridge legacy animation settings to transition options
+        var legacySettings = new AnimationSettings
+        {
+            FrameRate = 24,
+            Quality = 85
+        };
+
+        var transitionOptions = legacySettings.ToTransitionOptions();
+        Console.WriteLine($"Bridged options: {transitionOptions.FrameRate}fps, quality {transitionOptions.Quality}");
+    }
+}
+```
+
 ## ChartProcessingWorker
 
 `ChartProcessingWorker` is a background worker that processes chart rendering jobs asynchronously without blocking main application threads. It maintains a queue of chart jobs, processes them with configurable concurrency, and provides comprehensive job tracking with callbacks for completion and error handling. The worker is ideal for batch processing, web API scenarios, or any application requiring non-blocking chart rendering operations.
