@@ -7978,6 +7978,115 @@ public class ChartRenderingIntegrationTestsExample
         await testEngine.CanExportMultipleChartsInParallel();
     }
 }
+## ChartRenderingIntegrationTestsValidation
+
+`ChartRenderingIntegrationTestsValidation` provides validation helpers for integration tests that render charts using the SkiaSharp chart engine. It validates chart configurations, series data, and chart objects to ensure they are properly structured before rendering, preventing test failures from invalid input data. The validation methods return detailed error messages when issues are found, making it easier to diagnose problems in test setups.
+
+```csharp
+using System;
+using System.Collections.Generic;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Tests.Integration;
+
+public class ChartRenderingIntegrationTestsValidationExample
+{
+    public static void Main()
+    {
+        // Example 1: Validate chart configuration
+        var config = new ChartConfiguration
+        {
+            Width = 800,
+            Height = 600,
+            Title = "Sales Chart",
+            XAxisLabel = "Month",
+            YAxisLabel = "Revenue ($)",
+            BackgroundColor = "#FFFFFF",
+            GridColor = "#E0E0E0"
+        };
+
+        var configProblems = config.ValidateChartConfiguration();
+        if (configProblems.Count > 0)
+        {
+            Console.WriteLine("Configuration problems:");
+            foreach (var problem in configProblems)
+            {
+                Console.WriteLine($"  - {problem}");
+            }
+        }
+
+        // Example 2: Validate chart series
+        var series = new ChartSeries
+        {
+            Name = "2024 Sales",
+            Color = "#FF5733",
+            DataPoints = new List<DataPoint>
+            {
+                new DataPoint { X = 1, Y = 100 },
+                new DataPoint { X = 2, Y = 150 },
+                new DataPoint { X = 3, Y = 200 }
+            }
+        };
+
+        var seriesProblems = series.ValidateChartSeries();
+        if (seriesProblems.Count > 0)
+        {
+            Console.WriteLine("Series problems:");
+            foreach (var problem in seriesProblems)
+            {
+                Console.WriteLine($"  - {problem}");
+            }
+        }
+
+        // Example 3: Validate entire chart
+        var chart = new Chart
+        {
+            Id = "sales-2024",
+            Configuration = config,
+            Series = new List<ChartSeries> { series }
+        };
+
+        var chartProblems = chart.ValidateChart();
+        if (chartProblems.Count > 0)
+        {
+            Console.WriteLine("Chart problems:");
+            foreach (var problem in chartProblems)
+            {
+                Console.WriteLine($"  - {problem}");
+            }
+        }
+
+        // Example 4: Use Ensure methods to throw exceptions on validation failure
+        try
+        {
+            config.EnsureValidChartConfiguration();
+            series.EnsureValidChartSeries();
+            chart.EnsureValidChart();
+            Console.WriteLine("All validations passed!");
+        }
+        catch (ArgumentException ex)
+        {
+            Console.WriteLine($"Validation failed: {ex.Message}");
+        }
+
+        // Example 5: Quick validation checks
+        if (config.IsValidChartConfiguration())
+        {
+            Console.WriteLine("Configuration is valid");
+        }
+
+        if (series.IsValidChartSeries())
+        {
+            Console.WriteLine("Series is valid");
+        }
+
+        if (chart.IsValidChart())
+        {
+            Console.WriteLine("Chart is valid");
+        }
+    }
+}
+```
+
 ## AlertingService
 
 `AlertingService` monitors chart rendering operations and system conditions, triggering alerts when issues are detected. It maintains a registry of alert rules, tracks active alerts, and provides methods for acknowledging, querying, and clearing alerts. The service supports severity-based filtering and maintains a history of past alerts for auditing and analysis.
