@@ -27,36 +27,25 @@ public static class AnimationSettingsJsonExtensions
     /// <param name="value">The AnimationSettings instance to serialize</param>
     /// <param name="indented">Whether to format the JSON with indentation</param>
     /// <returns>A JSON string representation of the AnimationSettings</returns>
-    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/></exception>
     public static string ToJson(this AnimationSettings value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
-
-        var options = indented
-            ? new JsonSerializerOptions(_jsonOptions) { WriteIndented = true }
-            : _jsonOptions;
-
-        return JsonSerializer.Serialize(value, options);
+        return JsonSerializer.Serialize(value, new JsonSerializerOptions(_jsonOptions) { WriteIndented = indented });
     }
 
     /// <summary>
     /// Deserializes an AnimationSettings instance from a JSON string
     /// </summary>
     /// <param name="json">The JSON string to deserialize</param>
-    /// <returns>The deserialized AnimationSettings instance, or null if JSON is invalid</returns>
-    /// <exception cref="ArgumentException">Thrown when json is null or empty</exception>
-    public static AnimationSettings? FromJson(string json)
+    /// <returns>The deserialized AnimationSettings instance</returns>
+    /// <exception cref="ArgumentException"><paramref name="json"/> is <see langword="null"/>, empty, or whitespace</exception>
+    /// <exception cref="JsonException"><paramref name="json"/> contains invalid JSON data</exception>
+    public static AnimationSettings FromJson(string json)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
-
-        try
-        {
-            return JsonSerializer.Deserialize<AnimationSettings>(json, _jsonOptions);
-        }
-        catch (JsonException)
-        {
-            return null;
-        }
+        return JsonSerializer.Deserialize<AnimationSettings>(json, _jsonOptions)
+            ?? throw new JsonException("Deserialized AnimationSettings is null");
     }
 
     /// <summary>
@@ -65,7 +54,7 @@ public static class AnimationSettingsJsonExtensions
     /// <param name="json">The JSON string to deserialize</param>
     /// <param name="value">Receives the deserialized AnimationSettings instance if successful</param>
     /// <returns>True if deserialization succeeded; otherwise, false</returns>
-    /// <exception cref="ArgumentException">Thrown when json is null or empty</exception>
+    /// <exception cref="ArgumentException"><paramref name="json"/> is <see langword="null"/>, empty, or whitespace</exception>
     public static bool TryFromJson(string json, out AnimationSettings? value)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
@@ -73,7 +62,7 @@ public static class AnimationSettingsJsonExtensions
         try
         {
             value = JsonSerializer.Deserialize<AnimationSettings>(json, _jsonOptions);
-            return true;
+            return value is not null;
         }
         catch (JsonException)
         {
