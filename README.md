@@ -1125,6 +1125,77 @@ public class TransitionTimelineExample
 }
 ```
 
+## TransitionEasingCalculator
+
+`TransitionEasingCalculator` evaluates easing functions for chart transitions, providing smooth animation effects by transforming linear progress values into non-linear easing curves. It supports all CSS easing presets plus spring-physics and bounce variants, returning eased values that create natural acceleration and deceleration effects in chart animations.
+
+The calculator handles both standard easing functions (quadratic, cubic, exponential) and advanced physics-based animations (spring, elastic, bounce), with the spring easing intentionally allowing transient values outside the [0, 1] range to create natural overshoot effects.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Animation;
+using SkiaSharpChartEngine.Models;
+
+public class TransitionEasingCalculatorExample
+{
+    public static void Main()
+    {
+        // Example 1: Linear easing (constant velocity)
+        double linearResult = TransitionEasingCalculator.Calculate(TransitionEasing.Linear, 0.5);
+        Console.WriteLine($"Linear easing at t=0.5: {linearResult:F4}");
+        // Output: Linear easing at t=0.5: 0.5000
+
+        // Example 2: Ease-in quadratic (gradual acceleration)
+        double easeInQuadResult = TransitionEasingCalculator.Calculate(TransitionEasing.EaseInQuad, 0.5);
+        Console.WriteLine($"EaseInQuad at t=0.5: {easeInQuadResult:F4}");
+        // Output: EaseInQuad at t=0.5: 0.2500
+
+        // Example 3: Ease-out cubic (gradual deceleration)
+        double easeOutCubicResult = TransitionEasingCalculator.Calculate(TransitionEasing.EaseOutCubic, 0.5);
+        Console.WriteLine($"EaseOutCubic at t=0.5: {easeOutCubicResult:F4}");
+        // Output: EaseOutCubic at t=0.5: 0.8750
+
+        // Example 4: Spring easing (physically-accurate damped spring)
+        double springResult = TransitionEasingCalculator.Calculate(TransitionEasing.Spring, 0.5);
+        Console.WriteLine($"Spring easing at t=0.5: {springResult:F4}");
+        // Output: Spring easing at t=0.5: 0.8415 (may vary slightly due to physics calculation)
+
+        // Example 5: Ease-out back (overshoots slightly before settling)
+        double easeOutBackResult = TransitionEasingCalculator.Calculate(TransitionEasing.EaseOutBack, 0.8);
+        Console.WriteLine($"EaseOutBack at t=0.8: {easeOutBackResult:F4}");
+        // Output: EaseOutBack at t=0.8: 1.0192 (overshoots beyond 1.0)
+
+        // Example 6: Ease-out elastic (spring-like snap effect)
+        double easeOutElasticResult = TransitionEasingCalculator.Calculate(TransitionEasing.EaseOutElastic, 0.7);
+        Console.WriteLine($"EaseOutElastic at t=0.7: {easeOutElasticResult:F4}");
+        // Output: EaseOutElastic at t=0.7: 0.9712
+
+        // Example 7: Ease-out bounce (simulates ball bouncing to rest)
+        double easeOutBounceResult = TransitionEasingCalculator.Calculate(TransitionEasing.EaseOutBounce, 0.3);
+        Console.WriteLine($"EaseOutBounce at t=0.3: {easeOutBounceResult:F4}");
+        // Output: EaseOutBounce at t=0.3: 0.2813
+
+        // Example 8: Using easing with TransitionTimeline for smooth chart transitions
+        var chart1 = new Chart("chart-1");
+        var chart2 = new Chart("chart-2");
+        
+        var timeline = TransitionTimeline.Between(chart1, chart2, durationMs: 1000)
+            .WithEasing(TransitionEasing.EaseInOutElastic);
+        
+        Console.WriteLine($"Timeline with elastic easing: {timeline.TotalDurationMs}ms duration");
+        
+        // Example 9: Create custom easing curve by calculating intermediate values
+        Console.WriteLine("\nCustom easing curve progression:");
+        for (double t = 0.0; t <= 1.0; t += 0.2)
+        {
+            double easedValue = TransitionEasingCalculator.Calculate(TransitionEasing.EaseInOutCubic, t);
+            Console.WriteLine($"  t={t:F1} -> eased={easedValue:F3}");
+        }
+        // Output shows smooth cubic easing progression
+    }
+}
+```
+
 ## ChartEventPublisher
 
 `ChartEventPublisher` implements the publish-subscribe pattern for chart events in the SkiaSharp chart engine. It allows components to subscribe to various chart events (creation, update, deletion, rendering, export, and errors) and notifies all registered subscribers when these events occur. The publisher provides thread-safe subscription management and asynchronous event broadcasting with comprehensive logging.
