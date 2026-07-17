@@ -339,6 +339,96 @@ if (!isValid)
 }
 ```
 
+## ChartModelsAndValidationTestsValidation
+
+`ChartModelsAndValidationTestsValidation` provides extension methods for validating chart model instances (`DataPoint`, `ChartSeries`, `Chart`, and `ChartConfiguration`) during testing and development. It includes methods to check validity, return detailed validation problems, and throw descriptive exceptions when validation fails. This is particularly useful for ensuring data integrity before rendering charts or during automated testing scenarios.
+
+### Usage Example
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Tests.Models;
+
+public class ChartModelsValidationExample
+{
+    public static void Main()
+    {
+        // Example 1: Validate a DataPoint
+        var validDataPoint = new DataPoint { X = 1.0, Y = 2.5, Color = "#FF0000" };
+        var validationErrors = validDataPoint.Validate();
+        
+        Console.WriteLine($"DataPoint is valid: {validDataPoint.IsValid()}");
+        Console.WriteLine($"Validation errors count: {validationErrors.Count}");
+        
+        // Example 2: Validate and throw if invalid
+        try
+        {
+            var invalidDataPoint = new DataPoint { X = double.NaN, Y = 2.5, Color = "invalid" };
+            invalidDataPoint.EnsureValid(); // Throws ArgumentException
+        }
+        catch (ArgumentException ex)
+        {
+            Console.WriteLine($"Validation failed: {ex.Message}");
+        }
+        
+        // Example 3: Validate a ChartSeries
+        var chartSeries = new ChartSeries
+        {
+            Name = "Temperature Readings",
+            Color = "#1f77b4",
+            LineWidth = 2.5f,
+            DataPoints = new System.Collections.Generic.List<DataPoint>
+            {
+                new DataPoint { X = 1.0, Y = 22.5 },
+                new DataPoint { X = 2.0, Y = 23.1 },
+                new DataPoint { X = 3.0, Y = 24.8 }
+            }
+        };
+        
+        if (!chartSeries.IsValid())
+        {
+            Console.WriteLine("ChartSeries has validation errors");
+        }
+        
+        // Example 4: Validate a complete Chart
+        var chart = new Chart
+        {
+            Id = "temperature-chart-2024",
+            Title = "Temperature Readings",
+            Series = new System.Collections.Generic.List<ChartSeries> { chartSeries }
+        };
+        
+        var chartErrors = chart.Validate();
+        Console.WriteLine($"Chart validation problems: {chartErrors.Count}");
+        
+        // Example 5: Validate ChartConfiguration
+        var config = new ChartConfiguration
+        {
+            Width = 800,
+            Height = 600,
+            Title = "Temperature Chart",
+            BackgroundColor = "#FFFFFF",
+            GridColor = "#CCCCCC",
+            AxisColor = "#000000",
+            TextColor = "#333333",
+            MarginTop = 20,
+            MarginBottom = 20,
+            MarginLeft = 40,
+            MarginRight = 20,
+            AnimationDurationMs = 500,
+            ExportDPI = 300,
+            ExportQuality = 0.9f
+        };
+        
+        if (config.IsValid())
+        {
+            Console.WriteLine("ChartConfiguration is valid");
+        }
+    }
+}
+```
+
 ```csharp
 using System;
 using Microsoft.Extensions.Logging.Abstractions;
