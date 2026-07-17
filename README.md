@@ -1480,6 +1480,101 @@ public class TransitionEasingCalculatorExample
 }
 ```
 
+## CacheKeyBuilder
+
+`CacheKeyBuilder` is a utility class for generating and parsing cache keys used by the SkiaSharp Chart Engine's caching system. It provides methods to build consistent, structured cache keys for various chart components including charts, series, configurations, axes, palettes, and render operations. The class also includes utilities for validating cache keys, extracting chart IDs, and building invalidation patterns for cache management.
+
+```csharp
+using System;
+using SkiaSharpChartEngine.Caching;
+
+public class CacheKeyBuilderExample
+{
+    public static void Main()
+    {
+        // Example 1: Build a cache key for a chart
+        string chartKey = CacheKeyBuilder.BuildChartKey(
+            chartId: "sales-dashboard-2024",
+            chartType: "line",
+            width: 1920,
+            height: 1080
+        );
+        Console.WriteLine($"Chart cache key: {chartKey}");
+        
+        // Example 2: Build a cache key for chart rendering
+        string renderKey = CacheKeyBuilder.BuildRenderKey(
+            chartId: "sales-dashboard-2024",
+            chartType: "line",
+            configurationHash: "a1b2c3d4",
+            dataHash: "e5f6g7h8"
+        );
+        Console.WriteLine($"Render cache key: {renderKey}");
+        
+        // Example 3: Build a cache key for a series
+        string seriesKey = CacheKeyBuilder.BuildSeriesKey(
+            chartId: "sales-dashboard-2024",
+            seriesName: "Revenue",
+            seriesType: "line",
+            color: "#2E86C1"
+        );
+        Console.WriteLine($"Series cache key: {seriesKey}");
+        
+        // Example 4: Build a cache key for chart configuration
+        string configKey = CacheKeyBuilder.BuildConfigurationKey(
+            chartId: "sales-dashboard-2024",
+            title: "Sales Dashboard",
+            backgroundColor: "#FFFFFF",
+            showGrid: true,
+            showLegend: true
+        );
+        Console.WriteLine($"Configuration cache key: {configKey}");
+        
+        // Example 5: Build a cache key for an axis
+        string axisKey = CacheKeyBuilder.BuildAxisKey(
+            chartId: "sales-dashboard-2024",
+            axisType: "x",
+            label: "Quarter",
+            min: 0,
+            max: 4,
+            showGridLines: true
+        );
+        Console.WriteLine($"Axis cache key: {axisKey}");
+        
+        // Example 6: Build a cache key for a color palette
+        string paletteKey = CacheKeyBuilder.BuildPaletteKey(
+            chartId: "sales-dashboard-2024",
+            paletteType: "default",
+            colorCount: 5
+        );
+        Console.WriteLine($"Palette cache key: {paletteKey}");
+        
+        // Example 7: Extract chart ID from a cache key
+        string? extractedChartId = CacheKeyBuilder.ExtractChartIdFromKey(chartKey);
+        Console.WriteLine($"Extracted chart ID: {extractedChartId}");
+        
+        // Example 8: Build an invalidation pattern for cache cleanup
+        string invalidationPattern = CacheKeyBuilder.BuildInvalidationPattern(
+            chartId: "sales-dashboard-*"
+        );
+        Console.WriteLine($"Invalidation pattern: {invalidationPattern}");
+        
+        // Example 9: Validate a cache key
+        bool isValid = CacheKeyBuilder.IsValidCacheKey(chartKey);
+        Console.WriteLine($"Is valid cache key: {isValid}");
+        
+        // Example 10: Build a composite key for complex caching scenarios
+        string compositeKey = CacheKeyBuilder.BuildCompositeKey(
+            "sales-dashboard-2024",
+            "Revenue",
+            "line",
+            "#2E86C1",
+            "a1b2c3d4"
+        );
+        Console.WriteLine($"Composite cache key: {compositeKey}");
+    }
+}
+```
+
 ## ChartStreamingService
 
 `ChartStreamingService` is the default implementation of `IChartStreamingService` that provides real-time data streaming capabilities for charts. It enables dynamic chart updates by buffering incoming data points and rendering frames at configurable intervals, making it ideal for live dashboards, monitoring applications, and real-time data visualization scenarios.
