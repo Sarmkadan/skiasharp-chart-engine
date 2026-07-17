@@ -7444,3 +7444,82 @@ public class PerformanceOptimizerExample
     }
 }
 ```
+
+## ChartValidator
+
+`ChartValidator` is a comprehensive validation utility for SkiaSharp charts that provides static methods to validate charts, series, data points, and configurations. It returns detailed validation results with errors and warnings, making it ideal for debugging and ensuring chart integrity before rendering. The validator checks for null references, empty identifiers, invalid dimensions, malformed colors, and other common issues that could cause rendering problems.
+
+```csharp
+using System;
+using Microsoft.Extensions.Logging.Abstractions;
+using SkiaSharp;
+using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Utilities;
+
+public class ChartValidatorExample
+{
+    public static void Main()
+    {
+        // Create a valid chart
+        var chart = new Chart("validation-example");
+        chart.Configuration = new ChartConfiguration
+        {
+            Width = 800,
+            Height = 600,
+            BackgroundColor = "#ffffff",
+            GridColor = "#cccccc",
+            AxisColor = "#333333"
+        };
+        
+        // Add a valid series
+        var series = new ChartSeries("Temperature")
+        {
+            Color = "#ff0000",
+            LineWidth = 2f
+        };
+        series.AddDataPoint(1.0, 25.5);
+        series.AddDataPoint(2.0, 26.1);
+        series.AddDataPoint(3.0, 27.8);
+        chart.AddSeries(series);
+        
+        // Validate the chart
+        var validationResult = ChartValidator.ValidateChart(chart);
+        
+        Console.WriteLine("Validation Result:");
+        Console.WriteLine(validationResult);
+        Console.WriteLine($"Is Valid: {validationResult.IsValid}");
+        
+        if (!validationResult.IsValid)
+        {
+            Console.WriteLine("\nErrors found:");
+            foreach (var error in validationResult.Errors)
+            {
+                Console.WriteLine($"  - {error}");
+            }
+        }
+        
+        // Example with invalid data
+        var invalidChart = new Chart(""); // Empty ID
+        var invalidSeries = new ChartSeries(""); // Empty name
+        invalidSeries.AddDataPoint(double.NaN, 10.0); // Invalid X value
+        invalidChart.AddSeries(invalidSeries);
+        
+        var invalidResult = ChartValidator.ValidateChart(invalidChart);
+        Console.WriteLine("\nInvalid chart validation:");
+        Console.WriteLine(invalidResult);
+        
+        // Validate individual components
+        var seriesResult = ChartValidator.ValidateSeries(series);
+        Console.WriteLine("\nSeries validation:");
+        Console.WriteLine(seriesResult);
+        
+        var dataPointResult = ChartValidator.ValidateDataPoint(series.DataPoints[0]);
+        Console.WriteLine("\nDataPoint validation:");
+        Console.WriteLine(dataPointResult);
+        
+        var configResult = ChartValidator.ValidateConfiguration(chart.Configuration);
+        Console.WriteLine("\nConfiguration validation:");
+        Console.WriteLine(configResult);
+    }
+}
+```
