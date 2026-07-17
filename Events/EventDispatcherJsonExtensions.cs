@@ -1,7 +1,7 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =====================================================================
+// ===================================================================
 
 using System;
 using System.Text.Json;
@@ -47,10 +47,13 @@ public static class EventDispatcherJsonExtensions
     /// Deserializes a JSON string to an <see cref="EventDispatcher"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>The deserialized <see cref="EventDispatcher"/> instance, or null if the JSON is empty.</returns>
+    /// <returns>The deserialized <see cref="EventDispatcher"/> instance, or null if the JSON is empty or invalid.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
     /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
     public static EventDispatcher? FromJson(string json)
     {
+        ArgumentNullException.ThrowIfNull(json);
+
         if (string.IsNullOrWhiteSpace(json))
         {
             return null;
@@ -63,11 +66,14 @@ public static class EventDispatcherJsonExtensions
     /// Attempts to deserialize a JSON string to an <see cref="EventDispatcher"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="value">The deserialized <see cref="EventDispatcher"/> instance, or null if deserialization fails.</param>
+    /// <param name="value">When this method returns, contains the deserialized <see cref="EventDispatcher"/> instance if deserialization succeeds; otherwise, null.</param>
     /// <returns>True if deserialization succeeds; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
     public static bool TryFromJson(string json, out EventDispatcher? value)
     {
         value = null;
+
+        ArgumentNullException.ThrowIfNull(json);
 
         if (string.IsNullOrWhiteSpace(json))
         {
