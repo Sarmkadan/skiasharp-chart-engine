@@ -10,7 +10,7 @@ using System.Text.Json.Serialization.Metadata;
 namespace SkiaSharpChartEngine.Events;
 
 /// <summary>
-/// Provides System.Text.Json serialization extensions for ChartEventPublisher
+/// Provides System.Text.Json serialization extensions for <see cref="ChartEventPublisher"/>
 /// </summary>
 public static class ChartEventPublisherJsonExtensions
 {
@@ -22,50 +22,48 @@ public static class ChartEventPublisherJsonExtensions
     };
 
     /// <summary>
-    /// Serializes the ChartEventPublisher instance to a JSON string
+    /// Serializes the <see cref="ChartEventPublisher"/> instance to a JSON string
     /// </summary>
-    /// <param name="value">The ChartEventPublisher instance to serialize</param>
+    /// <param name="value">The <see cref="ChartEventPublisher"/> instance to serialize</param>
     /// <param name="indented">Whether to format the JSON with indentation for readability</param>
-    /// <returns>A JSON string representation of the ChartEventPublisher</returns>
-    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
-    public static string ToJson(this ChartEventPublisher value, bool indented = false)
-    {
-        ArgumentNullException.ThrowIfNull(value);
-
-        var options = indented
-            ? new JsonSerializerOptions(_jsonSerializerOptions)
-            {
-                WriteIndented = true
-            }
-            : _jsonSerializerOptions;
-
-        return JsonSerializer.Serialize(value, options);
-    }
+    /// <returns>A JSON string representation of the <see cref="ChartEventPublisher"/></returns>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/></exception>
+    public static string ToJson(this ChartEventPublisher value, bool indented = false) =>
+        value is null
+            ? throw new ArgumentNullException(nameof(value))
+            : JsonSerializer.Serialize(
+                value,
+                indented
+                    ? new JsonSerializerOptions(_jsonSerializerOptions) { WriteIndented = true }
+                    : _jsonSerializerOptions);
 
     /// <summary>
-    /// Deserializes a JSON string to a ChartEventPublisher instance
+    /// Deserializes a JSON string to a <see cref="ChartEventPublisher"/> instance
     /// </summary>
     /// <param name="json">The JSON string to deserialize</param>
-    /// <returns>A ChartEventPublisher instance, or null if the JSON is empty or whitespace</returns>
+    /// <returns>A <see cref="ChartEventPublisher"/> instance, or <see langword="null"/> if the JSON is empty or whitespace</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="json"/> is <see langword="null"/></exception>
     /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized</exception>
     public static ChartEventPublisher? FromJson(string json)
     {
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            return null;
-        }
+        ArgumentNullException.ThrowIfNull(json);
 
-        return JsonSerializer.Deserialize<ChartEventPublisher>(json, _jsonSerializerOptions);
+        return string.IsNullOrWhiteSpace(json)
+            ? null
+            : JsonSerializer.Deserialize<ChartEventPublisher>(json, _jsonSerializerOptions);
     }
 
     /// <summary>
-    /// Attempts to deserialize a JSON string to a ChartEventPublisher instance
+    /// Attempts to deserialize a JSON string to a <see cref="ChartEventPublisher"/> instance
     /// </summary>
     /// <param name="json">The JSON string to deserialize</param>
-    /// <param name="value">Receives the deserialized ChartEventPublisher instance, or null on failure</param>
-    /// <returns>True if deserialization succeeded; otherwise, false</returns>
+    /// <param name="value">Receives the deserialized <see cref="ChartEventPublisher"/> instance, or <see langword="null"/> on failure</param>
+    /// <returns><see langword="true"/> if deserialization succeeded; otherwise, <see langword="false"/></returns>
+    /// <exception cref="ArgumentNullException"><paramref name="json"/> is <see langword="null"/></exception>
     public static bool TryFromJson(string json, out ChartEventPublisher? value)
     {
+        ArgumentNullException.ThrowIfNull(json);
+
         value = null;
 
         if (string.IsNullOrWhiteSpace(json))
