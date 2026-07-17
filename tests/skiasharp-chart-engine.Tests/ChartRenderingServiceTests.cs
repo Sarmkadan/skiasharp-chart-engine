@@ -19,6 +19,26 @@ namespace SkiaSharpChartEngine.Tests.Services;
 /// </summary>
 public class ChartRenderingServiceTests
 {
+    /// <summary>
+    /// Gets the logger mock dependency used in tests.
+    /// </summary>
+    internal Mock<ILogger<ChartRenderingService>> LoggerMock { get; }
+
+    /// <summary>
+    /// Gets the data service mock dependency used in tests.
+    /// </summary>
+    internal Mock<IChartDataService> DataServiceMock { get; }
+
+    /// <summary>
+    /// Gets the cache service mock dependency used in tests.
+    /// </summary>
+    internal Mock<IRenderCacheService> CacheServiceMock { get; }
+
+    /// <summary>
+    /// Gets the chart rendering service instance under test.
+    /// </summary>
+    internal ChartRenderingService Service { get; }
+
     private readonly Mock<ILogger<ChartRenderingService>> _loggerMock;
     private readonly Mock<IChartDataService> _dataServiceMock;
     private readonly Mock<IRenderCacheService> _cacheServiceMock;
@@ -33,6 +53,11 @@ public class ChartRenderingServiceTests
         _dataServiceMock = new Mock<IChartDataService>();
         _cacheServiceMock = new Mock<IRenderCacheService>();
         _service = new ChartRenderingService(_loggerMock.Object, _dataServiceMock.Object, _cacheServiceMock.Object);
+
+        LoggerMock = _loggerMock;
+        DataServiceMock = _dataServiceMock;
+        CacheServiceMock = _cacheServiceMock;
+        Service = _service;
     }
 
     /// <summary>

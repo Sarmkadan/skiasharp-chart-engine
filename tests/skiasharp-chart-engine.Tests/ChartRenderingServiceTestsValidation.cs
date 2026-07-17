@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
 
 namespace SkiaSharpChartEngine.Tests.Services;
 
 /// <summary>
 /// Provides validation helpers for <see cref="ChartRenderingServiceTests"/> instances.
-/// Validates that test instances are properly initialized and contain valid test data.
+/// Validates that test instances are properly initialized and contain valid test dependencies.
 /// </summary>
 public static class ChartRenderingServiceTestsValidation
 {
@@ -16,6 +14,7 @@ public static class ChartRenderingServiceTestsValidation
     /// </summary>
     /// <param name="value">The test instance to validate.</param>
     /// <returns>A list of validation problems; empty if the instance is valid.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
     public static IReadOnlyList<string> Validate(this ChartRenderingServiceTests value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -23,22 +22,22 @@ public static class ChartRenderingServiceTestsValidation
         var problems = new List<string>();
 
         // Validate mock dependencies are not null
-        if (value.GetType().GetField("_loggerMock", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(value) is null)
+        if (value.LoggerMock is null)
         {
             problems.Add("Logger mock dependency is null.");
         }
 
-        if (value.GetType().GetField("_dataServiceMock", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(value) is null)
+        if (value.DataServiceMock is null)
         {
             problems.Add("Data service mock dependency is null.");
         }
 
-        if (value.GetType().GetField("_cacheServiceMock", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(value) is null)
+        if (value.CacheServiceMock is null)
         {
             problems.Add("Cache service mock dependency is null.");
         }
 
-        if (value.GetType().GetField("_service", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(value) is null)
+        if (value.Service is null)
         {
             problems.Add("ChartRenderingService instance is null.");
         }
@@ -51,15 +50,17 @@ public static class ChartRenderingServiceTestsValidation
     /// </summary>
     /// <param name="value">The test instance to check.</param>
     /// <returns><see langword="true"/> if the instance is valid; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
     public static bool IsValid(this ChartRenderingServiceTests value)
     {
-        return Validate(value).Count == 0;
+        return value is not null && Validate(value).Count == 0;
     }
 
     /// <summary>
     /// Ensures that the specified <see cref="ChartRenderingServiceTests"/> instance is valid.
     /// </summary>
     /// <param name="value">The test instance to validate.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">Thrown when the instance is not valid, containing a list of validation problems.</exception>
     public static void EnsureValid(this ChartRenderingServiceTests value)
     {
