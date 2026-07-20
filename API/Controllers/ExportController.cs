@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -178,6 +179,48 @@ public class ExportController
         {
             _logger.LogError(ex, "Error retrieving supported formats");
             return ApiResponse<List<ExportFormatInfo>>.InternalError(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// POST /export/svg
+    /// Renders a chart and returns the SVG as text/xml
+    /// </summary>
+    public async Task<ApiResponse<string>> ExportSvgAsync(
+        RenderChartRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (!request.IsValid(out var validationError))
+                return ApiResponse<string>.BadRequest(validationError!);
+
+            var chart = await _chartEngine.GetChartAsync(request.ChartId, cancellationToken);
+            if (chart == null)
+                return ApiResponse<string>.NotFound($"Chart {request.ChartId} not found");
+
+            // Use the ChartEngine's ExportChartAsync with SVG format to generate SVG content
+            var svgExportOptions = new ExportOptions(
+                request.ChartId ?? "chart",
+                ExportFormat.SVG,
+                request.Dpi > 0 ? request.Dpi : 96,
+                1.0f
+            );
+
+            var svgResult = await _chartEngine.ExportChartAsync(chart, svgExportOptions, cancellationToken);
+            if (!svgResult.IsSuccess || svgResult.OutputPath == null)
+                return ApiResponse<string>.InternalError("Failed to export SVG");
+
+            // Read the SVG file content
+            var svgContent = await File.ReadAllTextAsync(svgResult.OutputPath, cancellationToken);
+
+            _logger.LogInformation("Chart {ChartId} exported as SVG successfully", request.ChartId);
+            return ApiResponse<string>.Success(svgContent);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting chart {ChartId} as SVG", request.ChartId);
+            return ApiResponse<string>.InternalError(ex.Message);
         }
     }
 
