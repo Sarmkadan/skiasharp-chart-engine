@@ -26,8 +26,13 @@ public class PieChartRenderer
     }
 
     // Render pie chart
-    public void Render(SKCanvas canvas, Chart chart, SKRect bounds)
+    public void Render(SKCanvas canvas, Chart chart, SKRect bounds, float innerRadiusRatio = 0f)
     {
+        if (innerRadiusRatio < 0 || innerRadiusRatio > 0.9f)
+        {
+            throw new ArgumentOutOfRangeException(nameof(innerRadiusRatio), "Inner radius ratio must be between 0 and 0.9");
+        }
+
         try
         {
             if (canvas == null || chart == null || chart.Series == null || chart.Series.Count == 0)
@@ -49,6 +54,7 @@ public class PieChartRenderer
             var centerX = bounds.MidX;
             var centerY = bounds.MidY;
             var radius = Math.Min(bounds.Width, bounds.Height) / 3;
+            var innerRadius = radius * innerRadiusRatio;
 
             // Render slices
             using var paint = new SKPaint { IsAntialias = true };
@@ -68,9 +74,18 @@ public class PieChartRenderer
                 paint.Style = SKPaintStyle.Fill;
 
                 // Draw slice with a slight overlap so rounding gaps are not visible
-                var rect = new SKRect(centerX - (float)radius, centerY - (float)radius,
-                    centerX + (float)radius, centerY + (float)radius);
-                canvas.DrawArc(rect, currentAngle, sliceAngle + sweepOverlap, true, paint);
+                var rect = new SKRect(centerX - radius, centerY - radius,
+                    centerX + radius, centerY + radius);
+                var path = new SKPath();
+                path.AddArc(rect, currentAngle, sliceAngle + sweepOverlap);
+                if (innerRadiusRatio > 0)
+                {
+                    var innerRect = new SKRect(centerX - innerRadius, centerY - innerRadius,
+                        centerX + innerRadius, centerY + innerRadius);
+                    path.AddArc(innerRect, currentAngle + sliceAngle + sweepOverlap, -sliceAngle - sweepOverlap);
+                }
+                path.Close();
+                canvas.DrawPath(path, paint);
 
                 // Draw label
                 var labelAngle = currentAngle + sliceAngle / 2;
