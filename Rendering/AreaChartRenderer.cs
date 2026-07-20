@@ -8,18 +8,20 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
 using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Rendering;
 
 namespace SkiaSharpChartEngine.Rendering;
 
 /// <summary>
 /// Renderer for area charts. It draws the line exactly like <see cref="LineChartRenderer"/>
-/// and then fills the area under the line down to the baseline. The fill opacity can be
+/// and then fills the area under the line down to the baseline. The fill opacity can be 17
 /// configured via the <c>FillOpacity</c> constant (0‑1 range). Axis and grid drawing are
 /// reused from the line renderer to keep visual consistency.
 /// </summary>
 public class AreaChartRenderer
 {
     private readonly ILogger<AreaChartRenderer> _logger;
+    private readonly LegendRenderer _legendRenderer;
     private const float MarkerSize = 4f;
     private const float LineWidth = 2f;
     // Opacity of the fill (0 = fully transparent, 1 = fully opaque)
@@ -28,6 +30,7 @@ public class AreaChartRenderer
     public AreaChartRenderer(ILogger<AreaChartRenderer> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _legendRenderer = new LegendRenderer(logger);
     }
 
     /// <summary>
@@ -79,6 +82,12 @@ public class AreaChartRenderer
 
             // Render axes (reuse the same logic as the line renderer)
             _renderAxes(canvas, chartBounds, minValue, maxValue);
+
+            // Render legend if series have names
+            if (chart.Series.Any(s => !string.IsNullOrWhiteSpace(s.Name)))
+            {
+                _legendRenderer.Render(canvas, chart, bounds, LegendCorner.TopRight);
+            }
 
             _logger.LogDebug("Area chart rendered: {SeriesCount} series", chart.Series.Count);
         }

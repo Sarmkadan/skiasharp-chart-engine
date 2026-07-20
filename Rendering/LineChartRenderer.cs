@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
 using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Rendering;
 
 namespace SkiaSharpChartEngine.Rendering;
 
@@ -20,10 +21,12 @@ public class LineChartRenderer
     private readonly ILogger<LineChartRenderer> _logger;
     private const float MarkerSize = 4f;
     private const float LineWidth = 2f;
+    private readonly LegendRenderer _legendRenderer;
 
     public LineChartRenderer(ILogger<LineChartRenderer> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _legendRenderer = new LegendRenderer(logger);
     }
 
     // Render line chart
@@ -65,6 +68,12 @@ public class LineChartRenderer
             // Render axes
             _renderAxes(canvas, chartBounds, minValue, maxValue);
 
+
+        // Render legend if series have names
+        if (chart.Series.Any(s => !string.IsNullOrWhiteSpace(s.Name)))
+        {
+            _legendRenderer.Render(canvas, chart, bounds, LegendCorner.TopRight);
+        }
             _logger.LogDebug("Line chart rendered: {SeriesCount} series", chart.Series.Count);
         }
         catch (Exception ex)

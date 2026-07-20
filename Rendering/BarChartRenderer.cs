@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using SkiaSharp;
 using SkiaSharpChartEngine.Models;
+using SkiaSharpChartEngine.Rendering;
 
 namespace SkiaSharpChartEngine.Rendering;
 
@@ -18,10 +19,12 @@ namespace SkiaSharpChartEngine.Rendering;
 public class BarChartRenderer
 {
     private readonly ILogger<BarChartRenderer> _logger;
+    private readonly LegendRenderer _legendRenderer;
 
     public BarChartRenderer(ILogger<BarChartRenderer> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _legendRenderer = new LegendRenderer(logger);
     }
 
     // Render bar chart
@@ -51,6 +54,12 @@ public class BarChartRenderer
 
             // Render axes
             _renderAxes(canvas, chartBounds, minValue, maxValue);
+
+            // Render legend if series have names
+            if (chart.Series.Any(s => !string.IsNullOrWhiteSpace(s.Name)))
+            {
+                _legendRenderer.Render(canvas, chart, bounds, LegendCorner.TopRight);
+            }
 
             _logger.LogDebug("Bar chart rendered: {SeriesCount} series", chart.Series.Count);
         }
