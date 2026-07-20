@@ -77,7 +77,8 @@ public enum ChartType
     HeatmapChart = 3,
     AreaChart = 4,
     ScatterChart = 5,
-    ColumnChart = 6
+    ColumnChart = 6,
+    GaugeChart = 7
 }
 
 /// <summary>
