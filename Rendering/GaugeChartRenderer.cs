@@ -48,6 +48,20 @@ public class GaugeChartRenderer
 
             _logger.LogInformation("Rendering gauge chart: {ChartId}", chart.Id);
 
+            // Calculate title and subtitle height to shrink the plot area
+            float titleHeight = 0;
+            if (!string.IsNullOrEmpty(chart.Configuration.Title))
+            {
+                titleHeight += ChartConstants.TitleFontSize + 8f;
+            }
+            if (!string.IsNullOrEmpty(chart.Configuration.Subtitle))
+            {
+                titleHeight += ChartConstants.SubtitleFontSize + 6f;
+            }
+
+            // Adjust bounds to account for title/subtitle
+            var gaugeBounds = new SKRect(bounds.Left, bounds.Top + titleHeight, bounds.Right, bounds.Bottom);
+
             // Use the first series for the gauge chart (mirrors PieChartRenderer behaviour)
             var series = chart.Series.FirstOrDefault();
             if (series?.DataPoints == null || series.DataPoints.Count == 0)
@@ -71,13 +85,16 @@ public class GaugeChartRenderer
             normalizedValue = Math.Max(0, Math.Min(1, normalizedValue));
 
             // Calculate center and radius
-            var centerX = bounds.MidX;
-            var centerY = bounds.Bottom - 50f; // Position gauge at bottom with some padding
-            var radius = Math.Min(bounds.Width, bounds.Height) / 2.5f;
+            var centerX = gaugeBounds.MidX;
+            var centerY = gaugeBounds.Bottom - 50f; // Position gauge at bottom with some padding
+            var radius = Math.Min(gaugeBounds.Width, gaugeBounds.Height) / 2.5f;
 
             // Draw background
             using var bgPaint = new SKPaint { IsAntialias = true, Color = SKColors.White };
-            canvas.DrawRect(bounds, bgPaint);
+            canvas.DrawRect(gaugeBounds, bgPaint);
+
+            // Draw title and subtitle
+            _renderTitleAndSubtitle(canvas, chart, bounds);
 
             // Draw gauge zones (colored background bands)
             _drawGaugeZones(canvas, centerX, centerY, radius, minValue, maxValue);
@@ -91,12 +108,6 @@ public class GaugeChartRenderer
             // Draw value label
             _drawValueLabel(canvas, centerX, centerY, radius, currentValue, minValue, maxValue);
 
-            // Draw title if available
-            if (!string.IsNullOrWhiteSpace(chart.Title))
-            {
-                _drawTitle(canvas, centerX, bounds.Top + 20f, chart.Title);
-            }
-
             // Draw min/max labels
             _drawMinMaxLabels(canvas, centerX, centerY, radius, minValue, maxValue);
 
@@ -108,13 +119,53 @@ public class GaugeChartRenderer
         }
     }
 
+    private void _renderTitleAndSubtitle(SKCanvas canvas, Chart chart, SKRect bounds)
+    {
+        if (string.IsNullOrEmpty(chart.Configuration.Title) && string.IsNullOrEmpty(chart.Configuration.Subtitle))
+            return;
+
+        var centerX = bounds.MidX;
+        var textColor = SKColor.Parse(chart.Configuration.TextColor);
+        var titleY = bounds.Top + 4f;
+
+        // Render title
+        if (!string.IsNullOrEmpty(chart.Configuration.Title))
+        {
+            using var titlePaint = new SKPaint
+            {
+                Color = textColor,
+                TextSize = ChartConstants.TitleFontSize,
+                IsAntialias = true,
+                TextAlign = SKTextAlign.Center,
+                FakeBoldText = true
+            };
+
+            canvas.DrawText(chart.Configuration.Title, centerX, titleY, titlePaint);
+        }
+
+        // Render subtitle
+        if (!string.IsNullOrEmpty(chart.Configuration.Subtitle))
+        {
+            var subtitleY = titleY + ChartConstants.TitleFontSize + 2f;
+            using var subtitlePaint = new SKPaint
+            {
+                Color = textColor,
+                TextSize = ChartConstants.SubtitleFontSize,
+                IsAntialias = true,
+                TextAlign = SKTextAlign.Center
+            };
+
+            canvas.DrawText(chart.Configuration.Subtitle, centerX, subtitleY, subtitlePaint);
+        }
+    }
+
     private void _drawGaugeZones(SKCanvas canvas, float centerX, float centerY, float radius, double minValue, double maxValue)
     {
         // Define zones: red (danger), yellow (warning), green (good)
         // Each zone spans 1/3 of the range
         float zone1End = 0.33f; // Red zone: 0-33%
         float zone2End = 0.66f; // Yellow zone: 33-66%
-        float zone3End = 1.0f;  // Green zone: 66-100%
+        float zone3End = 1.0f; // Green zone: 66-100%
 
         // Zone 1: Red (0-33%)
         using var zone1Paint = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Stroke, StrokeWidth = ZoneBorderWidth };
@@ -152,7 +203,7 @@ public class GaugeChartRenderer
     {
         // Calculate needle angle (-180 to 0 degrees)
         float needleAngle = -180f + normalizedValue * 180f;
-        float needleRad = needleAngle * (float)Math.PI / 180f;
+        float needleRad = needleAngle * (float)Math.PI / 180;
 
         // Calculate needle tip position
         float needleTipX = centerX + (float)Math.Cos(needleRad) * radius * NeedleLengthRatio;
@@ -196,25 +247,6 @@ public class GaugeChartRenderer
         float textY = centerY + radius * 0.3f;
 
         canvas.DrawText(valueText, textX, textY, textPaint);
-    }
-
-    private void _drawTitle(SKCanvas canvas, float centerX, float centerY, string title)
-    {
-        using var titlePaint = new SKPaint
-        {
-            TextSize = 16f,
-            Color = SKColors.DarkSlateGray,
-            IsAntialias = true,
-            Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Normal)
-        };
-
-        var textBounds = new SKRect();
-        titlePaint.MeasureText(title, ref textBounds);
-
-        float textX = centerX - textBounds.MidX;
-        float textY = centerY;
-
-        canvas.DrawText(title, textX, textY, titlePaint);
     }
 
     private void _drawMinMaxLabels(SKCanvas canvas, float centerX, float centerY, float radius, double minValue, double maxValue)

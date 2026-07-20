@@ -16,7 +16,7 @@ namespace SkiaSharpChartEngine.Rendering;
 /// <summary>
 /// Specialized renderer for heatmap charts.
 /// Renders 2D data grids with color-coded intensity values.
-/// Supports <see cref="HeatmapColorScale.Linear"/>, <see cref="HeatmapColorScale.Logarithmic"/>,
+/// Supports <see cref="HeatmapColorScale.Linear"/>, <see cref="HeatmapColorScale.Logarithmic"/>
 /// and <see cref="HeatmapColorScale.Quantile"/> color scale modes.
 /// </summary>
 public class HeatmapRenderer
@@ -42,6 +42,20 @@ public class HeatmapRenderer
 
             _logger.LogInformation("Rendering heatmap chart: {ChartId}", chart.Id);
 
+            // Calculate title and subtitle height to shrink the plot area
+            float titleHeight = 0;
+            if (!string.IsNullOrEmpty(chart.Configuration.Title))
+            {
+                titleHeight += ChartConstants.TitleFontSize + 8f;
+            }
+            if (!string.IsNullOrEmpty(chart.Configuration.Subtitle))
+            {
+                titleHeight += ChartConstants.SubtitleFontSize + 6f;
+            }
+
+            // Adjust bounds to account for title/subtitle
+            var heatmapBounds = new SKRect(bounds.Left, bounds.Top + titleHeight, bounds.Right, bounds.Bottom);
+
             // Get data matrix from first series
             var series = chart.Series?.FirstOrDefault();
             if (series?.DataPoints == null || series.DataPoints.Count == 0)
@@ -56,9 +70,12 @@ public class HeatmapRenderer
             var colorScale = chart.Configuration?.HeatmapColorScale ?? HeatmapColorScale.Linear;
             var normalizedValues = _normalizeValues(dataPoints.Select(dp => dp.Value).ToList(), colorScale);
 
+            // Render title and subtitle
+            _renderTitleAndSubtitle(canvas, chart, bounds);
+
             // Calculate cell dimensions
-            var cellWidth = (bounds.Width - (cols + 1) * CellPadding) / cols;
-            var cellHeight = (bounds.Height - (rows + 1) * CellPadding) / rows;
+            var cellWidth = (heatmapBounds.Width - (cols + 1) * CellPadding) / cols;
+            var cellHeight = (heatmapBounds.Height - (rows + 1) * CellPadding) / rows;
 
             // Render cells
             using var paint = new SKPaint { IsAntialias = true };
@@ -76,8 +93,8 @@ public class HeatmapRenderer
                     paint.Color = color;
                     paint.Style = SKPaintStyle.Fill;
 
-                    var cellX = bounds.Left + col * (cellWidth + CellPadding) + CellPadding;
-                    var cellY = bounds.Top + row * (cellHeight + CellPadding) + CellPadding;
+                    var cellX = heatmapBounds.Left + col * (cellWidth + CellPadding) + CellPadding;
+                    var cellY = heatmapBounds.Top + row * (cellHeight + CellPadding) + CellPadding;
                     var cellRect = new SKRect(cellX, cellY, cellX + cellWidth, cellY + cellHeight);
 
                     canvas.DrawRect(cellRect, paint);
@@ -112,13 +129,53 @@ public class HeatmapRenderer
         }
     }
 
+    private void _renderTitleAndSubtitle(SKCanvas canvas, Chart chart, SKRect bounds)
+    {
+        if (string.IsNullOrEmpty(chart.Configuration.Title) && string.IsNullOrEmpty(chart.Configuration.Subtitle))
+            return;
+
+        var centerX = bounds.MidX;
+        var textColor = SKColor.Parse(chart.Configuration.TextColor);
+        var titleY = bounds.Top + 4f;
+
+        // Render title
+        if (!string.IsNullOrEmpty(chart.Configuration.Title))
+        {
+            using var titlePaint = new SKPaint
+            {
+                Color = textColor,
+                TextSize = ChartConstants.TitleFontSize,
+                IsAntialias = true,
+                TextAlign = SKTextAlign.Center,
+                FakeBoldText = true
+            };
+
+            canvas.DrawText(chart.Configuration.Title, centerX, titleY, titlePaint);
+        }
+
+        // Render subtitle
+        if (!string.IsNullOrEmpty(chart.Configuration.Subtitle))
+        {
+            var subtitleY = titleY + ChartConstants.TitleFontSize + 2f;
+            using var subtitlePaint = new SKPaint
+            {
+                Color = textColor,
+                TextSize = ChartConstants.SubtitleFontSize,
+                IsAntialias = true,
+                TextAlign = SKTextAlign.Center
+            };
+
+            canvas.DrawText(chart.Configuration.Subtitle, centerX, subtitleY, subtitlePaint);
+        }
+    }
+
     /// <summary>
     /// Normalises a list of raw values to the [0, 1] range according to the chosen
     /// <see cref="HeatmapColorScale"/>:
     /// <list type="bullet">
-    ///   <item><see cref="HeatmapColorScale.Linear"/> — (value - min) / range</item>
-    ///   <item><see cref="HeatmapColorScale.Logarithmic"/> — log10-compressed before linear normalisation, revealing detail across wide dynamic ranges</item>
-    ///   <item><see cref="HeatmapColorScale.Quantile"/> — rank-based so each colour band covers an equal number of cells, ideal for skewed distributions</item>
+    /// <item><see cref="HeatmapColorScale.Linear"/> — (value - min) / range</item>
+    /// <item><see cref="HeatmapColorScale.Logarithmic"/> — log10-compressed before linear normalisation, revealing detail across wide dynamic ranges</item>
+    /// <item><see cref="HeatmapColorScale.Quantile"/> — rank-based so each colour band covers an equal number of cells, ideal for skewed distributions</item>
     /// </list>
     /// </summary>
     private static List<double> _normalizeValues(List<double> values, HeatmapColorScale scale)
@@ -128,8 +185,8 @@ public class HeatmapRenderer
         return scale switch
         {
             HeatmapColorScale.Logarithmic => _normalizeLogarithmic(values),
-            HeatmapColorScale.Quantile    => _normalizeQuantile(values),
-            _                             => _normalizeLinear(values)
+            HeatmapColorScale.Quantile => _normalizeQuantile(values),
+            _ => _normalizeLinear(values)
         };
     }
 

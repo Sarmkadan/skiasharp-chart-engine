@@ -43,6 +43,26 @@ public class PieChartRenderer
 
             _logger.LogInformation("Rendering pie chart: {ChartId}", chart.Id);
 
+            // Calculate title and subtitle height to shrink the plot area
+            float titleHeight = 0;
+            if (!string.IsNullOrEmpty(chart.Configuration.Title))
+            {
+                titleHeight += ChartConstants.TitleFontSize + 8f;
+            }
+            if (!string.IsNullOrEmpty(chart.Configuration.Subtitle))
+            {
+                titleHeight += ChartConstants.SubtitleFontSize + 6f;
+            }
+
+            var padding = 40f;
+            var chartBounds = new SKRect(
+                bounds.Left + padding,
+                bounds.Top + padding + titleHeight,
+                bounds.Right - padding,
+                bounds.Bottom - padding
+            );
+
+            // Use the first series for the pie chart (mirrors PieChartRenderer behaviour)
             var series = chart.Series.FirstOrDefault();
             if (series?.DataPoints == null || series.DataPoints.Count == 0)
                 return;
@@ -50,10 +70,13 @@ public class PieChartRenderer
             var dataPoints = series.DataPoints;
             var total = dataPoints.Sum(dp => dp.Value);
 
+            // Render title and subtitle
+            _renderTitleAndSubtitle(canvas, chart, bounds);
+
             // Calculate center and radius
-            var centerX = bounds.MidX;
-            var centerY = bounds.MidY;
-            var radius = Math.Min(bounds.Width, bounds.Height) / 3;
+            var centerX = chartBounds.MidX;
+            var centerY = chartBounds.MidY;
+            var radius = Math.Min(chartBounds.Width, chartBounds.Height) / 3;
             var innerRadius = radius * innerRadiusRatio;
 
             // Render slices
@@ -106,6 +129,46 @@ public class PieChartRenderer
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error rendering pie chart");
+        }
+    }
+
+    private void _renderTitleAndSubtitle(SKCanvas canvas, Chart chart, SKRect bounds)
+    {
+        if (string.IsNullOrEmpty(chart.Configuration.Title) && string.IsNullOrEmpty(chart.Configuration.Subtitle))
+            return;
+
+        var centerX = bounds.MidX;
+        var textColor = SKColor.Parse(chart.Configuration.TextColor);
+        var titleY = bounds.Top + 4f;
+
+        // Render title
+        if (!string.IsNullOrEmpty(chart.Configuration.Title))
+        {
+            using var titlePaint = new SKPaint
+            {
+                Color = textColor,
+                TextSize = ChartConstants.TitleFontSize,
+                IsAntialias = true,
+                TextAlign = SKTextAlign.Center,
+                FakeBoldText = true
+            };
+
+            canvas.DrawText(chart.Configuration.Title, centerX, titleY, titlePaint);
+        }
+
+        // Render subtitle
+        if (!string.IsNullOrEmpty(chart.Configuration.Subtitle))
+        {
+            var subtitleY = titleY + ChartConstants.TitleFontSize + 2f;
+            using var subtitlePaint = new SKPaint
+            {
+                Color = textColor,
+                TextSize = ChartConstants.SubtitleFontSize,
+                IsAntialias = true,
+                TextAlign = SKTextAlign.Center
+            };
+
+            canvas.DrawText(chart.Configuration.Subtitle, centerX, subtitleY, subtitlePaint);
         }
     }
 
