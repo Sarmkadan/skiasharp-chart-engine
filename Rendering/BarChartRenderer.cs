@@ -21,6 +21,11 @@ public class BarChartRenderer
     private readonly ILogger<BarChartRenderer> _logger;
     private readonly LegendRenderer _legendRenderer;
 
+    /// <summary>
+    /// When true, bars are rendered in stacked mode (cumulative per category).
+    /// </summary>
+    public bool Stacked { get; set; } = false;
+
     public BarChartRenderer(ILogger<BarChartRenderer> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -46,8 +51,29 @@ public class BarChartRenderer
 
             // Get value range
             var allValues = chart.Series.SelectMany(s => s.DataPoints.Select(dp => dp.Value)).ToList();
-            var minValue = 0.0;
-            var maxValue = allValues.Max();
+
+            double minValue = 0.0;
+            double maxValue;
+
+            if (Stacked)
+            {
+                // Compute stacked totals per category (point index)
+                var pointCount = chart.Series.First().DataPoints.Count;
+                var stackedSums = new double[pointCount];
+                foreach (var series in chart.Series)
+                {
+                    for (int i = 0; i < pointCount; i++)
+                    {
+                        stackedSums[i] += series.DataPoints[i].Value;
+                    }
+                }
+
+                maxValue = stackedSums.Max();
+            }
+            else
+            {
+                maxValue = allValues.Max();
+            }
 
             // Render bars
             _renderBars(canvas, chart, chartBounds, minValue, maxValue);
@@ -78,31 +104,78 @@ public class BarChartRenderer
         var series = chart.Series;
         var pointCount = series.First().DataPoints.Count;
 
-        var barWidth = bounds.Width / (pointCount * series.Count + pointCount - 1);
+        // Determine bar width based on mode
+        float barWidth;
+        if (Stacked)
+        {
+            // One bar per category
+            barWidth = bounds.Width / pointCount;
+        }
+        else
+        {
+            // Grouped bars: space between groups + bars inside group
+            barWidth = bounds.Width / (pointCount * series.Count + pointCount - 1);
+        }
+
+        // Width of a full group (used only for grouped mode)
         var groupWidth = barWidth * series.Count;
 
         for (int pointIndex = 0; pointIndex < pointCount; pointIndex++)
         {
-            var groupX = bounds.Left + pointIndex * (groupWidth + barWidth);
-
-            for (int seriesIndex = 0; seriesIndex < series.Count; seriesIndex++)
+            if (Stacked)
             {
-                var dataPoint = series[seriesIndex].DataPoints[pointIndex];
-                var normalizedValue = (dataPoint.Value - minValue) / valueRange;
+                // Stacked mode: single bar per category, cumulative heights
+                float cumulativeHeight = 0f;
+                var barX = bounds.Left + pointIndex * barWidth;
 
-                var barHeight = (float)(normalizedValue * bounds.Height);
-                var barX = groupX + seriesIndex * barWidth;
-                var barY = bounds.Bottom - barHeight;
+                for (int seriesIndex = 0; seriesIndex < series.Count; seriesIndex++)
+                {
+                    var dataPoint = series[seriesIndex].DataPoints[pointIndex];
+                    var normalizedValue = (dataPoint.Value - minValue) / valueRange;
+                    var barHeight = (float)(normalizedValue * bounds.Height);
 
-                barPaint.Color = _getColor(seriesIndex);
-                var barRect = new SKRect(barX, barY, barX + barWidth - 2, bounds.Bottom);
-                canvas.DrawRect(barRect, barPaint);
+                    var barY = bounds.Bottom - cumulativeHeight - barHeight;
+                    var barRect = new SKRect(barX, barY, barX + barWidth - 2, bounds.Bottom - cumulativeHeight);
 
-                // Draw value label
-                var labelPaint = new SKPaint { TextSize = 9, Color = SKColors.Black };
-                var labelText = dataPoint.Value.ToString("F1");
-                var textWidth = labelPaint.MeasureText(labelText);
-                canvas.DrawText(labelText, barX + (barWidth - textWidth) / 2, barY - 5, labelPaint);
+                    barPaint.Color = _getColor(seriesIndex);
+                    canvas.DrawRect(barRect, barPaint);
+
+                    // Draw value label on top of each segment
+                    var labelPaint = new SKPaint { TextSize = 9, Color = SKColors.Black };
+                    var labelText = dataPoint.Value.ToString("F1");
+                    var textWidth = labelPaint.MeasureText(labelText);
+                    canvas.DrawText(labelText,
+                        barX + (barWidth - textWidth) / 2,
+                        barY - 5,
+                        labelPaint);
+
+                    cumulativeHeight += barHeight;
+                }
+            }
+            else
+            {
+                // Grouped mode (original behaviour)
+                var groupX = bounds.Left + pointIndex * (groupWidth + barWidth);
+
+                for (int seriesIndex = 0; seriesIndex < series.Count; seriesIndex++)
+                {
+                    var dataPoint = series[seriesIndex].DataPoints[pointIndex];
+                    var normalizedValue = (dataPoint.Value - minValue) / valueRange;
+
+                    var barHeight = (float)(normalizedValue * bounds.Height);
+                    var barX = groupX + seriesIndex * barWidth;
+                    var barY = bounds.Bottom - barHeight;
+
+                    barPaint.Color = _getColor(seriesIndex);
+                    var barRect = new SKRect(barX, barY, barX + barWidth - 2, bounds.Bottom);
+                    canvas.DrawRect(barRect, barPaint);
+
+                    // Draw value label
+                    var labelPaint = new SKPaint { TextSize = 9, Color = SKColors.Black };
+                    var labelText = dataPoint.Value.ToString("F1");
+                    var textWidth = labelPaint.MeasureText(labelText);
+                    canvas.DrawText(labelText, barX + (barWidth - textWidth) / 2, barY - 5, labelPaint);
+                }
             }
         }
     }
