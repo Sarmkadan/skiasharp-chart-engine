@@ -61,7 +61,9 @@ public enum ExportFormat
     SVG = 1,
     PDF = 2,
     JPEG = 3,
-    WEBP = 4
+    WEBP = 4,
+    CSV = 5,
+    TSV = 6
 }
 
 /// <summary>

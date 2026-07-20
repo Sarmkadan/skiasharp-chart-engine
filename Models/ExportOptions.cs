@@ -115,6 +115,8 @@ public class ExportOptions
         ExportFormat.PDF => "pdf",
         ExportFormat.JPEG => "jpg",
         ExportFormat.WEBP => "webp",
+    ExportFormat.CSV => "csv",
+    ExportFormat.TSV => "tsv",
         _ => throw new UnsupportedExportFormatException(format.ToString())
     };
 

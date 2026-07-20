@@ -42,4 +42,36 @@ public interface IExportService
     /// </summary>
     /// <returns>An enumerable of supported <see cref="ExportFormat"/> values.</returns>
     IEnumerable<ExportFormat> GetSupportedFormats();
+
+    /// <summary>
+    /// Exports chart series data to CSV format.
+    /// </summary>
+    /// <param name="chart">The chart containing series to export.</param>
+    /// <param name="options">Export configuration including output path.</param>
+    /// <returns>A <see cref="RenderResult"/> containing the CSV data and metadata.</returns>
+    Task<RenderResult> ExportToCsvAsync(Chart chart, ExportOptions options, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Exports chart series data to TSV format.
+    /// </summary>
+    /// <param name="chart">The chart containing series to export.</param>
+    /// <param name="options">Export configuration including output path.</param>
+    /// <returns>A <see cref="RenderResult"/> containing the TSV data and metadata.</returns>
+    Task<RenderResult> ExportToTsvAsync(Chart chart, ExportOptions options, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Exports chart series data to CSV format synchronously.
+    /// </summary>
+    /// <param name="chart">The chart containing series to export.</param>
+    /// <param name="options">Export configuration.</param>
+    /// <returns>A <see cref="RenderResult"/> containing the CSV data.</returns>
+    RenderResult ExportToCsv(Chart chart, ExportOptions options);
+
+    /// <summary>
+    /// Exports chart series data to TSV format synchronously.
+    /// </summary>
+    /// <param name="chart">The chart containing series to export.</param>
+    /// <param name="options">Export configuration.</param>
+    /// <returns>A <see cref="RenderResult"/> containing the TSV data.</returns>
+    RenderResult ExportToTsv(Chart chart, ExportOptions options);
 }
