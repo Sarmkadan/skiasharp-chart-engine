@@ -16,7 +16,7 @@ namespace SkiaSharpChartEngine.Rendering;
 /// Supports financial data visualization with open, high, low, close values.
 /// Renders green/red candlesticks with wicks and consistent axis layout.
 /// </summary>
-public class CandlestickChartRenderer
+public class CandlestickChartRenderer : IChartRenderer
 {
     private readonly ILogger<CandlestickChartRenderer> _logger;
 

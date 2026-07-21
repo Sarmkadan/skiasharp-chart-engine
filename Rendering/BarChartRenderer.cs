@@ -16,7 +16,7 @@ namespace SkiaSharpChartEngine.Rendering;
 /// Specialized renderer for bar charts.
 /// Supports grouped bars, stacked bars, and horizontal/vertical orientation.
 /// </summary>
-public class BarChartRenderer
+public class BarChartRenderer : IChartRenderer
 {
     private readonly ILogger<BarChartRenderer> _logger;
     private readonly LegendRenderer _legendRenderer;

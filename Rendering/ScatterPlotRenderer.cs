@@ -15,7 +15,7 @@ namespace SkiaSharpChartEngine.Rendering;
 /// Specialized renderer for scatter plots.
 /// Renders points with optional size/color encoding of third dimension.
 /// </summary>
-public class ScatterPlotRenderer
+public class ScatterPlotRenderer : IChartRenderer
 {
     private readonly ILogger<ScatterPlotRenderer> _logger;
     private const float PointSize = 5f;

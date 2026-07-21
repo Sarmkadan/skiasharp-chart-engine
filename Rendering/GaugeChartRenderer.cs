@@ -15,7 +15,7 @@ namespace SkiaSharpChartEngine.Rendering;
 /// Specialized renderer for gauge charts.
 /// Renders semicircular gauges with colored zones, needle indicator, and value label.
 /// </summary>
-public class GaugeChartRenderer
+public class GaugeChartRenderer : IChartRenderer
 {
     private readonly ILogger<GaugeChartRenderer> _logger;
     private const float LabelDistance = 30f;

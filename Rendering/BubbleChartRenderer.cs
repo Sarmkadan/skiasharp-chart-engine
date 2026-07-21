@@ -12,7 +12,7 @@ namespace SkiaSharpChartEngine.Rendering;
 /// using a square‑root scaling. The fill is semi‑transparent to allow overlapping
 /// bubbles to be visible.
 /// </summary>
-public class BubbleChartRenderer
+public class BubbleChartRenderer : IChartRenderer
 {
     private readonly ILogger<BubbleChartRenderer> _logger;
     private const float MaxRadius = 20f; // maximum radius for the largest bubble

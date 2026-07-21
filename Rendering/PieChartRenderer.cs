@@ -15,7 +15,7 @@ namespace SkiaSharpChartEngine.Rendering;
 /// Specialized renderer for pie charts.
 /// Renders donut and pie charts with labels, legends, and optional 3D effect.
 /// </summary>
-public class PieChartRenderer
+public class PieChartRenderer : IChartRenderer
 {
     private readonly ILogger<PieChartRenderer> _logger;
     private const float LabelDistance = 50f;

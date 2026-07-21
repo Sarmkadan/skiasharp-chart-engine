@@ -16,7 +16,7 @@ namespace SkiaSharpChartEngine.Rendering;
 /// Specialized renderer for line charts.
 /// Renders smooth or straight lines connecting data points with optional markers.
 /// </summary>
-public class LineChartRenderer
+public class LineChartRenderer : IChartRenderer
 {
     private readonly ILogger<LineChartRenderer> _logger;
     private const float MarkerSize = 4f;

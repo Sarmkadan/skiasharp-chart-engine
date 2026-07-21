@@ -18,7 +18,7 @@ namespace SkiaSharpChartEngine.Rendering;
 /// configured via the <c>FillOpacity</c> constant (0‑1 range). Axis and grid drawing are
 /// reused from the line renderer to keep visual consistency.
 /// </summary>
-public class AreaChartRenderer
+public class AreaChartRenderer : IChartRenderer
 {
     private readonly ILogger<AreaChartRenderer> _logger;
     private readonly LegendRenderer _legendRenderer;

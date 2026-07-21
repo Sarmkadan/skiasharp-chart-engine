@@ -18,7 +18,7 @@ namespace SkiaSharpChartEngine.Rendering;
 /// gridlines at 25 %, 50 %, 75 % and 100 % of the radius, and the data series as a
 /// filled translucent polygon with a stroked outline.
 /// </summary>
-public class RadarChartRenderer
+public class RadarChartRenderer : IChartRenderer
 {
     private readonly ILogger<RadarChartRenderer> _logger;
     private const float LabelDistance = 20f; // distance from outer radius for category labels

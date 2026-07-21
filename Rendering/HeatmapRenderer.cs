@@ -19,7 +19,7 @@ namespace SkiaSharpChartEngine.Rendering;
 /// Supports <see cref="HeatmapColorScale.Linear"/>, <see cref="HeatmapColorScale.Logarithmic"/>
 /// and <see cref="HeatmapColorScale.Quantile"/> color scale modes.
 /// </summary>
-public class HeatmapRenderer
+public class HeatmapRenderer : IChartRenderer
 {
     private readonly ILogger<HeatmapRenderer> _logger;
     private const float CellPadding = 2f;
