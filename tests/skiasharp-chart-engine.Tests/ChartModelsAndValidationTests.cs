@@ -139,6 +139,54 @@ public class ChartModelsAndValidationTests
     }
 
     // -------------------------------------------------------------------------
+    // ChartSeriesExtensions tests
+    // -------------------------------------------------------------------------
+
+    [Fact]
+    public void ChartSeriesExtensions_MinY_MaxY_ReturnsCorrectValues()
+    {
+        var series = new ChartSeries("Test");
+        series.AddDataPoint(1, 10);
+        series.AddDataPoint(2, 20);
+        
+        series.MinY().Should().Be(10);
+        series.MaxY().Should().Be(20);
+    }
+    
+    [Fact]
+    public void ChartSeriesExtensions_Range_ReturnsCorrectValue()
+    {
+        var series = new ChartSeries("Test");
+        series.AddDataPoint(1, 10);
+        series.AddDataPoint(2, 20);
+        
+        series.Range().Should().Be(10);
+    }
+
+    [Fact]
+    public void ChartSeriesExtensions_IsEmpty_ReturnsCorrectValue()
+    {
+        var series = new ChartSeries("Test");
+        series.IsEmpty().Should().BeTrue();
+        
+        series.AddDataPoint(1, 10);
+        series.IsEmpty().Should().BeFalse();
+    }
+
+    [Fact]
+    public void ChartSeriesExtensions_NormalizeY_ScalesCorrectly()
+    {
+        var series = new ChartSeries("Test");
+        series.AddDataPoint(1, 10);
+        series.AddDataPoint(2, 20);
+        
+        series.NormalizeY(0, 1);
+        
+        series.DataPoints[0].Y.Should().Be(0);
+        series.DataPoints[1].Y.Should().Be(1);
+    }
+
+    // -------------------------------------------------------------------------
     // Chart model tests
     // -------------------------------------------------------------------------
 
