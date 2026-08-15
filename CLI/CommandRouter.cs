@@ -1,8 +1,4 @@
-// =============================================================================
-// Author: Vladyslav Zaiets | https://sarmkadan.com
-// CTO & Software Architect
-// =============================================================================
-
+// CLI/CommandRouter.cs
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +14,7 @@ namespace SkiaSharpChartEngine.CLI;
 /// </summary>
 public class CommandRouter
 {
-    private readonly Dictionary<string, ICommandExecutor> _commandHandlers;
+    private readonly Dictionary<string, Func<string[], Task<int>>> _commandHandlers;
     private readonly ILogger<CommandRouter> _logger;
     private readonly ArgumentParser _argumentParser;
 
@@ -26,11 +22,16 @@ public class CommandRouter
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _argumentParser = argumentParser ?? throw new ArgumentNullException(nameof(argumentParser));
-        _commandHandlers = new Dictionary<string, ICommandExecutor>(StringComparer.OrdinalIgnoreCase);
+        _commandHandlers = new Dictionary<string, Func<string[], Task<int>>>(StringComparer.OrdinalIgnoreCase);
+
+        // Register commands
+        RegisterCommand("help", HelpCommand);
+        RegisterCommand("version", VersionCommand);
+        // ... register other commands ...
     }
 
     // Register a command handler for a specific command name
-    public void RegisterCommand(string commandName, ICommandExecutor executor)
+    public void RegisterCommand(string commandName, Func<string[], Task<int>> executor)
     {
         if (string.IsNullOrWhiteSpace(commandName))
             throw new ArgumentException("Command name cannot be empty", nameof(commandName));
@@ -72,7 +73,7 @@ public class CommandRouter
             var parsedArgs = _argumentParser.Parse(args.Skip(1).ToArray());
 
             // Execute command
-            var result = await executor.ExecuteAsync(parsedArgs);
+            var result = await executor(parsedArgs);
             return result ? 0 : 1;
         }
         catch (Exception ex)
@@ -102,12 +103,20 @@ public class CommandRouter
 
     // Get registered commands
     public IEnumerable<string> GetRegisteredCommands() => _commandHandlers.Keys;
-}
 
-/// <summary>
-/// Interface for command executors implementing the command pattern.
-/// </summary>
-public interface ICommandExecutor
-{
-    Task<bool> ExecuteAsync(Dictionary<string, string> arguments);
+    // Help command handler
+    private async Task<int> HelpCommand(string[] args)
+    {
+        DisplayHelp();
+        return 0;
+    }
+
+    // Version command handler
+    private async Task<int> VersionCommand(string[] args)
+    {
+        Console.WriteLine("SkiaSharp Chart Engine CLI version 1.0");
+        return 0;
+    }
+
+    // ... other command handlers ...
 }
