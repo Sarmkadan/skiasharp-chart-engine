@@ -153,30 +153,33 @@ public class LineChartRenderer : IChartRenderer
         var points = series.DataPoints;
         var pointWidth = bounds.Width / (points.Count - 1);
 
-        using var path = new SKPath();
+        // Build the line path (batched)
+        using var linePath = new SKPath();
         var x0 = bounds.Left;
         var y0 = bounds.Bottom - (float)((points[0].Value - minValue) / valueRange * bounds.Height);
-        path.MoveTo(x0, y0);
+        linePath.MoveTo(x0, y0);
 
         for (int i = 1; i < points.Count; i++)
         {
             var x = bounds.Left + i * pointWidth;
             var y = bounds.Bottom - (float)((points[i].Value - minValue) / valueRange * bounds.Height);
-            path.LineTo(x, y);
+            linePath.LineTo(x, y);
         }
 
-        canvas.DrawPath(path, paint);
+        canvas.DrawPath(linePath, paint);
 
-        // Draw markers
+        // Draw markers in a single batched path
         paint.Style = SKPaintStyle.Fill;
+        using var markersPath = new SKPath();
         for (int i = 0; i < points.Count; i++)
         {
             var point = points[i];
             var x = bounds.Left + i * pointWidth;
             var y = bounds.Bottom - (float)((point.Value - minValue) / valueRange * bounds.Height);
-
-            canvas.DrawCircle(x, y, MarkerSize, paint);
+            markersPath.AddCircle(x, y, MarkerSize);
         }
+
+        canvas.DrawPath(markersPath, paint);
     }
 
     private void _renderAxes(SKCanvas canvas, SKRect bounds, double minValue, double maxValue)

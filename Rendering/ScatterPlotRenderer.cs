@@ -49,13 +49,14 @@ public class ScatterPlotRenderer : IChartRenderer
             var valueRange = maxValue - minValue;
             if (valueRange == 0) valueRange = 1;
 
-            // Render points
-            var paint = new SKPaint { IsAntialias = true };
-            int pointIndex = 0;
+            // Render points using batched SKPath for each series
+            var paint = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Fill };
+            int seriesIndex = 0;
 
             foreach (var series in chart.Series)
             {
-                paint.Color = _getColor(pointIndex++);
+                paint.Color = _getColor(seriesIndex++);
+                using var seriesPath = new SKPath();
 
                 foreach (var dataPoint in series.DataPoints)
                 {
@@ -68,8 +69,10 @@ public class ScatterPlotRenderer : IChartRenderer
                     var x = chartBounds.Left + (float)(xNorm * chartBounds.Width);
                     var y = chartBounds.Bottom - (float)(yNorm * chartBounds.Height);
 
-                    canvas.DrawCircle(x, y, PointSize, paint);
+                    seriesPath.AddCircle(x, y, PointSize);
                 }
+
+                canvas.DrawPath(seriesPath, paint);
             }
 
             // Render axes
