@@ -48,12 +48,14 @@ public class RenderResult
 
     public RenderResult(string chartId)
     {
-        ChartId = chartId;
+        ArgumentException.ThrowIfNullOrEmpty(nameof(chartId));
+    ChartId = chartId;
     }
 
     public RenderResult(string chartId, bool success)
     {
-        ChartId = chartId;
+        ArgumentException.ThrowIfNullOrEmpty(nameof(chartId));
+    ChartId = chartId;
         Success = success;
     }
 
