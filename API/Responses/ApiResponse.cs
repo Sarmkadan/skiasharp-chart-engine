@@ -53,6 +53,7 @@ public class ApiResponse<T>
     /// </summary>
     public static ApiResponse<T> Ok(T data, int statusCode = 200)
     {
+        ArgumentNullException.ThrowIfNull(data);
         return new ApiResponse<T>
         {
             StatusCode = statusCode,
@@ -67,6 +68,7 @@ public class ApiResponse<T>
     /// </summary>
     public static ApiResponse<T> BadRequest(string message)
     {
+        ArgumentException.ThrowIfNullOrEmpty(message);
         return new ApiResponse<T>
         {
             StatusCode = 400,
@@ -80,6 +82,7 @@ public class ApiResponse<T>
     /// </summary>
     public static ApiResponse<T> Unauthorized(string message = "Unauthorized")
     {
+        ArgumentException.ThrowIfNullOrEmpty(message);
         return new ApiResponse<T>
         {
             StatusCode = 401,
@@ -93,6 +96,7 @@ public class ApiResponse<T>
     /// </summary>
     public static ApiResponse<T> Forbidden(string message = "Forbidden")
     {
+        ArgumentException.ThrowIfNullOrEmpty(message);
         return new ApiResponse<T>
         {
             StatusCode = 403,
@@ -106,6 +110,7 @@ public class ApiResponse<T>
     /// </summary>
     public static ApiResponse<T> NotFound(string message)
     {
+        ArgumentException.ThrowIfNullOrEmpty(message);
         return new ApiResponse<T>
         {
             StatusCode = 404,
@@ -119,6 +124,7 @@ public class ApiResponse<T>
     /// </summary>
     public static ApiResponse<T> Conflict(string message)
     {
+        ArgumentException.ThrowIfNullOrEmpty(message);
         return new ApiResponse<T>
         {
             StatusCode = 409,
@@ -132,6 +138,7 @@ public class ApiResponse<T>
     /// </summary>
     public static ApiResponse<T> InternalError(string message)
     {
+        ArgumentException.ThrowIfNullOrEmpty(message);
         return new ApiResponse<T>
         {
             StatusCode = 500,
@@ -145,6 +152,7 @@ public class ApiResponse<T>
     /// </summary>
     public static ApiResponse<T> ServiceUnavailable(string message = "Service unavailable")
     {
+        ArgumentException.ThrowIfNullOrEmpty(message);
         return new ApiResponse<T>
         {
             StatusCode = 503,
@@ -208,6 +216,7 @@ public class PaginatedResponse<T>
     /// </summary>
     public static PaginatedResponse<T> Ok(List<T> data, int pageNumber, int pageSize, int totalItems)
     {
+        ArgumentNullException.ThrowIfNull(data);
         var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
         return new PaginatedResponse<T>
         {
