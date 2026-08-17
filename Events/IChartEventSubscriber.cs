@@ -18,32 +18,56 @@ public interface IChartEventSubscriber
     /// <summary>
     /// Called when a chart is created
     /// </summary>
-    Task OnChartCreatedAsync(ChartCreatedEvent @event);
+    Task OnChartCreatedAsync(ChartCreatedEvent @event)
+    {
+        ArgumentNullException.ThrowIfNull(@event);
+        throw new NotImplementedException();
+    }
 
     /// <summary>
     /// Called when a chart is updated
     /// </summary>
-    Task OnChartUpdatedAsync(ChartUpdatedEvent @event);
+    Task OnChartUpdatedAsync(ChartUpdatedEvent @event)
+    {
+        ArgumentNullException.ThrowIfNull(@event);
+        throw new NotImplementedException();
+    }
 
     /// <summary>
     /// Called when a chart is deleted
     /// </summary>
-    Task OnChartDeletedAsync(ChartDeletedEvent @event);
+    Task OnChartDeletedAsync(ChartDeletedEvent @event)
+    {
+        ArgumentNullException.ThrowIfNull(@event);
+        throw new NotImplementedException();
+    }
 
     /// <summary>
     /// Called when a chart is rendered
     /// </summary>
-    Task OnChartRenderedAsync(ChartRenderedEvent @event);
+    Task OnChartRenderedAsync(ChartRenderedEvent @event)
+    {
+        ArgumentNullException.ThrowIfNull(@event);
+        throw new NotImplementedException();
+    }
 
     /// <summary>
     /// Called when a chart export completes
     /// </summary>
-    Task OnChartExportedAsync(ChartExportedEvent @event);
+    Task OnChartExportedAsync(ChartExportedEvent @event)
+    {
+        ArgumentNullException.ThrowIfNull(@event);
+        throw new NotImplementedException();
+    }
 
     /// <summary>
     /// Called when an error occurs
     /// </summary>
-    Task OnErrorAsync(ChartErrorEvent @event);
+    Task OnErrorAsync(ChartErrorEvent @event)
+    {
+        ArgumentNullException.ThrowIfNull(@event);
+        throw new NotImplementedException();
+    }
 }
 
 /// <summary>
