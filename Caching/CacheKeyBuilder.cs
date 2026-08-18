@@ -33,8 +33,7 @@ public static class CacheKeyBuilder
     /// </summary>
     public static string BuildChartKey(string chartId)
     {
-        if (string.IsNullOrEmpty(chartId))
-            throw new ArgumentException("Chart ID cannot be empty", nameof(chartId));
+        ArgumentException.ThrowIfNullOrEmpty(chartId);
 
         return $"{KeyPrefix}{chartId}";
     }
@@ -45,8 +44,8 @@ public static class CacheKeyBuilder
     /// </summary>
     public static string BuildRenderKey(string chartId, int width, int height, float dpi, string format)
     {
-        if (string.IsNullOrEmpty(chartId))
-            throw new ArgumentException("Chart ID cannot be empty", nameof(chartId));
+        ArgumentException.ThrowIfNullOrEmpty(chartId);
+        ArgumentException.ThrowIfNullOrEmpty(format);
 
         var keyComponents = $"{chartId}_{width}x{height}_{dpi}dpi_{format}";
         return $"{RenderKeyPrefix}{HashKey(keyComponents)}";
@@ -57,8 +56,8 @@ public static class CacheKeyBuilder
     /// </summary>
     public static string BuildSeriesKey(string chartId, string seriesName)
     {
-        if (string.IsNullOrEmpty(chartId))
-            throw new ArgumentException("Chart ID cannot be empty", nameof(chartId));
+        ArgumentException.ThrowIfNullOrEmpty(chartId);
+        ArgumentException.ThrowIfNullOrEmpty(seriesName);
 
         var keyComponents = $"{chartId}_{seriesName}";
         return $"{SeriesKeyPrefix}{HashKey(keyComponents)}";
@@ -86,8 +85,7 @@ public static class CacheKeyBuilder
     /// </summary>
     public static string BuildPaletteKey(string paletteName)
     {
-        if (string.IsNullOrEmpty(paletteName))
-            throw new ArgumentException("Palette name cannot be empty", nameof(paletteName));
+        ArgumentException.ThrowIfNullOrEmpty(paletteName);
 
         return $"palette_{paletteName.ToLowerInvariant()}";
     }
@@ -140,8 +138,7 @@ public static class CacheKeyBuilder
     /// </summary>
     public static string BuildInvalidationPattern(string chartId)
     {
-        if (string.IsNullOrEmpty(chartId))
-            throw new ArgumentException("Chart ID cannot be empty", nameof(chartId));
+        ArgumentException.ThrowIfNullOrEmpty(chartId);
 
         return $"{KeyPrefix}{chartId}_*";
     }
@@ -162,6 +159,8 @@ public static class CacheKeyBuilder
     /// </summary>
     public static string BuildCompositeKey(params object?[] parameters)
     {
+        ArgumentNullException.ThrowIfNull(parameters);
+
         var sb = new StringBuilder();
         for (int i = 0; i < parameters.Length; i++)
         {
