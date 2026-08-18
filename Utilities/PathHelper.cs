@@ -20,6 +20,8 @@ public static class PathHelper
     /// </summary>
     public static bool IsValidPath(string path, string? basePath = null)
     {
+        ArgumentException.ThrowIfNullOrEmpty(path);
+
         if (string.IsNullOrWhiteSpace(path))
             return false;
 
@@ -66,6 +68,9 @@ public static class PathHelper
     /// </summary>
     public static string GetUniqueFilename(string directory, string filename)
     {
+        ArgumentException.ThrowIfNullOrEmpty(directory);
+        ArgumentException.ThrowIfNullOrEmpty(filename);
+
         if (!Directory.Exists(directory))
             throw new DirectoryNotFoundException($"Directory {directory} not found");
 
@@ -90,6 +95,8 @@ public static class PathHelper
     /// </summary>
     public static bool EnsureDirectoryExists(string directory)
     {
+        ArgumentException.ThrowIfNullOrEmpty(directory);
+
         try
         {
             if (!Directory.Exists(directory))
@@ -109,6 +116,8 @@ public static class PathHelper
     /// </summary>
     public static string GetFileExtension(string format)
     {
+        ArgumentException.ThrowIfNullOrEmpty(format);
+
         return format?.ToLowerInvariant() switch
         {
             "png" => ".png",
@@ -126,6 +135,8 @@ public static class PathHelper
     /// </summary>
     public static string GetMimeType(string format)
     {
+        ArgumentException.ThrowIfNullOrEmpty(format);
+
         return format?.ToLowerInvariant() switch
         {
             "png" => "image/png",
@@ -158,6 +169,9 @@ public static class PathHelper
     /// </summary>
     public static string GetRelativePath(string baseDirectory, string fullPath)
     {
+        ArgumentException.ThrowIfNullOrEmpty(baseDirectory);
+        ArgumentException.ThrowIfNullOrEmpty(fullPath);
+
         try
         {
             var baseDirPath = Path.GetFullPath(baseDirectory);
@@ -180,6 +194,8 @@ public static class PathHelper
     /// </summary>
     public static string NormalizePath(string path)
     {
+        ArgumentException.ThrowIfNullOrEmpty(path);
+
         if (string.IsNullOrEmpty(path))
             return path;
 
@@ -192,6 +208,8 @@ public static class PathHelper
     /// </summary>
     public static int CleanupOldFiles(string directory, TimeSpan olderThan)
     {
+        ArgumentException.ThrowIfNullOrEmpty(directory);
+
         if (!Directory.Exists(directory))
             return 0;
 
