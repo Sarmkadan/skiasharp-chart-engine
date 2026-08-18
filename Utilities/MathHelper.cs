@@ -18,6 +18,7 @@ public static class MathHelper
     /// </summary>
     public static (float Min, float Max) GetMinMax(IEnumerable<float> values)
     {
+        ArgumentNullException.ThrowIfNull(values);
         float min = float.MaxValue;
         float max = float.MinValue;
         bool hasValues = false;
@@ -136,6 +137,7 @@ public static class MathHelper
     /// </summary>
     public static float Average(IEnumerable<float> values)
     {
+        ArgumentNullException.ThrowIfNull(values);
         float sum = 0f;
         int count = 0;
 
@@ -172,6 +174,7 @@ public static class MathHelper
     /// </summary>
     public static float StandardDeviation(IEnumerable<float> values)
     {
+        ArgumentNullException.ThrowIfNull(values);
         const int InitialCapacity = 64;
         float[] buffer = ArrayPool<float>.Shared.Rent(InitialCapacity);
         int count = 0;
