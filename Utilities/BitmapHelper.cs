@@ -20,6 +20,8 @@ public static class BitmapHelper
     /// </summary>
     public static bool IsPngValid(byte[] data)
     {
+        ArgumentNullException.ThrowIfNull(data);
+
         if (data == null || data.Length < 8)
             return false;
 
@@ -33,6 +35,8 @@ public static class BitmapHelper
     /// </summary>
     public static bool IsJpegValid(byte[] data)
     {
+        ArgumentNullException.ThrowIfNull(data);
+
         if (data == null || data.Length < 3)
             return false;
 
@@ -44,6 +48,8 @@ public static class BitmapHelper
     /// </summary>
     public static (int Width, int Height)? GetPngDimensions(byte[] data)
     {
+        ArgumentNullException.ThrowIfNull(data);
+
         try
         {
             if (!IsPngValid(data) || data.Length < 24)
@@ -68,6 +74,8 @@ public static class BitmapHelper
     /// </summary>
     public static long EstimateFileSize(int width, int height, float dpi, string format)
     {
+        ArgumentException.ThrowIfNullOrEmpty(format);
+
         // Rough estimation: width * height * bytes_per_pixel
         // PNG typically 3-4 bytes per pixel with compression
         // JPEG typically 1-2 bytes per pixel depending on quality
@@ -91,6 +99,8 @@ public static class BitmapHelper
     /// </summary>
     public static string? DetectFormat(byte[] data)
     {
+        ArgumentNullException.ThrowIfNull(data);
+
         if (data == null || data.Length < 4)
             return null;
 
