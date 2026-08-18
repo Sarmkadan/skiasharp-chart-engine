@@ -67,6 +67,8 @@ public class RequestMetricsCollector
     /// </summary>
     public EndpointMetrics? GetEndpointMetrics(string endpoint)
     {
+        ArgumentException.ThrowIfNullOrEmpty(endpoint);
+
         if (!_metrics.TryGetValue(endpoint, out var list) || list.Count == 0)
             return null;
 
@@ -161,6 +163,8 @@ public class RequestMetricsCollector
     /// </summary>
     public EndpointMetrics? GetEndpointMetricsForPeriod(string endpoint, TimeSpan period)
     {
+        ArgumentException.ThrowIfNullOrEmpty(endpoint);
+
         if (!_metrics.TryGetValue(endpoint, out var list))
             return null;
 
