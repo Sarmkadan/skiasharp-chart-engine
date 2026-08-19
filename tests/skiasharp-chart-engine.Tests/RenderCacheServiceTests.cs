@@ -53,11 +53,13 @@ public class RenderCacheServiceTests
     [Fact]
     public void Get_WithNullKey_ReturnsNull()
     {
+        _loggerMock.Object.LogInformation("Get_WithNullKey_ReturnsNull called");
         // Act
         var result = _cacheService.Get(null!);
 
         // Assert
         result.Should().BeNull();
+        _loggerMock.Object.LogInformation("Get_WithNullKey_ReturnsNull finished");
     }
 
     /// <summary>
@@ -66,11 +68,13 @@ public class RenderCacheServiceTests
     [Fact]
     public void Get_WithEmptyKey_ReturnsNull()
     {
+        _loggerMock.Object.LogInformation("Get_WithEmptyKey_ReturnsNull called");
         // Act
         var result = _cacheService.Get(" ");
 
         // Assert
         result.Should().BeNull();
+        _loggerMock.Object.LogInformation("Get_WithEmptyKey_ReturnsNull finished");
     }
 
     /// <summary>
@@ -79,11 +83,13 @@ public class RenderCacheServiceTests
     [Fact]
     public void Get_WithNonExistentKey_ReturnsNull()
     {
+        _loggerMock.Object.LogInformation("Get_WithNonExistentKey_ReturnsNull called");
         // Act
         var result = _cacheService.Get("nonexistent");
 
         // Assert
         result.Should().BeNull();
+        _loggerMock.Object.LogInformation("Get_WithNonExistentKey_ReturnsNull finished");
     }
 
     /// <summary>
@@ -92,6 +98,7 @@ public class RenderCacheServiceTests
     [Fact]
     public void Get_WithExistingKey_ReturnsImageData()
     {
+        _loggerMock.Object.LogInformation("Get_WithExistingKey_ReturnsImageData called with {Key}", "key1");
         // Arrange
         var imageData = CreateTestImageData(500);
         _cacheService.Set("key1", imageData);
@@ -102,6 +109,7 @@ public class RenderCacheServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Should().Equal(imageData);
+        _loggerMock.Object.LogInformation("Get_WithExistingKey_ReturnsImageData finished with {Key}", "key1");
     }
 
     /// <summary>
@@ -110,6 +118,7 @@ public class RenderCacheServiceTests
     [Fact]
     public void Get_IncrementsAccessCount()
     {
+        _loggerMock.Object.LogInformation("Get_IncrementsAccessCount called with {Key}", "key1");
         // Arrange
         _cacheService.Set("key1", CreateTestImageData());
 
@@ -120,6 +129,7 @@ public class RenderCacheServiceTests
         // Assert
         result1.Should().NotBeNull();
         result2.Should().NotBeNull();
+        _loggerMock.Object.LogInformation("Get_IncrementsAccessCount finished with {Key}", "key1");
     }
 
     /// <summary>
@@ -136,11 +146,13 @@ public class RenderCacheServiceTests
     [Fact]
     public void Set_WithNullKey_DoesNotCrash()
     {
+        _loggerMock.Object.LogInformation("Set_WithNullKey_DoesNotCrash called");
         // Act
         Action act = () => _cacheService.Set(null!, CreateTestImageData());
 
         // Assert
         act.Should().NotThrow();
+        _loggerMock.Object.LogInformation("Set_WithNullKey_DoesNotCrash finished");
     }
 
     /// <summary>
@@ -149,11 +161,13 @@ public class RenderCacheServiceTests
     [Fact]
     public void Set_WithEmptyKey_DoesNotCrash()
     {
+        _loggerMock.Object.LogInformation("Set_WithEmptyKey_DoesNotCrash called");
         // Act
         Action act = () => _cacheService.Set(" ", CreateTestImageData());
 
         // Assert
         act.Should().NotThrow();
+        _loggerMock.Object.LogInformation("Set_WithEmptyKey_DoesNotCrash finished");
     }
 
     /// <summary>
@@ -162,11 +176,13 @@ public class RenderCacheServiceTests
     [Fact]
     public void Set_WithNullImageData_DoesNotCrash()
     {
+        _loggerMock.Object.LogInformation("Set_WithNullImageData_DoesNotCrash called with {Key}", "key");
         // Act
         Action act = () => _cacheService.Set("key", null!);
 
         // Assert
         act.Should().NotThrow();
+        _loggerMock.Object.LogInformation("Set_WithNullImageData_DoesNotCrash finished with {Key}", "key");
     }
 
     /// <summary>
@@ -175,6 +191,7 @@ public class RenderCacheServiceTests
     [Fact]
     public void Set_WithValidData_StoresEntry()
     {
+        _loggerMock.Object.LogInformation("Set_WithValidData_StoresEntry called with {Key}", "key1");
         // Arrange
         var imageData = CreateTestImageData(500);
 
@@ -184,6 +201,7 @@ public class RenderCacheServiceTests
 
         // Assert
         result.Should().Equal(imageData);
+        _loggerMock.Object.LogInformation("Set_WithValidData_StoresEntry finished with {Key}", "key1");
     }
 
     /// <summary>
@@ -192,6 +210,7 @@ public class RenderCacheServiceTests
     [Fact]
     public void Set_ReplacesExistingEntry()
     {
+        _loggerMock.Object.LogInformation("Set_ReplacesExistingEntry called with {Key}", "key1");
         // Arrange
         var data1 = CreateTestImageData(100);
         var data2 = CreateTestImageData(200);
@@ -203,6 +222,7 @@ public class RenderCacheServiceTests
 
         // Assert
         result.Should().Equal(data2);
+        _loggerMock.Object.LogInformation("Set_ReplacesExistingEntry finished with {Key}", "key1");
     }
 
     /// <summary>
@@ -211,6 +231,7 @@ public class RenderCacheServiceTests
     [Fact]
     public void Set_WhenMaxCacheSizeReached_EvictsLRU()
     {
+        _loggerMock.Object.LogInformation("Set_WhenMaxCacheSizeReached_EvictsLRU called");
         // Arrange - cache size is 3
         _cacheService.Set("key1", CreateTestImageData());
         _cacheService.Set("key2", CreateTestImageData());
@@ -224,6 +245,7 @@ public class RenderCacheServiceTests
         _cacheService.Get("key2").Should().NotBeNull();
         _cacheService.Get("key3").Should().NotBeNull();
         _cacheService.Get("key4").Should().NotBeNull();
+        _loggerMock.Object.LogInformation("Set_WhenMaxCacheSizeReached_EvictsLRU finished");
     }
 
     /// <summary>
@@ -232,6 +254,7 @@ public class RenderCacheServiceTests
     [Fact]
     public void Set_EvicsLeastAccessedWhenTied()
     {
+        _loggerMock.Object.LogInformation("Set_EvicsLeastAccessedWhenTied called");
         // Arrange - cache size is 3
         _cacheService.Set("key1", CreateTestImageData()); // oldest, no accesses
         _cacheService.Set("key2", CreateTestImageData()); // middle
@@ -242,6 +265,7 @@ public class RenderCacheServiceTests
 
         // Assert - key1 (oldest with least accesses) should be evicted
         _cacheService.Get("key1").Should().BeNull();
+        _loggerMock.Object.LogInformation("Set_EvicsLeastAccessedWhenTied finished");
     }
 
     /// <summary>
