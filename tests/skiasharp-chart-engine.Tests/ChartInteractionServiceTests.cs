@@ -71,11 +71,13 @@ public class ChartInteractionServiceTests
     [Fact]
     public void ProcessInteraction_WithNullChart_ThrowsArgumentNullException()
     {
+        _loggerMock.Object.LogInformation("Entering {MethodName}", nameof(ProcessInteraction_WithNullChart_ThrowsArgumentNullException));
         // Act
         Action act = () => _service.ProcessInteraction(null!, ChartInteractionType.Click, 0, 0, 800, 600);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("chart");
+        _loggerMock.Object.LogInformation("Exiting {MethodName}", nameof(ProcessInteraction_WithNullChart_ThrowsArgumentNullException));
     }
 
     /// <summary>
