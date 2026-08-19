@@ -52,6 +52,8 @@ public class RenderResultCacheTests
     [Fact]
     public void Cache_WithNullKey_DoesNotCrash()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Cache_WithNullKey_DoesNotCrash));
+        
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
         var result = CreateTestResult();
@@ -61,6 +63,8 @@ public class RenderResultCacheTests
 
         // Assert
         act.Should().NotThrow();
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Cache_WithNullKey_DoesNotCrash));
     }
 
     /// <summary>
@@ -70,6 +74,8 @@ public class RenderResultCacheTests
     [Fact]
     public void Cache_WithNullResult_DoesNotCrash()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Cache_WithNullResult_DoesNotCrash));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
 
@@ -78,6 +84,8 @@ public class RenderResultCacheTests
 
         // Assert
         act.Should().NotThrow();
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Cache_WithNullResult_DoesNotCrash));
     }
 
     /// <summary>
@@ -87,6 +95,8 @@ public class RenderResultCacheTests
     [Fact]
     public void Cache_WithValidData_StoresResultWithDefaultTtl()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Cache_WithValidData_StoresResultWithDefaultTtl));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
         var result = CreateTestResult();
@@ -98,6 +108,8 @@ public class RenderResultCacheTests
         // Assert
         retrieved.Should().NotBeNull();
         retrieved.ChartId.Should().Be("test");
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Cache_WithValidData_StoresResultWithDefaultTtl));
     }
 
     /// <summary>
@@ -107,6 +119,8 @@ public class RenderResultCacheTests
     [Fact]
     public void Cache_WithCustomTtl_RespectsTtlValue()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Cache_WithCustomTtl_RespectsTtlValue));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
         var result = CreateTestResult();
@@ -118,6 +132,8 @@ public class RenderResultCacheTests
 
         // Assert - immediately after caching, should still be available
         retrieved.Should().NotBeNull();
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Cache_WithCustomTtl_RespectsTtlValue));
     }
 
     /// <summary>
@@ -127,6 +143,8 @@ public class RenderResultCacheTests
     [Fact]
     public void Cache_StoresMultipleEntriesIndependently()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Cache_StoresMultipleEntriesIndependently));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
         var result1 = CreateTestResult("chart1");
@@ -139,6 +157,8 @@ public class RenderResultCacheTests
         // Assert
         cache.Get("key1")?.ChartId.Should().Be("chart1");
         cache.Get("key2")?.ChartId.Should().Be("chart2");
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Cache_StoresMultipleEntriesIndependently));
     }
 
     /// <summary>
@@ -148,6 +168,8 @@ public class RenderResultCacheTests
     [Fact]
     public void Cache_WhenSizeExceedsLimit_EvictsLRU()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Cache_WhenSizeExceedsLimit_EvictsLRU));
+
         // Arrange
         var smallSize = 5000L; // Small cache to force eviction
         using var cache = new RenderResultCache(_loggerMock.Object, smallSize);
@@ -164,6 +186,8 @@ public class RenderResultCacheTests
         cache.Get("key1").Should().BeNull();
         cache.Get("key2").Should().NotBeNull();
         cache.Get("key3").Should().NotBeNull();
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Cache_WhenSizeExceedsLimit_EvictsLRU));
     }
 
     /// <summary>
@@ -173,6 +197,8 @@ public class RenderResultCacheTests
     [Fact]
     public void Cache_ReplacesExistingEntry()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Cache_ReplacesExistingEntry));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
         var result1 = CreateTestResult("chart1");
@@ -185,6 +211,8 @@ public class RenderResultCacheTests
         // Assert
         var retrieved = cache.Get("key");
         retrieved?.ChartId.Should().Be("chart2");
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Cache_ReplacesExistingEntry));
     }
 
     // ---------------------------------------------------------------
@@ -198,6 +226,8 @@ public class RenderResultCacheTests
     [Fact]
     public void Get_WithNonExistentKey_ReturnsNull()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Get_WithNonExistentKey_ReturnsNull));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
 
@@ -206,6 +236,8 @@ public class RenderResultCacheTests
 
         // Assert
         result.Should().BeNull();
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Get_WithNonExistentKey_ReturnsNull));
     }
 
     /// <summary>
@@ -215,6 +247,8 @@ public class RenderResultCacheTests
     [Fact]
     public void Get_WithValidKey_ReturnsResult()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Get_WithValidKey_ReturnsResult));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
         var testResult = CreateTestResult("test-id");
@@ -226,6 +260,8 @@ public class RenderResultCacheTests
         // Assert
         result.Should().NotBeNull();
         result.ChartId.Should().Be("test-id");
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Get_WithValidKey_ReturnsResult));
     }
 
     /// <summary>
@@ -235,6 +271,8 @@ public class RenderResultCacheTests
     [Fact]
     public void Get_UpdatesAccessCountAndLastAccessedTime()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Get_UpdatesAccessCountAndLastAccessedTime));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
         var testResult = CreateTestResult();
@@ -248,6 +286,8 @@ public class RenderResultCacheTests
         // Assert - both should succeed with updated access info
         result1.Should().NotBeNull();
         result2.Should().NotBeNull();
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Get_UpdatesAccessCountAndLastAccessedTime));
     }
 
     /// <summary>
@@ -257,6 +297,8 @@ public class RenderResultCacheTests
     [Fact]
     public void Get_WithExpiredEntry_ReturnsNullAndRemovesEntry()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Get_WithExpiredEntry_ReturnsNullAndRemovesEntry));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
         var testResult = CreateTestResult();
@@ -269,6 +311,8 @@ public class RenderResultCacheTests
 
         // Assert
         result.Should().BeNull();
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Get_WithExpiredEntry_ReturnsNullAndRemovesEntry));
     }
 
     // ---------------------------------------------------------------
@@ -282,6 +326,8 @@ public class RenderResultCacheTests
     [Fact]
     public void Remove_WithExistingKey_ReturnsTrue()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Remove_WithExistingKey_ReturnsTrue));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
         var testResult = CreateTestResult();
@@ -293,6 +339,8 @@ public class RenderResultCacheTests
         // Assert
         removed.Should().BeTrue();
         cache.Get("key").Should().BeNull();
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Remove_WithExistingKey_ReturnsTrue));
     }
 
     /// <summary>
@@ -302,6 +350,8 @@ public class RenderResultCacheTests
     [Fact]
     public void Remove_WithNonExistentKey_ReturnsFalse()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Remove_WithNonExistentKey_ReturnsFalse));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
 
@@ -310,6 +360,8 @@ public class RenderResultCacheTests
 
         // Assert
         removed.Should().BeFalse();
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Remove_WithNonExistentKey_ReturnsFalse));
     }
 
     /// <summary>
@@ -319,6 +371,8 @@ public class RenderResultCacheTests
     [Fact]
     public void Remove_DecreasesCacheSizeCounter()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Remove_DecreasesCacheSizeCounter));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
         var testResult = CreateTestResult("id", 5000);
@@ -332,6 +386,8 @@ public class RenderResultCacheTests
         // Assert
         statsBefore.TotalSize.Should().BeGreaterThan(0);
         statsAfter.TotalSize.Should().BeLessThan(statsBefore.TotalSize);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Remove_DecreasesCacheSizeCounter));
     }
 
     // ---------------------------------------------------------------
@@ -345,6 +401,8 @@ public class RenderResultCacheTests
     [Fact]
     public void Clear_RemovesAllEntries()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Clear_RemovesAllEntries));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
         cache.Cache("key1", CreateTestResult("id1"));
@@ -358,6 +416,8 @@ public class RenderResultCacheTests
         cache.Get("key1").Should().BeNull();
         cache.Get("key2").Should().BeNull();
         cache.Get("key3").Should().BeNull();
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Clear_RemovesAllEntries));
     }
 
     /// <summary>
@@ -367,6 +427,8 @@ public class RenderResultCacheTests
     [Fact]
     public void Clear_ResetsSizeCounter()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Clear_ResetsSizeCounter));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
         cache.Cache("key", CreateTestResult());
@@ -379,6 +441,8 @@ public class RenderResultCacheTests
         // Assert
         stats1.TotalSize.Should().BeGreaterThan(0);
         stats2.TotalSize.Should().Be(0);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Clear_ResetsSizeCounter));
     }
 
     // ---------------------------------------------------------------
@@ -392,6 +456,8 @@ public class RenderResultCacheTests
     [Fact]
     public void GetStatistics_WithEmptyCache_ReturnsZeroStats()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(GetStatistics_WithEmptyCache_ReturnsZeroStats));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
 
@@ -403,6 +469,8 @@ public class RenderResultCacheTests
         stats.TotalSize.Should().Be(0);
         stats.TotalHits.Should().Be(0);
         stats.MaxSize.Should().Be(TestMaxCacheSize);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(GetStatistics_WithEmptyCache_ReturnsZeroStats));
     }
 
     /// <summary>
@@ -412,6 +480,8 @@ public class RenderResultCacheTests
     [Fact]
     public void GetStatistics_TracksEntryCountAndSize()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(GetStatistics_TracksEntryCountAndSize));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
         var result1 = CreateTestResult("id1", 1000);
@@ -425,6 +495,8 @@ public class RenderResultCacheTests
         // Assert
         stats.TotalEntries.Should().Be(2);
         stats.TotalSize.Should().BeGreaterThan(0);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(GetStatistics_TracksEntryCountAndSize));
     }
 
     /// <summary>
@@ -434,6 +506,8 @@ public class RenderResultCacheTests
     [Fact]
     public void GetStatistics_TracksHitCount()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(GetStatistics_TracksHitCount));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
         var result = CreateTestResult();
@@ -446,6 +520,8 @@ public class RenderResultCacheTests
 
         // Assert
         stats.TotalHits.Should().BeGreaterThanOrEqualTo(0);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(GetStatistics_TracksHitCount));
     }
 
     /// <summary>
@@ -455,6 +531,8 @@ public class RenderResultCacheTests
     [Fact]
     public void GetStatistics_IncludesOldestAndNewestEntryDates()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(GetStatistics_IncludesOldestAndNewestEntryDates));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
         cache.Cache("key1", CreateTestResult());
@@ -468,6 +546,8 @@ public class RenderResultCacheTests
         stats.OldestEntry.Should().NotBeNull();
         stats.NewestEntry.Should().NotBeNull();
         stats.NewestEntry.Should().BeOnOrAfter(stats.OldestEntry!.Value);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(GetStatistics_IncludesOldestAndNewestEntryDates));
     }
 
     // ---------------------------------------------------------------
@@ -481,6 +561,8 @@ public class RenderResultCacheTests
     [Fact]
     public void Cache_IsThreadSafe_ConcurrentReads()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Cache_IsThreadSafe_ConcurrentReads));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
         cache.Cache("key", CreateTestResult());
@@ -507,6 +589,8 @@ public class RenderResultCacheTests
 
         // Assert
         results.Should().AllSatisfy(r => r.Should().NotBeNull());
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Cache_IsThreadSafe_ConcurrentReads));
     }
 
     /// <summary>
@@ -516,6 +600,8 @@ public class RenderResultCacheTests
     [Fact]
     public void Cache_IsThreadSafe_ConcurrentWrites()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Cache_IsThreadSafe_ConcurrentWrites));
+
         // Arrange
         using var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
         var threads = new List<Thread>();
@@ -541,6 +627,8 @@ public class RenderResultCacheTests
         // Assert - cache should have all entries
         var stats = cache.GetStatistics();
         stats.TotalEntries.Should().Be(50);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Cache_IsThreadSafe_ConcurrentWrites));
     }
 
     // ---------------------------------------------------------------
@@ -554,11 +642,15 @@ public class RenderResultCacheTests
     [Fact]
     public void Constructor_WithNullLogger_ThrowsArgumentNullException()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Constructor_WithNullLogger_ThrowsArgumentNullException));
+
         // Act
         Action act = () => new RenderResultCache(null!, TestMaxCacheSize);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Constructor_WithNullLogger_ThrowsArgumentNullException));
     }
 
     /// <summary>
@@ -568,12 +660,16 @@ public class RenderResultCacheTests
     [Fact]
     public void Constructor_WithDefaultMaxSize_Uses100Mb()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Constructor_WithDefaultMaxSize_Uses100Mb));
+
         // Arrange & Act
         using var cache = new RenderResultCache(_loggerMock.Object);
 
         // Assert
         var stats = cache.GetStatistics();
         stats.MaxSize.Should().Be(104_857_600); // 100 MB
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Constructor_WithDefaultMaxSize_Uses100Mb));
     }
 
     /// <summary>
@@ -583,6 +679,8 @@ public class RenderResultCacheTests
     [Fact]
     public void Dispose_DisposesCacheGracefully()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Dispose_DisposesCacheGracefully));
+
         // Arrange
         var cache = new RenderResultCache(_loggerMock.Object, TestMaxCacheSize);
         cache.Cache("key", CreateTestResult());
@@ -592,5 +690,7 @@ public class RenderResultCacheTests
 
         // Assert - no exceptions
         cache.Clear(); // Should not throw
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Dispose_DisposesCacheGracefully));
     }
 }
