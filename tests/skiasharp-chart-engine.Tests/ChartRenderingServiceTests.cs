@@ -263,8 +263,7 @@ public class ChartRenderingServiceTests
 
     /// <summary>
     /// Verifies that the rendered image data is written to the specified file path.
-    /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous test execution.</returns>
+    /// </returns>A <see cref="Task"/> representing the asynchronous test execution.</returns>
     [Fact]
     public async Task RenderToFileAsync_WritesImageDataToFile()
     {
