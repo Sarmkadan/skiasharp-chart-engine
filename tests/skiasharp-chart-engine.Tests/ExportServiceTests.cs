@@ -23,6 +23,7 @@ public class ExportServiceTests
     private readonly Mock<IChartRenderingService> _renderingServiceMock;
     private readonly Mock<ILogger<ExportService>> _loggerMock;
     private readonly ExportService _service;
+    private readonly Mock<ILogger<ExportServiceTests>> _testLoggerMock;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExportServiceTests"/> class.
@@ -34,6 +35,7 @@ public class ExportServiceTests
         _renderingServiceMock = new Mock<IChartRenderingService>();
         _loggerMock = new Mock<ILogger<ExportService>>();
         _service = new ExportService(_renderingServiceMock.Object, _loggerMock.Object);
+        _testLoggerMock = new Mock<ILogger<ExportServiceTests>>();
     }
 
     /// <summary>
@@ -61,6 +63,7 @@ public class ExportServiceTests
     [Fact]
     public async Task ExportAsync_WithNullChart_ThrowsArgumentNullException()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(ExportAsync_WithNullChart_ThrowsArgumentNullException));
         // Arrange
         var options = new ExportOptions { Format = ExportFormat.PNG };
 
@@ -69,6 +72,7 @@ public class ExportServiceTests
 
         // Assert
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("chart");
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(ExportAsync_WithNullChart_ThrowsArgumentNullException));
     }
 
     /// <summary>
@@ -78,6 +82,7 @@ public class ExportServiceTests
     [Fact]
     public async Task ExportAsync_WithNullOptions_ThrowsArgumentNullException()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(ExportAsync_WithNullOptions_ThrowsArgumentNullException));
         // Arrange
         var chart = CreateValidChart();
 
@@ -86,6 +91,7 @@ public class ExportServiceTests
 
         // Assert
         await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("options");
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(ExportAsync_WithNullOptions_ThrowsArgumentNullException));
     }
 
     /// <summary>
@@ -226,6 +232,7 @@ public class ExportServiceTests
     [Fact]
     public void Export_WithNullChart_ThrowsArgumentNullException()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(Export_WithNullChart_ThrowsArgumentNullException));
         // Arrange
         var options = new ExportOptions { Format = ExportFormat.PNG };
 
@@ -234,6 +241,7 @@ public class ExportServiceTests
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("chart");
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(Export_WithNullChart_ThrowsArgumentNullException));
     }
 
     /// <summary>
@@ -243,6 +251,7 @@ public class ExportServiceTests
     [Fact]
     public void Export_WithNullOptions_ThrowsArgumentNullException()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(Export_WithNullOptions_ThrowsArgumentNullException));
         // Arrange
         var chart = CreateValidChart();
 
@@ -251,6 +260,7 @@ public class ExportServiceTests
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("options");
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(Export_WithNullOptions_ThrowsArgumentNullException));
     }
 
     /// <summary>
@@ -260,6 +270,7 @@ public class ExportServiceTests
     [Fact]
     public void Export_WithUnsupportedFormat_ThrowsUnsupportedExportFormatException()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(Export_WithUnsupportedFormat_ThrowsUnsupportedExportFormatException));
         // Arrange
         var chart = CreateValidChart();
         var options = new ExportOptions { Format = (ExportFormat)999 };
@@ -269,6 +280,7 @@ public class ExportServiceTests
 
         // Assert
         act.Should().Throw<UnsupportedExportFormatException>();
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(Export_WithUnsupportedFormat_ThrowsUnsupportedExportFormatException));
     }
 
     /// <summary>
