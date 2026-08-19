@@ -101,6 +101,7 @@ public class ExportServiceTests
     [Fact]
     public async Task ExportAsync_WithUnsupportedFormat_ThrowsUnsupportedExportFormatException()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(ExportAsync_WithUnsupportedFormat_ThrowsUnsupportedExportFormatException));
         // Arrange
         var chart = CreateValidChart();
         var options = new ExportOptions { Format = (ExportFormat)999 };
@@ -110,6 +111,7 @@ public class ExportServiceTests
 
         // Assert
         await act.Should().ThrowAsync<UnsupportedExportFormatException>();
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(ExportAsync_WithUnsupportedFormat_ThrowsUnsupportedExportFormatException));
     }
 
     /// <summary>
@@ -119,6 +121,7 @@ public class ExportServiceTests
     [Fact]
     public async Task ExportAsync_WithSupportedPngFormat_DelegatesRenderingAndReturnsSuccess()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(ExportAsync_WithSupportedPngFormat_DelegatesRenderingAndReturnsSuccess));
         // Arrange
         var chart = CreateValidChart();
         var options = new ExportOptions { Format = ExportFormat.PNG, DirectoryPath = "/tmp", FileName = "chart.png" };
@@ -132,6 +135,7 @@ public class ExportServiceTests
         // Assert
         result.Success.Should().BeTrue();
         _renderingServiceMock.Verify(x => x.RenderWithExportAsync(chart, options, It.IsAny<CancellationToken>()), Times.Once);
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(ExportAsync_WithSupportedPngFormat_DelegatesRenderingAndReturnsSuccess));
     }
 
     /// <summary>
@@ -141,6 +145,7 @@ public class ExportServiceTests
     [Fact]
     public async Task ExportAsync_WithSupportedSvgFormat_DelegatesRenderingAndReturnsSuccess()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(ExportAsync_WithSupportedSvgFormat_DelegatesRenderingAndReturnsSuccess));
         // Arrange
         var chart = CreateValidChart();
         var options = new ExportOptions { Format = ExportFormat.SVG, DirectoryPath = "/tmp", FileName = "chart.svg" };
@@ -154,6 +159,7 @@ public class ExportServiceTests
         // Assert
         result.Success.Should().BeTrue();
         _renderingServiceMock.Verify(x => x.RenderWithExportAsync(chart, options, It.IsAny<CancellationToken>()), Times.Once);
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(ExportAsync_WithSupportedSvgFormat_DelegatesRenderingAndReturnsSuccess));
     }
 
     /// <summary>
@@ -163,6 +169,7 @@ public class ExportServiceTests
     [Fact]
     public async Task ExportAsync_WhenRenderingServiceReturnsFailure_ReturnsFailureResult()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(ExportAsync_WhenRenderingServiceReturnsFailure_ReturnsFailureResult));
         // Arrange
         var chart = CreateValidChart();
         var options = new ExportOptions { Format = ExportFormat.PNG, DirectoryPath = "/tmp", FileName = "chart.png" };
@@ -176,6 +183,7 @@ public class ExportServiceTests
         // Assert
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("Rendering failed");
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(ExportAsync_WhenRenderingServiceReturnsFailure_ReturnsFailureResult));
     }
 
     /// <summary>
@@ -185,6 +193,7 @@ public class ExportServiceTests
     [Fact]
     public async Task ExportAsync_WhenInfrastructureErrorOccurs_ReturnsFailureWithErrorMessage()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(ExportAsync_WhenInfrastructureErrorOccurs_ReturnsFailureWithErrorMessage));
         // Arrange
         var chart = CreateValidChart();
         var options = new ExportOptions { Format = ExportFormat.PNG, DirectoryPath = "/tmp", FileName = "chart.png" };
@@ -197,6 +206,7 @@ public class ExportServiceTests
         // Assert
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().NotBeNullOrEmpty();
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(ExportAsync_WhenInfrastructureErrorOccurs_ReturnsFailureWithErrorMessage));
     }
 
     /// <summary>
@@ -206,6 +216,7 @@ public class ExportServiceTests
     [Fact]
     public async Task ExportAsync_WithCancellation_RespectsCancellationToken()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(ExportAsync_WithCancellation_RespectsCancellationToken));
         // Arrange
         var chart = CreateValidChart();
         var options = new ExportOptions { Format = ExportFormat.PNG, DirectoryPath = "/tmp", FileName = "chart.png" };
@@ -219,6 +230,7 @@ public class ExportServiceTests
 
         // Assert
         result.Success.Should().BeFalse();
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(ExportAsync_WithCancellation_RespectsCancellationToken));
     }
 
     // ---------------------------------------------------------------
@@ -290,6 +302,7 @@ public class ExportServiceTests
     [Fact]
     public void Export_WithValidChartAndFormat_DelegatesAndReturnsSuccess()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(Export_WithValidChartAndFormat_DelegatesAndReturnsSuccess));
         // Arrange
         var chart = CreateValidChart();
         var options = new ExportOptions { Format = ExportFormat.PNG, DirectoryPath = "/tmp", FileName = "chart.png" };
@@ -305,6 +318,7 @@ public class ExportServiceTests
         // Assert
         result.Success.Should().BeTrue();
         _renderingServiceMock.Verify(x => x.RenderWithExportAsync(chart, options, It.IsAny<CancellationToken>()), Times.Once);
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(Export_WithValidChartAndFormat_DelegatesAndReturnsSuccess));
     }
 
     /// <summary>
@@ -314,6 +328,7 @@ public class ExportServiceTests
     [Fact]
     public void Export_WhenRenderingServiceThrows_ReturnsFailureResult()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(Export_WhenRenderingServiceThrows_ReturnsFailureResult));
         // Arrange
         var chart = CreateValidChart();
         var options = new ExportOptions { Format = ExportFormat.PNG, DirectoryPath = "/tmp", FileName = "chart.png" };
@@ -326,6 +341,7 @@ public class ExportServiceTests
         // Assert
         result.Success.Should().BeFalse();
         result.ErrorMessage.Should().Contain("Rendering failed");
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(Export_WhenRenderingServiceThrows_ReturnsFailureResult));
     }
 
     // ---------------------------------------------------------------
@@ -338,11 +354,13 @@ public class ExportServiceTests
     [Fact]
     public void SupportsFormat_WithPng_ReturnsTrue()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(SupportsFormat_WithPng_ReturnsTrue));
         // Act
         var result = _service.SupportsFormat(ExportFormat.PNG);
 
         // Assert
         result.Should().BeTrue();
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(SupportsFormat_WithPng_ReturnsTrue));
     }
 
     /// <summary>
@@ -351,11 +369,13 @@ public class ExportServiceTests
     [Fact]
     public void SupportsFormat_WithSvg_ReturnsTrue()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(SupportsFormat_WithSvg_ReturnsTrue));
         // Act
         var result = _service.SupportsFormat(ExportFormat.SVG);
 
         // Assert
         result.Should().BeTrue();
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(SupportsFormat_WithSvg_ReturnsTrue));
     }
 
     /// <summary>
@@ -364,11 +384,13 @@ public class ExportServiceTests
     [Fact]
     public void SupportsFormat_WithJpeg_ReturnsTrue()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(SupportsFormat_WithJpeg_ReturnsTrue));
         // Act
         var result = _service.SupportsFormat(ExportFormat.JPEG);
 
         // Assert
         result.Should().BeTrue();
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(SupportsFormat_WithJpeg_ReturnsTrue));
     }
 
     /// <summary>
@@ -377,11 +399,13 @@ public class ExportServiceTests
     [Fact]
     public void SupportsFormat_WithWebp_ReturnsTrue()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(SupportsFormat_WithWebp_ReturnsTrue));
         // Act
         var result = _service.SupportsFormat(ExportFormat.WEBP);
 
         // Assert
         result.Should().BeTrue();
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(SupportsFormat_WithWebp_ReturnsTrue));
     }
 
     /// <summary>
@@ -390,11 +414,13 @@ public class ExportServiceTests
     [Fact]
     public void SupportsFormat_WithUnsupportedFormat_ReturnsFalse()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(SupportsFormat_WithUnsupportedFormat_ReturnsFalse));
         // Act
         var result = _service.SupportsFormat((ExportFormat)999);
 
         // Assert
         result.Should().BeFalse();
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(SupportsFormat_WithUnsupportedFormat_ReturnsFalse));
     }
 
     // ---------------------------------------------------------------
@@ -407,6 +433,7 @@ public class ExportServiceTests
     [Fact]
     public void GetSupportedFormats_ReturnsAllFourFormats()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(GetSupportedFormats_ReturnsAllFourFormats));
         // Act
         var formats = _service.GetSupportedFormats();
 
@@ -416,6 +443,7 @@ public class ExportServiceTests
         formats.Should().Contain(ExportFormat.SVG);
         formats.Should().Contain(ExportFormat.JPEG);
         formats.Should().Contain(ExportFormat.WEBP);
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(GetSupportedFormats_ReturnsAllFourFormats));
     }
 
     /// <summary>
@@ -424,11 +452,13 @@ public class ExportServiceTests
     [Fact]
     public void GetSupportedFormats_ReturnsOrderedFormats()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(GetSupportedFormats_ReturnsOrderedFormats));
         // Act
         var formats = new List<ExportFormat>(_service.GetSupportedFormats());
 
         // Assert - formats are sorted by name
         formats.Select(f => f.ToString()).Should().BeInAscendingOrder();
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(GetSupportedFormats_ReturnsOrderedFormats));
     }
 
     // ---------------------------------------------------------------
@@ -442,11 +472,13 @@ public class ExportServiceTests
     [Fact]
     public void Constructor_WithNullRenderingService_ThrowsArgumentNullException()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(Constructor_WithNullRenderingService_ThrowsArgumentNullException));
         // Act
         Action act = () => new ExportService(null!, _loggerMock.Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("renderingService");
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(Constructor_WithNullRenderingService_ThrowsArgumentNullException));
     }
 
     /// <summary>
@@ -456,10 +488,12 @@ public class ExportServiceTests
     [Fact]
     public void Constructor_WithNullLogger_ThrowsArgumentNullException()
     {
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(Constructor_WithNullLogger_ThrowsArgumentNullException));
         // Act
         Action act = () => new ExportService(_renderingServiceMock.Object, null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(Constructor_WithNullLogger_ThrowsArgumentNullException));
     }
 }
