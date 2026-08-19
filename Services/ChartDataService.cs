@@ -45,7 +45,7 @@ public class ChartDataService : IChartDataService
 
         chart.Configuration.Validate();
 
-        _logger.LogInformation($"Chart {chart.Id} validation passed");
+        _logger.LogInformation("Chart {ChartId} validation passed", chart.Id);
     }
 
     public void ValidateSeries(ChartSeries series)
@@ -67,7 +67,7 @@ public class ChartDataService : IChartDataService
         if (series.LineWidth <= 0)
             throw new InvalidChartDataException("Line width must be greater than 0");
 
-        _logger.LogInformation($"Series '{series.Name}' validation passed");
+        _logger.LogInformation("Series '{SeriesName}' validation passed", series.Name);
     }
 
     public void ValidateDataPoint(DataPoint point)
@@ -147,7 +147,7 @@ public class ChartDataService : IChartDataService
             point.Y = (point.Y - yMin) / yRange;
         }
 
-        _logger.LogInformation($"Normalized {points.Count} data points");
+        _logger.LogInformation("Normalized {Count} data points", points.Count);
     }
 
     public Chart TransformChartData(Chart chart, Func<DataPoint, DataPoint> transformer)
@@ -167,7 +167,7 @@ public class ChartDataService : IChartDataService
             series.AddDataPoints(transformedPoints);
         }
 
-        _logger.LogInformation($"Transformed chart {chart.Id} data");
+        _logger.LogInformation("Transformed chart {ChartId} data", chart.Id);
         return cloned;
     }
 
@@ -180,7 +180,7 @@ public class ChartDataService : IChartDataService
             throw new ArgumentNullException(nameof(predicate));
 
         var filtered = points.Where(predicate).ToList();
-        _logger.LogInformation($"Filtered {points.Count} points down to {filtered.Count}");
+        _logger.LogInformation("Filtered {OriginalCount} points down to {FilteredCount}", points.Count, filtered.Count);
 
         return filtered;
     }
