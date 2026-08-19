@@ -69,11 +69,13 @@ public class PdfReportGeneratorTests
 	[Fact]
 	public async Task GenerateAsync_WithNullSections_ThrowsArgumentNullException()
 	{
+		_loggerMock.Object.LogInformation("GenerateAsync_WithNullSections_ThrowsArgumentNullException called");
 		// Act
 		Func<Task> act = async () => await _generator.GenerateAsync(null!);
 
 		// Assert
 		await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("sections");
+		_loggerMock.Object.LogInformation("GenerateAsync_WithNullSections_ThrowsArgumentNullException finished");
 	}
 
 	/// <summary>
@@ -82,12 +84,14 @@ public class PdfReportGeneratorTests
 	[Fact]
 	public async Task GenerateAsync_EmptySections_ReturnsPdfBytes()
 	{
+		_loggerMock.Object.LogInformation("GenerateAsync_EmptySections_ReturnsPdfBytes called");
 		// Act
 		var bytes = await _generator.GenerateAsync(new List<ReportSection>());
 
 		// Assert
 		bytes.Should().NotBeNull();
 		bytes.Length.Should().BeGreaterThan(0);
+		_loggerMock.Object.LogInformation("GenerateAsync_EmptySections_ReturnsPdfBytes finished");
 	}
 
 	/// <summary>
@@ -96,6 +100,7 @@ public class PdfReportGeneratorTests
 	[Fact]
 	public async Task GenerateAsync_TextOnlySection_ReturnsPdfBytes()
 	{
+		_loggerMock.Object.LogInformation("GenerateAsync_TextOnlySection_ReturnsPdfBytes called");
 		// Arrange
 		var sections = new List<ReportSection>
 		{
@@ -112,6 +117,7 @@ public class PdfReportGeneratorTests
 		// Assert
 		bytes.Should().NotBeNull();
 		bytes.Length.Should().BeGreaterThan(0);
+		_loggerMock.Object.LogInformation("GenerateAsync_TextOnlySection_ReturnsPdfBytes finished");
 	}
 
 	/// <summary>
@@ -120,6 +126,7 @@ public class PdfReportGeneratorTests
 	[Fact]
 	public async Task GenerateAsync_WithChart_CallsRenderingService()
 	{
+		_loggerMock.Object.LogInformation("GenerateAsync_WithChart_CallsRenderingService called");
 		// Arrange
 		SetupRenderSuccess();
 		var sections = new List<ReportSection>
@@ -141,6 +148,7 @@ public class PdfReportGeneratorTests
 			It.IsAny<Chart>(),
 			It.IsAny<ExportOptions>(),
 			It.IsAny<CancellationToken>()), Times.Once);
+		_loggerMock.Object.LogInformation("GenerateAsync_WithChart_CallsRenderingService finished");
 	}
 
 	/// <summary>
@@ -149,6 +157,7 @@ public class PdfReportGeneratorTests
 	[Fact]
 	public async Task GenerateAsync_MultipleSections_ProducesSinglePdf()
 	{
+		_loggerMock.Object.LogInformation("GenerateAsync_MultipleSections_ProducesSinglePdf called");
 		// Arrange
 		SetupRenderSuccess();
 		var sections = new List<ReportSection>
@@ -168,6 +177,7 @@ public class PdfReportGeneratorTests
 			It.IsAny<Chart>(),
 			It.IsAny<ExportOptions>(),
 			It.IsAny<CancellationToken>()), Times.Exactly(2));
+		_loggerMock.Object.LogInformation("GenerateAsync_MultipleSections_ProducesSinglePdf finished");
 	}
 
 	/// <summary>
@@ -176,6 +186,7 @@ public class PdfReportGeneratorTests
 	[Fact]
 	public async Task GenerateAsync_RenderFailure_StillProducesPdf()
 	{
+		_loggerMock.Object.LogInformation("GenerateAsync_RenderFailure_StillProducesPdf called");
 		// Arrange – render returns failure
 		_renderMock
 			.Setup(r => r.RenderWithExportAsync(
@@ -196,6 +207,7 @@ public class PdfReportGeneratorTests
 		// Assert – PDF is still generated even when chart render fails
 		bytes.Should().NotBeNull();
 		bytes.Length.Should().BeGreaterThan(0);
+		_loggerMock.Object.LogInformation("GenerateAsync_RenderFailure_StillProducesPdf finished");
 	}
 
 	/// <summary>
@@ -204,12 +216,14 @@ public class PdfReportGeneratorTests
 	[Fact]
 	public async Task GenerateToFileAsync_WithEmptyPath_ThrowsArgumentNullException()
 	{
+		_loggerMock.Object.LogInformation("GenerateToFileAsync_WithEmptyPath_ThrowsArgumentNullException called");
 		// Act
 		Func<Task> act = async () =>
 			await _generator.GenerateToFileAsync("", new List<ReportSection>());
 
 		// Assert
 		await act.Should().ThrowAsync<ArgumentNullException>();
+		_loggerMock.Object.LogInformation("GenerateToFileAsync_WithEmptyPath_ThrowsArgumentNullException finished");
 	}
 
 	/// <summary>
@@ -218,6 +232,7 @@ public class PdfReportGeneratorTests
 	[Fact]
 	public async Task GenerateToFileAsync_ValidPath_WritesFile()
 	{
+		_loggerMock.Object.LogInformation("GenerateToFileAsync_ValidPath_WritesFile called");
 		// Arrange
 		var outputPath = Path.Combine(Path.GetTempPath(), $"test-report-{Guid.NewGuid():N}.pdf");
 		try
@@ -237,5 +252,6 @@ public class PdfReportGeneratorTests
 			if (File.Exists(outputPath))
 				File.Delete(outputPath);
 		}
+		_loggerMock.Object.LogInformation("GenerateToFileAsync_ValidPath_WritesFile finished");
 	}
 }
