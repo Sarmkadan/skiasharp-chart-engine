@@ -22,7 +22,7 @@ public class DataAggregatorTests
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DataAggregatorTests"/> class.
-    /// Sets up mock logger and creates a test instance of <see cref="DataAggregator"/>.
+    /// Sets up the test dependencies including a mocked logger for testing cache operations.
     /// </summary>
     public DataAggregatorTests()
     {
@@ -40,11 +40,15 @@ public class DataAggregatorTests
     [Fact]
     public void AggregateByCount_WithNullDataPoints_ReturnsEmptyList()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(AggregateByCount_WithNullDataPoints_ReturnsEmptyList));
+
         // Act
         var result = _aggregator.AggregateByCount(null!, 5, AggregationType.Average);
 
         // Assert
         result.Should().BeEmpty();
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(AggregateByCount_WithNullDataPoints_ReturnsEmptyList));
     }
 
     /// <summary>
@@ -53,6 +57,8 @@ public class DataAggregatorTests
     [Fact]
     public void AggregateByCount_WithEmptyDataPoints_ReturnsEmptyList()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(AggregateByCount_WithEmptyDataPoints_ReturnsEmptyList));
+
         // Arrange
         var dataPoints = new List<DataPoint>();
 
@@ -61,6 +67,8 @@ public class DataAggregatorTests
 
         // Assert
         result.Should().BeEmpty();
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(AggregateByCount_WithEmptyDataPoints_ReturnsEmptyList));
     }
 
     /// <summary>
@@ -69,6 +77,8 @@ public class DataAggregatorTests
     [Fact]
     public void AggregateByCount_WithZeroBucketCount_ThrowsArgumentException()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(AggregateByCount_WithZeroBucketCount_ThrowsArgumentException));
+
         // Arrange
         var dataPoints = new List<DataPoint> { new DataPoint(1.0, 100.0) };
 
@@ -77,6 +87,8 @@ public class DataAggregatorTests
 
         // Assert
         act.Should().Throw<ArgumentException>().WithParameterName("bucketCount");
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(AggregateByCount_WithZeroBucketCount_ThrowsArgumentException));
     }
 
     /// <summary>
@@ -85,6 +97,8 @@ public class DataAggregatorTests
     [Fact]
     public void AggregateByCount_WithNegativeBucketCount_ThrowsArgumentException()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(AggregateByCount_WithNegativeBucketCount_ThrowsArgumentException));
+
         // Arrange
         var dataPoints = new List<DataPoint> { new DataPoint(1.0, 100.0) };
 
@@ -93,6 +107,8 @@ public class DataAggregatorTests
 
         // Assert
         act.Should().Throw<ArgumentException>().WithParameterName("bucketCount");
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(AggregateByCount_WithNegativeBucketCount_ThrowsArgumentException));
     }
 
     /// <summary>
@@ -101,6 +117,8 @@ public class DataAggregatorTests
     [Fact]
     public void AggregateByCount_WithAverageAggregation_ComputesAverageBuckets()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(AggregateByCount_WithAverageAggregation_ComputesAverageBuckets));
+
         // Arrange
         var dataPoints = new List<DataPoint>
         {
@@ -117,6 +135,8 @@ public class DataAggregatorTests
         result.Should().HaveCount(2);
         result[0].Value.Should().BeApproximately(15.0, 0.01); // (10+20)/2
         result[1].Value.Should().BeApproximately(35.0, 0.01); // (30+40)/2
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(AggregateByCount_WithAverageAggregation_ComputesAverageBuckets));
     }
 
     /// <summary>
@@ -125,6 +145,8 @@ public class DataAggregatorTests
     [Fact]
     public void AggregateByCount_WithSumAggregation_ComputesSumBuckets()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(AggregateByCount_WithSumAggregation_ComputesSumBuckets));
+
         // Arrange
         var dataPoints = new List<DataPoint>
         {
@@ -141,6 +163,8 @@ public class DataAggregatorTests
         result.Should().HaveCount(2);
         result[0].Value.Should().Be(30.0); // 10+20
         result[1].Value.Should().Be(70.0); // 30+40
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(AggregateByCount_WithSumAggregation_ComputesSumBuckets));
     }
 
     /// <summary>
@@ -149,6 +173,8 @@ public class DataAggregatorTests
     [Fact]
     public void AggregateByCount_WithMinAggregation_ComputesMinBuckets()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(AggregateByCount_WithMinAggregation_ComputesMinBuckets));
+
         // Arrange
         var dataPoints = new List<DataPoint>
         {
@@ -165,6 +191,8 @@ public class DataAggregatorTests
         result.Should().HaveCount(2);
         result[0].Value.Should().Be(10.0); // min(50, 10)
         result[1].Value.Should().Be(30.0); // min(40, 30)
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(AggregateByCount_WithMinAggregation_ComputesMinBuckets));
     }
 
     /// <summary>
@@ -173,6 +201,8 @@ public class DataAggregatorTests
     [Fact]
     public void AggregateByCount_WithMaxAggregation_ComputesMaxBuckets()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(AggregateByCount_WithMaxAggregation_ComputesMaxBuckets));
+
         // Arrange
         var dataPoints = new List<DataPoint>
         {
@@ -189,6 +219,8 @@ public class DataAggregatorTests
         result.Should().HaveCount(2);
         result[0].Value.Should().Be(50.0); // max(50, 10)
         result[1].Value.Should().Be(40.0); // max(40, 30)
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(AggregateByCount_WithMaxAggregation_ComputesMaxBuckets));
     }
 
     /// <summary>
@@ -197,6 +229,8 @@ public class DataAggregatorTests
     [Fact]
     public void AggregateByCount_WithMedianAggregation_ComputesMedianBuckets()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(AggregateByCount_WithMedianAggregation_ComputesMedianBuckets));
+
         // Arrange
         var dataPoints = new List<DataPoint>
         {
@@ -213,6 +247,8 @@ public class DataAggregatorTests
         result.Should().HaveCount(2);
         result[0].Value.Should().BeApproximately(15.0, 0.01); // median(10, 20)
         result[1].Value.Should().BeApproximately(35.0, 0.01); // median(30, 40)
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(AggregateByCount_WithMedianAggregation_ComputesMedianBuckets));
     }
 
     /// <summary>
@@ -221,6 +257,8 @@ public class DataAggregatorTests
     [Fact]
     public void AggregateByCount_WithMoreBucketsThanPoints_CreatesOnePointPerBucket()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(AggregateByCount_WithMoreBucketsThanPoints_CreatesOnePointPerBucket));
+
         // Arrange
         var dataPoints = new List<DataPoint>
         {
@@ -233,6 +271,8 @@ public class DataAggregatorTests
 
         // Assert - should only aggregate existing points
         result.Count.Should().BeLessThanOrEqualTo(dataPoints.Count);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(AggregateByCount_WithMoreBucketsThanPoints_CreatesOnePointPerBucket));
     }
 
     // ---------------------------------------------------------------
@@ -245,11 +285,15 @@ public class DataAggregatorTests
     [Fact]
     public void AggregateByInterval_WithNullDataPoints_ReturnsEmptyDictionary()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(AggregateByInterval_WithNullDataPoints_ReturnsEmptyDictionary));
+
         // Act
         var result = _aggregator.AggregateByInterval(null!, AggregationType.Average);
 
         // Assert
         result.Should().BeEmpty();
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(AggregateByInterval_WithNullDataPoints_ReturnsEmptyDictionary));
     }
 
     /// <summary>
@@ -258,6 +302,8 @@ public class DataAggregatorTests
     [Fact]
     public void AggregateByInterval_GroupsByLabel()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(AggregateByInterval_GroupsByLabel));
+
         // Arrange
         var dataPoints = new List<DataPoint>
         {
@@ -274,6 +320,8 @@ public class DataAggregatorTests
         result.Should().HaveCount(2);
         result["Q1"].Should().HaveCount(2);
         result["Q2"].Should().HaveCount(2);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(AggregateByInterval_GroupsByLabel));
     }
 
     /// <summary>
@@ -282,6 +330,8 @@ public class DataAggregatorTests
     [Fact]
     public void AggregateByInterval_WithNullLabel_GroupsAsUnknown()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(AggregateByInterval_WithNullLabel_GroupsAsUnknown));
+
         // Arrange
         var dataPoints = new List<DataPoint>
         {
@@ -295,6 +345,8 @@ public class DataAggregatorTests
         // Assert
         result.Should().ContainKey("unknown");
         result["unknown"].Should().HaveCount(2);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(AggregateByInterval_WithNullLabel_GroupsAsUnknown));
     }
 
     // ---------------------------------------------------------------
@@ -307,11 +359,15 @@ public class DataAggregatorTests
     [Fact]
     public void CalculateStatistics_WithNullDataPoints_ReturnsNull()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(CalculateStatistics_WithNullDataPoints_ReturnsNull));
+
         // Act
         var result = _aggregator.CalculateStatistics(null!);
 
         // Assert
         result.Should().BeNull();
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(CalculateStatistics_WithNullDataPoints_ReturnsNull));
     }
 
     /// <summary>
@@ -320,6 +376,8 @@ public class DataAggregatorTests
     [Fact]
     public void CalculateStatistics_WithEmptyDataPoints_ReturnsNull()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(CalculateStatistics_WithEmptyDataPoints_ReturnsNull));
+
         // Arrange
         var dataPoints = new List<DataPoint>();
 
@@ -328,6 +386,8 @@ public class DataAggregatorTests
 
         // Assert
         result.Should().BeNull();
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(CalculateStatistics_WithEmptyDataPoints_ReturnsNull));
     }
 
     /// <summary>
@@ -336,6 +396,8 @@ public class DataAggregatorTests
     [Fact]
     public void CalculateStatistics_ComputesSumAndAverage()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(CalculateStatistics_ComputesSumAndAverage));
+
         // Arrange
         var dataPoints = new List<DataPoint>
         {
@@ -352,6 +414,8 @@ public class DataAggregatorTests
         result!.Sum.Should().Be(60.0);
         result.Average.Should().Be(20.0);
         result.Count.Should().Be(3);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(CalculateStatistics_ComputesSumAndAverage));
     }
 
     /// <summary>
@@ -360,6 +424,8 @@ public class DataAggregatorTests
     [Fact]
     public void CalculateStatistics_ComputesMinAndMax()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(CalculateStatistics_ComputesMinAndMax));
+
         // Arrange
         var dataPoints = new List<DataPoint>
         {
@@ -375,6 +441,8 @@ public class DataAggregatorTests
         result.Should().NotBeNull();
         result!.Min.Should().Be(10.0);
         result.Max.Should().Be(50.0);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(CalculateStatistics_ComputesMinAndMax));
     }
 
     /// <summary>
@@ -383,6 +451,8 @@ public class DataAggregatorTests
     [Fact]
     public void CalculateStatistics_ComputesMedian()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(CalculateStatistics_ComputesMedian));
+
         // Arrange
         var dataPoints = new List<DataPoint>
         {
@@ -399,6 +469,8 @@ public class DataAggregatorTests
         // Assert
         result.Should().NotBeNull();
         result!.Median.Should().Be(30.0);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(CalculateStatistics_ComputesMedian));
     }
 
     /// <summary>
@@ -407,6 +479,8 @@ public class DataAggregatorTests
     [Fact]
     public void CalculateStatistics_ComputesRange()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(CalculateStatistics_ComputesRange));
+
         // Arrange
         var dataPoints = new List<DataPoint>
         {
@@ -420,6 +494,8 @@ public class DataAggregatorTests
         // Assert
         result.Should().NotBeNull();
         result!.Range.Should().Be(90.0);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(CalculateStatistics_ComputesRange));
     }
 
     /// <summary>
@@ -428,6 +504,8 @@ public class DataAggregatorTests
     [Fact]
     public void CalculateStatistics_ComputesStandardDeviation()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(CalculateStatistics_ComputesStandardDeviation));
+
         // Arrange
         var dataPoints = new List<DataPoint>
         {
@@ -442,6 +520,8 @@ public class DataAggregatorTests
         // Assert
         result.Should().NotBeNull();
         result!.StandardDeviation.Should().BeGreaterThan(0);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(CalculateStatistics_ComputesStandardDeviation));
     }
 
     /// <summary>
@@ -450,6 +530,8 @@ public class DataAggregatorTests
     [Fact]
     public void CalculateStatistics_IncludesCalculatedAtTimestamp()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(CalculateStatistics_IncludesCalculatedAtTimestamp));
+
         // Arrange
         var dataPoints = new List<DataPoint> { new DataPoint(1.0, 100.0) };
         var beforeTime = DateTime.UtcNow;
@@ -460,6 +542,8 @@ public class DataAggregatorTests
         // Assert
         result.Should().NotBeNull();
         result!.CalculatedAt.Should().BeOnOrAfter(beforeTime);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(CalculateStatistics_IncludesCalculatedAtTimestamp));
     }
 
     // ---------------------------------------------------------------
@@ -472,6 +556,8 @@ public class DataAggregatorTests
     [Fact]
     public void AggregateByCount_WithInvalidAggregationType_ReturnsAverageFallback()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(AggregateByCount_WithInvalidAggregationType_ReturnsAverageFallback));
+
         // Arrange
         var dataPoints = new List<DataPoint>
         {
@@ -485,6 +571,8 @@ public class DataAggregatorTests
         // Assert
         result.Should().HaveCount(1);
         result[0].Value.Should().BeApproximately(15.0, 0.01);
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(AggregateByCount_WithInvalidAggregationType_ReturnsAverageFallback));
     }
 
     // ---------------------------------------------------------------
@@ -497,10 +585,14 @@ public class DataAggregatorTests
     [Fact]
     public void Constructor_WithNullLogger_ThrowsArgumentNullException()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestName}", nameof(Constructor_WithNullLogger_ThrowsArgumentNullException));
+
         // Act
         Action act = () => new DataAggregator(null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
+
+        _loggerMock.Object.LogInformation("Finished test {TestName}", nameof(Constructor_WithNullLogger_ThrowsArgumentNullException));
     }
 }
