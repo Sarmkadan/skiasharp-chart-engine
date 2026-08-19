@@ -48,6 +48,7 @@ public class ChartStreamingServiceTests
     [Fact]
     public void Register_NewChart_IsRegisteredSuccessfully()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestMethod}", nameof(Register_NewChart_IsRegisteredSuccessfully));
         // Arrange
         var chart = CreateChart();
 
@@ -58,6 +59,7 @@ public class ChartStreamingServiceTests
         var snapshot = _service.GetSnapshot(chart.Id);
         snapshot.Should().NotBeNull();
         snapshot.Id.Should().Be(chart.Id);
+        _loggerMock.Object.LogInformation("Finished test {TestMethod}", nameof(Register_NewChart_IsRegisteredSuccessfully));
     }
 
     /// <summary>
@@ -66,11 +68,13 @@ public class ChartStreamingServiceTests
     [Fact]
     public void Publish_UnregisteredChart_ThrowsInvalidOperationException()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestMethod}", nameof(Publish_UnregisteredChart_ThrowsInvalidOperationException));
         // Act
         Action act = () => _service.Publish("unknown", new StreamDataPoint { SeriesName = "S", X = 1, Y = 2 });
 
         // Assert
         act.Should().Throw<InvalidOperationException>().WithMessage("*unknown*");
+        _loggerMock.Object.LogInformation("Finished test {TestMethod}", nameof(Publish_UnregisteredChart_ThrowsInvalidOperationException));
     }
 
     /// <summary>
@@ -79,6 +83,7 @@ public class ChartStreamingServiceTests
     [Fact]
     public void Publish_ValidPoint_IsAppliedToSnapshot()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestMethod}", nameof(Publish_ValidPoint_IsAppliedToSnapshot));
         // Arrange
         var chart = CreateChart();
         _service.Register(chart);
@@ -92,6 +97,7 @@ public class ChartStreamingServiceTests
         series.Should().NotBeNull();
         series!.GetDataPointCount().Should().Be(1);
         series.DataPoints[0].Y.Should().Be(42.0);
+        _loggerMock.Object.LogInformation("Finished test {TestMethod}", nameof(Publish_ValidPoint_IsAppliedToSnapshot));
     }
 
     /// <summary>
@@ -100,6 +106,7 @@ public class ChartStreamingServiceTests
     [Fact]
     public void PublishBatch_MultiplePoints_AllApplied()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestMethod}", nameof(PublishBatch_MultiplePoints_AllApplied));
         // Arrange
         var chart = CreateChart();
         _service.Register(chart);
@@ -113,6 +120,7 @@ public class ChartStreamingServiceTests
         // Assert
         enqueued.Should().Be(5);
         chart.GetSeriesByName("Sensor")!.GetDataPointCount().Should().Be(5);
+        _loggerMock.Object.LogInformation("Finished test {TestMethod}", nameof(PublishBatch_MultiplePoints_AllApplied));
     }
 
     /// <summary>
@@ -121,6 +129,7 @@ public class ChartStreamingServiceTests
     [Fact]
     public void WindowSize_Enforced_OldestPointsDropped()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestMethod}", nameof(WindowSize_Enforced_OldestPointsDropped));
         // Arrange
         var chart   = CreateChart();
         var options = new StreamingChartOptions { WindowSize = 3 };
@@ -136,6 +145,7 @@ public class ChartStreamingServiceTests
         var series = chart.GetSeriesByName("Sensor")!;
         series.GetDataPointCount().Should().Be(3);
         series.DataPoints[0].X.Should().Be(3);
+        _loggerMock.Object.LogInformation("Finished test {TestMethod}", nameof(WindowSize_Enforced_OldestPointsDropped));
     }
 
     /// <summary>
@@ -144,6 +154,7 @@ public class ChartStreamingServiceTests
     [Fact]
     public void AutoCreateSeries_WhenSeriesDoesNotExist_SeriesCreated()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestMethod}", nameof(AutoCreateSeries_WhenSeriesDoesNotExist_SeriesCreated));
         // Arrange
         var chart = new Chart("auto-series");
         _service.Register(chart);
@@ -155,6 +166,7 @@ public class ChartStreamingServiceTests
         // Assert
         chart.GetSeriesByName("NewSeries").Should().NotBeNull();
         chart.GetSeriesByName("NewSeries")!.DataPoints[0].Y.Should().Be(99);
+        _loggerMock.Object.LogInformation("Finished test {TestMethod}", nameof(AutoCreateSeries_WhenSeriesDoesNotExist_SeriesCreated));
     }
 
     /// <summary>
@@ -163,6 +175,7 @@ public class ChartStreamingServiceTests
     [Fact]
     public void Unregister_PublishAfterwards_ThrowsInvalidOperationException()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestMethod}", nameof(Unregister_PublishAfterwards_ThrowsInvalidOperationException));
         // Arrange
         var chart = CreateChart();
         _service.Register(chart);
@@ -173,6 +186,7 @@ public class ChartStreamingServiceTests
 
         // Assert
         act.Should().Throw<InvalidOperationException>();
+        _loggerMock.Object.LogInformation("Finished test {TestMethod}", nameof(Unregister_PublishAfterwards_ThrowsInvalidOperationException));
     }
 
     /// <summary>
@@ -182,6 +196,7 @@ public class ChartStreamingServiceTests
     [Fact]
     public async Task FlushAsync_AppliesBufferedPoints()
     {
+        _loggerMock.Object.LogInformation("Starting test {TestMethod}", nameof(FlushAsync_AppliesBufferedPoints));
         // Arrange
         var chart = CreateChart();
         _service.Register(chart);
@@ -194,5 +209,6 @@ public class ChartStreamingServiceTests
         // Assert
         applied.Should().Be(2);
         chart.GetSeriesByName("Sensor")!.GetDataPointCount().Should().Be(2);
+        _loggerMock.Object.LogInformation("Finished test {TestMethod}", nameof(FlushAsync_AppliesBufferedPoints));
     }
 }
