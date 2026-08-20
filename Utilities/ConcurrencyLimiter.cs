@@ -29,6 +29,7 @@ public class ConcurrencyLimiter : IDisposable
         _maxConcurrency = maxConcurrency;
         _semaphore = new SemaphoreSlim(maxConcurrency, maxConcurrency);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _logger.LogInformation("ConcurrencyLimiter created with max concurrency {MaxConcurrency}", _maxConcurrency);
     }
 
     // Execute operation with concurrency control
@@ -40,13 +41,14 @@ public class ConcurrencyLimiter : IDisposable
         await _semaphore.WaitAsync(cancellationToken);
         try
         {
-            _logger.LogDebug("Operation started, available slots: {Slots}", _semaphore.CurrentCount);
+            _logger.LogInformation("Operation started, available slots: {AvailableSlots}", _semaphore.CurrentCount);
+        _logger.LogInformation("Operation started with max concurrency {MaxConcurrency}", _maxConcurrency);
             return await operation();
         }
         finally
         {
             _semaphore.Release();
-            _logger.LogDebug("Operation completed, available slots: {Slots}", _semaphore.CurrentCount);
+            _logger.LogInformation("Operation completed, available slots: {AvailableSlots}", _semaphore.CurrentCount);
         }
     }
 
@@ -59,7 +61,8 @@ public class ConcurrencyLimiter : IDisposable
         await _semaphore.WaitAsync(cancellationToken);
         try
         {
-            _logger.LogDebug("Operation started, available slots: {Slots}", _semaphore.CurrentCount);
+            _logger.LogInformation("Operation started, available slots: {AvailableSlots}", _semaphore.CurrentCount);
+        _logger.LogInformation("Operation started with max concurrency {MaxConcurrency}", _maxConcurrency);
             await operation();
         }
         finally
@@ -74,6 +77,7 @@ public class ConcurrencyLimiter : IDisposable
         if (operation == null)
             throw new ArgumentNullException(nameof(operation));
 
+        _logger.LogInformation("Synchronous operation started, available slots: {AvailableSlots}", _semaphore.CurrentCount);
         _semaphore.Wait();
         try
         {
@@ -82,6 +86,7 @@ public class ConcurrencyLimiter : IDisposable
         finally
         {
             _semaphore.Release();
+            _logger.LogInformation("Synchronous operation completed, available slots: {AvailableSlots}", _semaphore.CurrentCount);
         }
     }
 
