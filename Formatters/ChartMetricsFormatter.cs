@@ -32,6 +32,7 @@ public class ChartMetricsFormatter
         if (metrics == null)
             throw new ArgumentNullException(nameof(metrics));
 
+        _logger.LogInformation("Starting to format render metrics for chart {ChartId}", metrics.ChartId);
         var sb = new StringBuilder();
 
         sb.AppendLine("=== Render Metrics ===");
@@ -43,6 +44,7 @@ public class ChartMetricsFormatter
         sb.AppendLine($"Series Count: {metrics.SeriesCount}");
         sb.AppendLine($"Timestamp: {metrics.Timestamp:O}");
 
+        _logger.LogInformation("Finished formatting render metrics for chart {ChartId}", metrics.ChartId);
         return sb.ToString();
     }
 
@@ -53,12 +55,14 @@ public class ChartMetricsFormatter
     {
         try
         {
+            _logger.LogInformation("Starting to format render metrics as JSON for chart {ChartId}", metrics.ChartId);
             var options = new JsonSerializerOptions { WriteIndented = true };
             return JsonSerializer.Serialize(metrics, options);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error formatting metrics as JSON");
+            _logger.LogInformation("Finished formatting render metrics as JSON for chart {ChartId}", metrics.ChartId);
             return "{\"error\": \"Failed to serialize metrics\"}";
         }
     }
@@ -68,6 +72,7 @@ public class ChartMetricsFormatter
     /// </summary>
     public string FormatChartConfiguration(ChartConfiguration config)
     {
+        _logger.LogInformation("Formatting chart configuration for {Title}", config?.Title);
         if (config == null)
             return "No configuration";
 
@@ -86,6 +91,7 @@ public class ChartMetricsFormatter
             sb.AppendLine($"Color Palette: {config.ColorPalette.Name}");
         }
 
+        _logger.LogInformation("Finished formatting chart configuration for {Title}", config?.Title);
         return sb.ToString();
     }
 
@@ -94,6 +100,7 @@ public class ChartMetricsFormatter
     /// </summary>
     public string FormatChartSummary(Chart chart)
     {
+        _logger.LogInformation("Starting to format chart summary for chart {ChartId}", chart?.Id);
         if (chart == null)
             throw new ArgumentNullException(nameof(chart));
 
@@ -138,6 +145,7 @@ public class ChartMetricsFormatter
             sb.AppendLine($"Max Value: {maxValue:F2}");
         }
 
+        _logger.LogInformation("Finished formatting chart summary for chart {ChartId}", chart.Id);
         return sb.ToString();
     }
 
@@ -146,6 +154,7 @@ public class ChartMetricsFormatter
     /// </summary>
     public string FormatComparison(RenderMetrics metrics1, RenderMetrics metrics2)
     {
+        _logger.LogInformation("Starting to compare render metrics for charts {ChartId1} and {ChartId2}", metrics1?.ChartId, metrics2?.ChartId);
         if (metrics1 == null || metrics2 == null)
             return "Cannot compare null metrics";
 
@@ -161,6 +170,7 @@ public class ChartMetricsFormatter
         sb.AppendLine($"Memory: {FormatBytes(metrics1.MemoryUsedBytes)} vs {FormatBytes(metrics2.MemoryUsedBytes)}");
         sb.AppendLine($"Output Size: {FormatBytes(metrics1.OutputSizeBytes)} vs {FormatBytes(metrics2.OutputSizeBytes)}");
 
+        _logger.LogInformation("Finished comparing render metrics for charts {ChartId1} and {ChartId2}", metrics1?.ChartId, metrics2?.ChartId);
         return sb.ToString();
     }
 
