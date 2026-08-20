@@ -33,6 +33,8 @@ public class PerformanceMonitor
     /// </summary>
     public void RecordMetric(string operationName, long elapsedMilliseconds, bool success = true)
     {
+        _logger.LogInformation("Recording metric for operation {OperationName} with duration {ElapsedMilliseconds}ms, success: {Success}", operationName, elapsedMilliseconds, success);
+
         if (string.IsNullOrEmpty(operationName))
             throw new ArgumentException("Operation name cannot be empty", nameof(operationName));
 
@@ -70,14 +72,22 @@ public class PerformanceMonitor
     /// </summary>
     public PerformanceStatistics? GetStatistics(string operationName)
     {
+        _logger.LogInformation("Retrieving statistics for operation {OperationName}", operationName);
+
         lock (_lock)
         {
             if (!_metrics.TryGetValue(operationName, out var list) || list.Count == 0)
+            {
+                _logger.LogWarning("No metrics found for operation {OperationName}", operationName);
                 return null;
+            }
 
             var successfulMetrics = list.Where(m => m.Success).Select(m => m.ElapsedMilliseconds).ToList();
             if (successfulMetrics.Count == 0)
+            {
+                _logger.LogWarning("No successful metrics found for operation {OperationName}", operationName);
                 return null;
+            }
 
             var times = successfulMetrics.OrderBy(t => t).ToList();
             var avg = (long)times.Average();
@@ -107,6 +117,8 @@ public class PerformanceMonitor
     /// </summary>
     public List<PerformanceStatistics> GetAllStatistics()
     {
+        _logger.LogInformation("Retrieving all performance statistics");
+
         var stats = new List<PerformanceStatistics>();
 
         lock (_lock)
@@ -140,12 +152,12 @@ public class PerformanceMonitor
     /// </summary>
     public void ClearOperation(string operationName)
     {
+        _logger.LogInformation("Clearing performance metrics for operation {OperationName}", operationName);
+
         lock (_lock)
         {
             _metrics.Remove(operationName);
         }
-
-        _logger.LogDebug("Performance metrics cleared for operation {Operation}", operationName);
     }
 
     /// <summary>
@@ -153,6 +165,7 @@ public class PerformanceMonitor
     /// </summary>
     public int GetTrackedOperationCount()
     {
+        _logger.LogInformation("Getting tracked operation count");
         lock (_lock)
         {
             return _metrics.Count;
@@ -164,6 +177,7 @@ public class PerformanceMonitor
     /// </summary>
     public int GetTotalMetricCount()
     {
+        _logger.LogInformation("Getting total metric count");
         lock (_lock)
         {
             return _metrics.Values.Sum(list => list.Count);
