@@ -23,6 +23,7 @@ public class ValidationRuleBuilder<T>
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _rules = new List<ValidationRule<T>>();
+            _logger.LogInformation("ValidationRuleBuilder initialized");
     }
 
     // Add a validation rule
@@ -31,8 +32,12 @@ public class ValidationRuleBuilder<T>
         string errorMessage,
         string ruleName = null)
     {
+        _logger.LogInformation("AddRule called with errorMessage={ErrorMessage}, ruleName={RuleName}", errorMessage, ruleName);
         if (predicate == null)
+        {
+            _logger.LogWarning("AddRule called with null predicate");
             throw new ArgumentNullException(nameof(predicate));
+        }
 
         _rules.Add(new ValidationRule<T>
         {
@@ -50,6 +55,7 @@ public class ValidationRuleBuilder<T>
         Func<T, object> accessor,
         string fieldName)
     {
+        _logger.LogInformation("IsRequired called for field={FieldName}", fieldName);
         AddRule(
             obj => accessor(obj) != null,
             $"{fieldName} is required",
@@ -65,8 +71,9 @@ public class ValidationRuleBuilder<T>
         int max,
         string fieldName)
     {
+        _logger.LogInformation("IsInRange called for field={FieldName}, min={Min}, max={Max}", fieldName, min, max);
         AddRule(
-            obj => accessor(obj) >= min && accessor(obj) <= max,
+            obj => accessor(obj) != null && accessor(obj) >= min && accessor(obj) <= max,
             $"{fieldName} must be between {min} and {max}",
             $"Range_{fieldName}");
 
@@ -80,6 +87,7 @@ public class ValidationRuleBuilder<T>
         int maxLength,
         string fieldName)
     {
+        _logger.LogInformation("HasLength called for field={FieldName}, minLength={MinLength}, maxLength={MaxLength}", fieldName, minLength, maxLength);
         AddRule(
             obj =>
             {
@@ -98,12 +106,14 @@ public class ValidationRuleBuilder<T>
         string errorMessage,
         string ruleName = null)
     {
+        _logger.LogInformation("When called with errorMessage={ErrorMessage}, ruleName={RuleName}", errorMessage, ruleName);
         return AddRule(predicate, errorMessage, ruleName);
     }
 
     // Validate object against all rules
     public ValidationResult Validate(T obj)
     {
+        _logger.LogInformation("Validate called for object of type {Type}", typeof(T).Name);
         try
         {
             var result = new ValidationResult();
@@ -126,6 +136,7 @@ public class ValidationRuleBuilder<T>
             }
 
             result.IsValid = result.Errors.Count == 0;
+            _logger.LogInformation("Validation completed for object of type {Type}. IsValid: {IsValid}", typeof(T).Name, result.IsValid);
             return result;
         }
         catch (Exception ex)
@@ -136,11 +147,17 @@ public class ValidationRuleBuilder<T>
     }
 
     // Get rule count
-    public int GetRuleCount() => _rules.Count;
+    public int GetRuleCount()
+    {
+        int count = _rules.Count;
+        _logger.LogInformation("GetRuleCount called, returning {Count}", count);
+        return count;
+    }
 
     // Clear all rules
     public void ClearRules()
     {
+        _logger.LogInformation("ClearRules called");
         _rules.Clear();
         _logger.LogDebug("All validation rules cleared");
     }
