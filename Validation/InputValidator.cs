@@ -31,6 +31,7 @@ public class InputValidator
     /// </summary>
     public ValidationResult ValidateChart(Chart chart)
     {
+        _logger.LogInformation("Validating chart {ChartId}", chart?.Id ?? "null");
         var result = new ValidationResult();
 
         if (chart == null)
@@ -51,6 +52,7 @@ public class InputValidator
     /// </summary>
     public ValidationResult ValidateSeriesData(List<ChartSeries> series)
     {
+        _logger.LogInformation("Validating {SeriesCount} series", series?.Count ?? 0);
         var result = new ValidationResult();
 
         if (series == null || series.Count == 0)
@@ -61,6 +63,7 @@ public class InputValidator
 
         if (series.Count > 100)
         {
+            _logger.LogWarning("Chart has more than 100 series, which may impact performance");
             result.AddWarning("Chart has more than 100 series, which may impact performance");
         }
 
@@ -103,6 +106,7 @@ public class InputValidator
     /// </summary>
     public ValidationResult ValidateDataPoints(List<DataPoint> dataPoints)
     {
+        _logger.LogInformation("Validating {DataPointCount} data points", dataPoints?.Count ?? 0);
         var result = new ValidationResult();
 
         if (dataPoints == null || dataPoints.Count == 0)
@@ -113,6 +117,7 @@ public class InputValidator
 
         if (dataPoints.Count > 100000)
         {
+            _logger.LogWarning("Series has more than 100,000 points, rendering may be slow");
             result.AddWarning("Series has more than 100,000 points, rendering may be slow");
         }
 
@@ -131,6 +136,7 @@ public class InputValidator
         }
         else if (validPoints < dataPoints.Count * 0.8)
         {
+            _logger.LogWarning("Series has {DataPointCount - ValidPointCount} invalid/NaN values");
             result.AddWarning($"Series has {dataPoints.Count - validPoints} invalid/NaN values");
         }
 
