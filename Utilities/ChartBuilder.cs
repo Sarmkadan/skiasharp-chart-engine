@@ -25,6 +25,7 @@ public class ChartBuilder
 
     public ChartBuilder WithTitle(string title)
     {
+        ArgumentException.ThrowIfNullOrEmpty(title);
         _config.Title = title;
         return this;
     }
@@ -76,6 +77,7 @@ public class ChartBuilder
 
     public ChartBuilder WithBackgroundColor(string hexColor)
     {
+        ArgumentException.ThrowIfNullOrEmpty(hexColor);
         if (!ColorHelper.IsValidHexColor(hexColor))
             throw new ArgumentException("Invalid hex color format");
 
@@ -85,6 +87,7 @@ public class ChartBuilder
 
     public ChartBuilder WithGridColor(string hexColor)
     {
+        ArgumentException.ThrowIfNullOrEmpty(hexColor);
         if (!ColorHelper.IsValidHexColor(hexColor))
             throw new ArgumentException("Invalid hex color format");
 
@@ -136,6 +139,7 @@ public class ChartBuilder
 
     public ChartBuilder AddSeries(string seriesName, string? color = null)
     {
+        ArgumentException.ThrowIfNullOrEmpty(seriesName);
         var series = new ChartSeries(seriesName);
         if (!string.IsNullOrEmpty(color))
         {
@@ -149,6 +153,8 @@ public class ChartBuilder
 
     public ChartBuilder AddSeriesWithData(string seriesName, List<DataPoint> dataPoints, string? color = null)
     {
+        ArgumentException.ThrowIfNullOrEmpty(seriesName);
+        ArgumentNullException.ThrowIfNull(dataPoints);
         var series = new ChartSeries(seriesName);
         if (!string.IsNullOrEmpty(color))
         {
