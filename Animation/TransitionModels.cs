@@ -252,27 +252,39 @@ public sealed class TransitionResult
         IReadOnlyList<TransitionRenderFrame> frames,
         double                              totalDurationMs,
         long                                renderTimeMs,
-        IReadOnlyDictionary<string, object>? metadata = null) => new()
+        IReadOnlyDictionary<string, object>? metadata = null)
     {
-        ChartId         = chartId,
-        Success         = true,
-        Frames          = frames,
-        TotalDurationMs = totalDurationMs,
-        RenderTimeMs    = renderTimeMs,
-        Metadata        = metadata ?? new Dictionary<string, object>(),
-    };
+        ArgumentException.ThrowIfNullOrEmpty(chartId);
+        ArgumentNullException.ThrowIfNull(frames);
+
+        return new()
+        {
+            ChartId         = chartId,
+            Success         = true,
+            Frames          = frames,
+            TotalDurationMs = totalDurationMs,
+            RenderTimeMs    = renderTimeMs,
+            Metadata        = metadata ?? new Dictionary<string, object>(),
+        };
+    }
 
     /// <summary>Creates a failure result with the supplied error information.</summary>
     public static TransitionResult CreateFailure(
         string     chartId,
         string     errorMessage,
-        Exception? exception = null) => new()
+        Exception? exception = null)
     {
-        ChartId      = chartId,
-        Success      = false,
-        ErrorMessage = errorMessage,
-        Exception    = exception,
-    };
+        ArgumentException.ThrowIfNullOrEmpty(chartId);
+        ArgumentException.ThrowIfNullOrEmpty(errorMessage);
+
+        return new()
+        {
+            ChartId      = chartId,
+            Success      = false,
+            ErrorMessage = errorMessage,
+            Exception    = exception,
+        };
+    }
 
     /// <inheritdoc/>
     public override string ToString()
