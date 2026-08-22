@@ -18,13 +18,9 @@ public static class ChartValidator
 {
     public static ValidationResult ValidateChart(Chart chart)
     {
-        var result = new ValidationResult();
+        ArgumentNullException.ThrowIfNull(chart);
 
-        if (chart == null)
-        {
-            result.AddError("Chart cannot be null");
-            return result;
-        }
+        var result = new ValidationResult();
 
         if (string.IsNullOrWhiteSpace(chart.Id))
             result.AddError("Chart ID cannot be empty");
@@ -51,13 +47,9 @@ public static class ChartValidator
 
     public static ValidationResult ValidateSeries(ChartSeries series, int seriesIndex = 0)
     {
-        var result = new ValidationResult();
+        ArgumentNullException.ThrowIfNull(series);
 
-        if (series == null)
-        {
-            result.AddError($"Series at index {seriesIndex} is null");
-            return result;
-        }
+        var result = new ValidationResult();
 
         if (string.IsNullOrWhiteSpace(series.Name))
             result.AddError($"Series {seriesIndex} has an empty name");
@@ -77,13 +69,9 @@ public static class ChartValidator
 
     public static ValidationResult ValidateDataPoint(DataPoint point, int pointIndex = 0)
     {
-        var result = new ValidationResult();
+        ArgumentNullException.ThrowIfNull(point);
 
-        if (point == null)
-        {
-            result.AddError($"DataPoint at index {pointIndex} is null");
-            return result;
-        }
+        var result = new ValidationResult();
 
         if (double.IsNaN(point.X) || double.IsInfinity(point.X))
             result.AddError($"DataPoint {pointIndex} has invalid X value: {point.X}");
@@ -99,13 +87,9 @@ public static class ChartValidator
 
     public static ValidationResult ValidateConfiguration(ChartConfiguration config)
     {
-        var result = new ValidationResult();
+        ArgumentNullException.ThrowIfNull(config);
 
-        if (config == null)
-        {
-            result.AddError("Configuration cannot be null");
-            return result;
-        }
+        var result = new ValidationResult();
 
         if (config.Width < Constants.ChartConstants.MinimumChartWidth)
             result.AddError($"Chart width ({config.Width}) is less than minimum ({Constants.ChartConstants.MinimumChartWidth})");
