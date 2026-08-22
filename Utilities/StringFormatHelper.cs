@@ -43,6 +43,8 @@ public class StringFormatHelper
     /// </summary>
     public static string FormatCurrency(double value, string currencySymbol = "$")
     {
+        ArgumentException.ThrowIfNullOrEmpty(currencySymbol);
+
         return currencySymbol + value.ToString("N2", CultureInfo.InvariantCulture);
     }
 
@@ -60,6 +62,8 @@ public class StringFormatHelper
     /// </summary>
     public static string TruncateWithEllipsis(string text, int maxLength)
     {
+        ArgumentException.ThrowIfNullOrEmpty(text);
+
         if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
             return text;
 
@@ -151,6 +155,8 @@ public class StringFormatHelper
     /// </summary>
     public static string PadForAlignment(string text, int width, char padChar = ' ', bool rightAlign = true)
     {
+        ArgumentException.ThrowIfNullOrEmpty(text);
+
         if (rightAlign)
             return text.PadLeft(width, padChar);
 
@@ -200,6 +206,8 @@ public class StringFormatHelper
     /// </summary>
     public static string ToCsvLine(params object?[] values)
     {
+        ArgumentNullException.ThrowIfNull(values);
+
         var sb = _sbPool.Get();
         try
         {
