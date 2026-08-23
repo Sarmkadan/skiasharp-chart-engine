@@ -20,13 +20,24 @@ public class EventDispatcher
     private readonly Dictionary<string, List<IEventHandler>> _handlers;
     private readonly ILogger<EventDispatcher> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EventDispatcher"/> class.
+    /// </summary>
+    /// <param name="logger">The logger used for diagnostics and error reporting.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="logger"/> is null.</exception>
     public EventDispatcher(ILogger<EventDispatcher> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _handlers = new Dictionary<string, List<IEventHandler>>(StringComparer.OrdinalIgnoreCase);
     }
 
-    // Subscribe to an event
+    /// <summary>
+    /// Subscribes a handler to the specified event type.
+    /// </summary>
+    /// <param name="eventType">The name of the event type to subscribe to.</param>
+    /// <param name="handler">The handler that will receive events of the specified type.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="eventType"/> is null, empty, or whitespace.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is null.</exception>
     public void Subscribe(string eventType, IEventHandler handler)
     {
         try
@@ -53,7 +64,12 @@ public class EventDispatcher
         }
     }
 
-    // Unsubscribe from event
+    /// <summary>
+    /// Unsubscribes a handler from the specified event type.
+    /// Does nothing if the event type is invalid, the handler is null, or no matching subscription exists.
+    /// </summary>
+    /// <param name="eventType">The name of the event type to unsubscribe from.</param>
+    /// <param name="handler">The handler to remove from the subscription list.</param>
     public void Unsubscribe(string eventType, IEventHandler handler)
     {
         try
@@ -73,7 +89,13 @@ public class EventDispatcher
         }
     }
 
-    // Dispatch event synchronously
+    /// <summary>
+    /// Dispatches an event synchronously to all handlers registered for the specified event type.
+    /// Exceptions thrown by individual handlers are logged and do not prevent remaining handlers from executing.
+    /// </summary>
+    /// <param name="eventType">The name of the event type to dispatch.</param>
+    /// <param name="eventData">The payload associated with the event.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="eventType"/> is null, empty, or whitespace.</exception>
     public void Dispatch(string eventType, object eventData)
     {
         try
@@ -107,7 +129,15 @@ public class EventDispatcher
         }
     }
 
-    // Dispatch event asynchronously
+    /// <summary>
+    /// Dispatches an event asynchronously to all handlers registered for the specified event type.
+    /// Handlers implementing <see cref="IAsyncEventHandler"/> are awaited; exceptions thrown by
+    /// individual handlers are logged and do not prevent remaining handlers from executing.
+    /// </summary>
+    /// <param name="eventType">The name of the event type to dispatch.</param>
+    /// <param name="eventData">The payload associated with the event.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="eventType"/> is null, empty, or whitespace.</exception>
+    /// <returns>A task representing the asynchronous dispatch operation.</returns>
     public async Task DispatchAsync(string eventType, object eventData)
     {
         try
@@ -149,16 +179,25 @@ public class EventDispatcher
         }
     }
 
-    // Get handler count for event type
+    /// <summary>
+    /// Gets the number of handlers registered for the specified event type.
+    /// </summary>
+    /// <param name="eventType">The name of the event type.</param>
+    /// <returns>The number of registered handlers, or zero if none are registered.</returns>
     public int GetHandlerCount(string eventType)
     {
         return _handlers.TryGetValue(eventType, out var handlers) ? handlers.Count : 0;
     }
 
-    // Get all subscribed event types
+    /// <summary>
+    /// Gets all currently subscribed event types.
+    /// </summary>
+    /// <returns>An enumerable collection of subscribed event type names.</returns>
     public IEnumerable<string> GetSubscribedEventTypes() => _handlers.Keys;
 
-    // Clear all handlers
+    /// <summary>
+    /// Removes all registered event handlers.
+    /// </summary>
     public void Clear()
     {
         _handlers.Clear();
@@ -171,6 +210,11 @@ public class EventDispatcher
 /// </summary>
 public interface IEventHandler
 {
+    /// <summary>
+    /// Handles the specified event synchronously.
+    /// </summary>
+    /// <param name="eventType">The name of the event type being dispatched.</param>
+    /// <param name="eventData">The payload associated with the event.</param>
     void Handle(string eventType, object eventData);
 }
 
@@ -179,5 +223,11 @@ public interface IEventHandler
 /// </summary>
 public interface IAsyncEventHandler : IEventHandler
 {
+    /// <summary>
+    /// Handles the specified event asynchronously.
+    /// </summary>
+    /// <param name="eventType">The name of the event type being dispatched.</param>
+    /// <param name="eventData">The payload associated with the event.</param>
+    /// <returns>A task representing the asynchronous handling operation.</returns>
     Task HandleAsync(string eventType, object eventData);
 }
