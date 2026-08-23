@@ -51,6 +51,10 @@ public sealed class ChartInteractionService : IChartInteractionService
     {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
 
+        _logger.LogInformation(
+            "ProcessInteraction called with {ChartId}, {InteractionType}, {PointerX}, {PointerY}, {CanvasWidth}, {CanvasHeight}",
+            chart.Id, interactionType, pointerX, pointerY, canvasWidth, canvasHeight);
+
         var hit = _interactivityService.HitTest(
             chart, pointerX, pointerY, canvasWidth, canvasHeight, tooltipOptions, viewport);
 
@@ -88,6 +92,10 @@ public sealed class ChartInteractionService : IChartInteractionService
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         cancellationToken.ThrowIfCancellationRequested();
 
+        _logger.LogInformation(
+            "ProcessInteractionAsync called with {ChartId}, {InteractionType}, {PointerX}, {PointerY}, {CanvasWidth}, {CanvasHeight}",
+            chart.Id, interactionType, pointerX, pointerY, canvasWidth, canvasHeight);
+
         var hit = await _interactivityService.HitTestAsync(
             chart, pointerX, pointerY, canvasWidth, canvasHeight,
             tooltipOptions, viewport, cancellationToken);
@@ -122,9 +130,18 @@ public sealed class ChartInteractionService : IChartInteractionService
     {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
 
+        _logger.LogInformation(
+            "ToggleSelection called with {ChartId}, {PointerX}, {PointerY}, {CanvasWidth}, {CanvasHeight}",
+            chart.Id, pointerX, pointerY, canvasWidth, canvasHeight);
+
         var hit = _interactivityService.HitTest(chart, pointerX, pointerY, canvasWidth, canvasHeight, null, viewport);
         if (!hit.IsHit || hit.DataPoint == null || hit.Series == null)
+        {
+            _logger.LogWarning(
+                "ToggleSelection found no selectable point – chart={ChartId}, pointer=({PointerX}, {PointerY})",
+                chart.Id, pointerX, pointerY);
             return false;
+        }
 
         lock (_selectionLock)
         {
@@ -157,6 +174,8 @@ public sealed class ChartInteractionService : IChartInteractionService
     {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
 
+        _logger.LogInformation("ClearSelection called with {ChartId}", chart.Id);
+
         lock (_selectionLock)
         {
             _selections.Remove(chart.Id);
@@ -171,10 +190,17 @@ public sealed class ChartInteractionService : IChartInteractionService
     {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
 
+        _logger.LogInformation("GetSelection called with {ChartId}", chart.Id);
+
         lock (_selectionLock)
         {
             if (!_selections.TryGetValue(chart.Id, out var sel))
+            {
+                _logger.LogWarning(
+                    "GetSelection found no stored selection – chart={ChartId}; returning empty result",
+                    chart.Id);
                 return new Dictionary<string, IReadOnlyList<DataPoint>>();
+            }
 
             return sel.ToDictionary(
                 kv => kv.Key,
