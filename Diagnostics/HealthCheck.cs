@@ -26,6 +26,7 @@ public class HealthCheckService
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _checks = new List<IHealthCheck>();
+        _logger.LogInformation("HealthCheckService initialized");
     }
 
     /// <summary>
@@ -36,6 +37,8 @@ public class HealthCheckService
         if (check == null)
             throw new ArgumentNullException(nameof(check));
 
+        _logger.LogInformation("RegisterCheck called with {CheckName}", check.Name);
+
         _checks.Add(check);
         _logger.LogDebug("Health check registered: {CheckName}", check.Name);
     }
@@ -45,6 +48,8 @@ public class HealthCheckService
     /// </summary>
     public async Task<HealthCheckResult> CheckHealthAsync(CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("CheckHealthAsync called with {RegisteredCheckCount} registered checks", _checks.Count);
+
         var result = new HealthCheckResult
         {
             Timestamp = DateTime.UtcNow,
@@ -79,6 +84,15 @@ public class HealthCheckService
         result.Status = checkResults.All(c => c.Status == HealthStatus.Healthy)
             ? HealthStatus.Healthy
             : HealthStatus.Unhealthy;
+
+        if (result.Status != HealthStatus.Healthy)
+        {
+            _logger.LogWarning(
+                "Health check reported non-healthy status {Status}: {FailedCount}/{TotalCount} checks failed",
+                result.Status,
+                checkResults.Count(c => c.Status != HealthStatus.Healthy),
+                checkResults.Count);
+        }
 
         _lastStatus = result.Status;
 
