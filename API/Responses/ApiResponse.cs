@@ -159,7 +159,8 @@ public class ApiResponse<T>
             Success = false,
             Message = message
         };
-    }
+        public override string ToString() => $"ApiResponse {{ StatusCode = {StatusCode}, Success = {Success}, Data = {Data}, Message = {Message}, Timestamp = {Timestamp}, TraceId = {TraceId} }}";
+}
 }
 
 /// <summary>
@@ -242,5 +243,6 @@ public class PaginatedResponse<T>
             Success = false,
             Message = message
         };
-    }
+        public override string ToString() => $"ApiResponse {{ StatusCode = {StatusCode}, Success = {Success}, Data = {Data}, Message = {Message}, Timestamp = {Timestamp}, TraceId = {TraceId} }}";
+}
 }
