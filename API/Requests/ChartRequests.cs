@@ -34,6 +34,8 @@ public class CreateChartRequest
     /// </summary>
     public List<ChartSeries>? Series { get; set; }
 
+    public override string ToString() => $"CreateChartRequest {{ Title = {Title}, ChartType = {ChartType}, Configuration = {Configuration}, Series = {Series}, Title = {Title}, Configuration = {Configuration} }}";
+
     /// <summary>
     /// Validates the request before processing
     /// </summary>
