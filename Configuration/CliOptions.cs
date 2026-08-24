@@ -143,6 +143,12 @@ public class CliOptions
     /// Gets the cache size in bytes
     /// </summary>
     public long GetCacheSizeBytes() => (long)CacheMaxSizeMb * 1024 * 1024;
+
+    /// <summary>
+    /// Returns a concise, informative representation of the CLI options
+    /// </summary>
+    public override string ToString() =>
+        $"CliOptions {{ InputFile = {InputFile}, OutputDirectory = {OutputDirectory}, ConfigFile = {ConfigFile}, ExportFormats = {ExportFormats}, Width = {Width}, Height = {Height} }}";
 }
 
 /// <summary>
