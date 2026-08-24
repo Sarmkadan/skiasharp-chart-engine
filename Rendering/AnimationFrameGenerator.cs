@@ -165,4 +165,6 @@ public class AnimationFrame
     public int FrameNumber { get; set; }
     public double Progress { get; set; }
     public List<double> Values { get; set; }
+
+    public override string ToString() => $"AnimationFrame {{ FrameNumber = {FrameNumber}, Progress = {Progress}, Values = {Values} }}";
 }
