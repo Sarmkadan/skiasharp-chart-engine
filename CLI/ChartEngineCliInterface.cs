@@ -21,6 +21,8 @@ public class ChartEngineCliInterface
     private readonly ChartEngine _chartEngine;
     private readonly ILogger<ChartEngineCliInterface> _logger;
     private readonly Dictionary<string, Func<string[], Task<int>>> _commands;
+    private CliRenderOptions? _lastRenderOptions;
+    private CliExportOptions? _lastExportOptions;
 
     public ChartEngineCliInterface(ChartEngine chartEngine, ILogger<ChartEngineCliInterface> logger)
     {
@@ -34,6 +36,24 @@ public class ChartEngineCliInterface
             { "version", VersionCommand },
             { "validate", ValidateCommand }
         };
+    }
+
+    /// <summary>
+    /// Returns a concise, informative representation of the CLI interface,
+    /// including the most recently parsed render and export options.
+    /// </summary>
+    public override string ToString()
+    {
+        var render = _lastRenderOptions ?? new CliRenderOptions();
+        var export = _lastExportOptions ?? new CliExportOptions();
+
+        return $"ChartEngineCliInterface {{ " +
+               $"ChartType = {render.ChartType}, " +
+               $"OutputPath = {render.OutputPath}, " +
+               $"DataFile = {render.DataFile}, " +
+               $"ConfigFile = {render.ConfigFile}, " +
+               $"ChartId = {export.ChartId}, " +
+               $"ExportFormats = [{string.Join(", ", export.ExportFormats)}] }}";
     }
 
     /// <summary>
@@ -153,23 +173,27 @@ public class ChartEngineCliInterface
 
     private CliRenderOptions ParseRenderOptions(string[] args)
     {
-        return new CliRenderOptions
+        var options = new CliRenderOptions
         {
             ChartType = ExtractOption(args, "--type"),
             OutputPath = ExtractOption(args, "--output"),
             DataFile = ExtractOption(args, "--data-file"),
             ConfigFile = ExtractOption(args, "--config")
         };
+        _lastRenderOptions = options;
+        return options;
     }
 
     private CliExportOptions ParseExportOptions(string[] args)
     {
         var formatsStr = ExtractOption(args, "--formats") ?? "png";
-        return new CliExportOptions
+        var options = new CliExportOptions
         {
             ChartId = ExtractOption(args, "--chart-id"),
             ExportFormats = formatsStr.Split(',').Select(f => f.Trim()).ToList()
         };
+        _lastExportOptions = options;
+        return options;
     }
 
     private string? ExtractOption(string[] args, string optionName)
