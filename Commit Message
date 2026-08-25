@@ -1,1 +1,1 @@
-chore: remove unused EventDispatcherJsonExtensions
+Add ToString override to ChartRenderingPipeline
