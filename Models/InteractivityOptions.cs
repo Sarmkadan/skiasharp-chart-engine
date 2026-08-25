@@ -117,6 +117,8 @@ public class TooltipOptions
         BorderWidth      = BorderWidth,
         ShadowOpacity    = ShadowOpacity
     };
+
+    public override string ToString() => $"TooltipOptions {{ Enabled = {Enabled}, BackgroundColor = {BackgroundColor}, BorderColor = {BorderColor}, TextColor = {TextColor}, ContentTemplate = {ContentTemplate}, BorderWidth = {BorderWidth} }}";
 }
 
 /// <summary>
@@ -168,7 +170,7 @@ public class ViewportState
     private double _zoomX = 1.0;
     private double _zoomY = 1.0;
 
-    /// <summary>Gets or sets the horizontal zoom factor (1.0 = no zoom, &gt;1.0 = zoomed in).</summary>
+    /// <summary>Gets or sets the horizontal zoom factor (1.0 = no zoom, >1.0 = zoomed in).</summary>
     [Range(0.01, 100.0)]
     public double ZoomX
     {
@@ -181,7 +183,7 @@ public class ViewportState
         }
     }
 
-    /// <summary>Gets or sets the vertical zoom factor (1.0 = no zoom, &gt;1.0 = zoomed in).</summary>
+    /// <summary>Gets or sets the vertical zoom factor (1.0 = no zoom, >1.0 = zoomed in).</summary>
     [Range(0.01, 100.0)]
     public double ZoomY
     {
