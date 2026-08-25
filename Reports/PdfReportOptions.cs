@@ -41,6 +41,9 @@ public sealed class ReportSection
 
     /// <summary>Gets or sets whether to insert a page break before this section.</summary>
     public bool PageBreakBefore { get; set; } = false;
+
+    public override string ToString() =>
+        $"ReportSection {{ Heading = {Heading}, BodyText = {BodyText}, Chart = {Chart}, ImageFit = {ImageFit}, PageBreakBefore = {PageBreakBefore} }}";
 }
 
 /// <summary>
