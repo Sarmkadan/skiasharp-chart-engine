@@ -116,4 +116,6 @@ public class BatchProcessingResult
     public long ElapsedMilliseconds { get; set; }
     public List<string> Errors { get; set; } = new List<string>();
     public bool Success => FailedItems == 0;
+
+    public override string ToString() => $"BatchProcessingResult {{ TotalItems = {TotalItems}, ProcessedItems = {ProcessedItems}, FailedItems = {FailedItems}, TotalBatches = {TotalBatches}, ElapsedMilliseconds = {ElapsedMilliseconds}, Errors = [{string.Join(", ", Errors)}] }}";
 }
