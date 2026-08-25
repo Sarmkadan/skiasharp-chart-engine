@@ -111,6 +111,8 @@ public class ErrorResponse
     public string? ExceptionType { get; set; }
     public DateTime Timestamp { get; set; }
     public string? TraceId { get; set; }
+
+    public override string ToString() => $"ErrorHandlingMiddleware {{ StatusCode = {StatusCode}, Message = {Message}, Details = {Details}, ExceptionType = {ExceptionType}, Timestamp = {Timestamp}, TraceId = {TraceId} }}";
 }
 
 /// <summary>
