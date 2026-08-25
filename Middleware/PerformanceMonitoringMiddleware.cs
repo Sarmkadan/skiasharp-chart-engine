@@ -130,6 +130,8 @@ public class PerformanceContext
     public long EndMemory { get; set; }
     public long MemoryUsedBytes { get; set; }
     public long ElapsedMilliseconds { get; set; }
+
+    public override string ToString() => $"PerformanceMonitoringMiddleware {{ RequestId = {RequestId}, OperationName = {OperationName}, StartTime = {StartTime}, EndTime = {EndTime}, Stopwatch = {Stopwatch}, StartMemory = {StartMemory} }}";
 }
 
 /// <summary>
