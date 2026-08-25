@@ -126,6 +126,17 @@ public class RateLimitingMiddleware
     {
         _cleanupTimer?.Dispose();
     }
+
+    /// <summary>
+    /// Returns a concise, informative representation of the rate limiting middleware
+    /// </summary>
+    public override string ToString()
+    {
+        var availableTokens = _buckets.Values.Sum(bucket => bucket.GetCurrentInfo().AvailableTokens);
+        var resetTime = DateTime.UtcNow.AddSeconds(_policy.RefillIntervalSeconds);
+
+        return $"RateLimitingMiddleware {{ MaxTokens = {_policy.MaxTokens}, RefillIntervalSeconds = {_policy.RefillIntervalSeconds}, CustomIdentifierExtractor = {(_policy.CustomIdentifierExtractor is not null)}, AvailableTokens = {availableTokens}, MaxTokens = {_policy.MaxTokens}, ResetTime = {resetTime:O} }}";
+    }
 }
 
 /// <summary>
