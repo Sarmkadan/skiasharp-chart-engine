@@ -1,1 +1,1 @@
-Add ToString override to ChartRenderingPipeline
+Add ToString override to ChartConfiguration in Models/ChartConfiguration.cs

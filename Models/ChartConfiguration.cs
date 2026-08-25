@@ -166,4 +166,6 @@ public class ChartConfiguration
             CustomSettings = CustomSettings != null ? new Dictionary<string, object>(CustomSettings) : null
         };
     }
+
+    public override string ToString() => $"ChartConfiguration {{ Subtitle = {Subtitle}, XAxisLabel = {XAxisLabel}, YAxisLabel = {YAxisLabel}, BackgroundColor = {BackgroundColor}, GridColor = {GridColor}, AxisColor = {AxisColor} }}";
 }
