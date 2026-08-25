@@ -72,6 +72,13 @@ public class ThemeManager
     // Get available themes
     public IEnumerable<string> GetAvailableThemes() => _themes.Keys;
 
+    // Concise, informative representation including the current theme's key properties
+    public override string ToString()
+    {
+        var theme = GetCurrentTheme();
+        return $"ThemeManager {{ Name = {theme.Name}, BackgroundColor = {theme.BackgroundColor}, ForegroundColor = {theme.ForegroundColor}, GridColor = {theme.GridColor}, AxisColor = {theme.AxisColor}, TextColor = {theme.TextColor} }}";
+    }
+
     private void _initializeDefaultThemes()
     {
         // Light theme
