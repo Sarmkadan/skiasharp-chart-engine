@@ -54,6 +54,12 @@ public class ChartRenderingPipeline
     }
 
     /// <summary>
+    /// Returns a concise, informative representation of this pipeline
+    /// </summary>
+    public override string ToString()
+        => $"ChartRenderingPipeline {{ Stages = {_stages.Count}, Interceptors = {_interceptors.Count} }}";
+
+    /// <summary>
     /// Executes the complete rendering pipeline
     /// </summary>
     public async Task<PipelineResult> ExecuteAsync(
