@@ -192,6 +192,11 @@ public class SeriesStatistics
     public double IQR { get; set; }
     public double Skewness { get; set; }
     public double Kurtosis { get; set; }
+
+    public override string ToString()
+    {
+        return $"SeriesStatistics {{ SeriesName = {SeriesName}, Count = {Count}, Sum = {Sum}, Mean = {Mean}, Median = {Median}, Mode = {Mode} }}";
+    }
 }
 
 public class OutlierInfo
