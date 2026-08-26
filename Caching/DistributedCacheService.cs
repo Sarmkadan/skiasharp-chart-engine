@@ -222,6 +222,12 @@ public class DistributedCacheService : IDisposable
     }
 
     /// <summary>
+    /// Returns a concise, informative representation of the cache service
+    /// </summary>
+    public override string ToString() =>
+        $"DistributedCacheService {{ EntryCount = {_cache.Count}, SizeInBytes = {_currentSizeBytes}, MaxSizeInBytes = {_maxSizeBytes} }}";
+
+    /// <summary>
     /// Gets metadata for all entries
     /// </summary>
     public List<CacheEntryMetadata> GetMetadata()
