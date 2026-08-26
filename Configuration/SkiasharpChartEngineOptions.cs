@@ -67,4 +67,6 @@ public class SkiasharpChartEngineOptions
     /// </summary>
     [Required]
     public bool ValidateDataOnLoad { get; set; } = true;
+
+    public override string ToString() => $"SkiasharpChartEngineOptions {{ CacheEnabled = {CacheEnabled}, CacheDurationSeconds = {CacheDurationSeconds}, MaxConcurrentRenders = {MaxConcurrentRenders}, DefaultChartWidth = {DefaultChartWidth}, DefaultChartHeight = {DefaultChartHeight}, DefaultBackgroundColor = {DefaultBackgroundColor} }}";
 }
