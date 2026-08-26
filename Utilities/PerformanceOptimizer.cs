@@ -31,6 +31,11 @@ public class OptimizationRecommendation
     public Severity Severity { get; set; }
     public string Message { get; set; }
     public string Action { get; set; }
+
+    public override string ToString()
+    {
+        return $"OptimizationRecommendation {{ Category = {Category}, Severity = {Severity}, Message = {Message}, Action = {Action} }}";
+    }
 }
 
 /// <summary>
