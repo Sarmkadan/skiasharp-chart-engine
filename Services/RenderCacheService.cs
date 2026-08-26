@@ -90,6 +90,14 @@ public class RenderCacheService : IRenderCacheService
 
     public IEnumerable<string> GetAllKeys() => _cache.Keys.ToList();
 
+    public override string ToString()
+    {
+        if (_cache.Count == 0)
+            return "RenderCacheService { ImageData = null, CreatedAt = 0001-01-01 00:00:00Z, AccessCount = 0 }";
+        var entry = _cache.First().Value;
+        return $"RenderCacheService {{ ImageData = {entry.ImageData.Length} bytes, CreatedAt = {entry.CreatedAt}, AccessCount = {entry.AccessCount} }}";
+    }
+
     private void EvictLeastUsedEntry()
     {
         if (_cache.Count == 0)
