@@ -28,6 +28,8 @@ public class MetricsCollector
         _metrics = new Dictionary<string, OperationMetrics>();
     }
 
+    public override string ToString() => $"MetricsCollector {{ _metrics = {_metrics.Count} }}";
+
     // Begin collecting metrics for operation
     public MetricsContext StartCollection(string operationName)
     {
