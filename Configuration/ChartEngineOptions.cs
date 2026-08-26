@@ -54,6 +54,7 @@ public class ChartEngineOptions : SkiasharpChartEngineOptions
     public bool ValidateDataOnLoad { get; set; } = true;
 
     public Dictionary<string, object>? CustomSettings { get; set; }
+    public override string ToString() => $"ChartEngineOptions {{ CacheSize = {CacheSize}, EnableLogging = {EnableLogging}, EnableCaching = {EnableCaching}, MaxConcurrentRenders = {MaxConcurrentRenders}, DefaultChartWidth = {DefaultChartWidth}, DefaultChartHeight = {DefaultChartHeight} }}";
 
     public void Validate()
     {
