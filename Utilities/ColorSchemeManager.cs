@@ -218,6 +218,15 @@ public class ColorSchemeManager
         if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
         return p;
     }
+
+    public override string ToString()
+    {
+        if (_schemes.TryGetValue("default", out var defaultScheme))
+        {
+            return $"ColorSchemeManager {{ Name = {defaultScheme.Name}, Description = {defaultScheme.Description}, Colors = {defaultScheme.Colors?.Length ?? 0} colors }}";
+        }
+        return "ColorSchemeManager { No default scheme }";
+    }
 }
 
 /// <summary>
