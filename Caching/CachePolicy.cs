@@ -137,6 +137,11 @@ public class CachePolicy
             SlidingExpiration = TimeSpan.FromMinutes(Math.Max(10, hours * 5))
         };
     }
+
+    public override string ToString()
+    {
+        return $"CachePolicy {{ AbsoluteExpirationRelativeToNow = {AbsoluteExpirationRelativeToNow}, SlidingExpiration = {SlidingExpiration}, Priority = {Priority}, PostEvictionCallbacks = {PostEvictionCallbacks} }}";
+    }
 }
 
 /// <summary>
