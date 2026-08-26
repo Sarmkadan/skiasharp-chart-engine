@@ -25,6 +25,14 @@ public class RenderResultCache : IDisposable
     private Timer _evictionTimer;
     private readonly object _lockObject = new object();
 
+    public override string ToString()
+{
+    if (_cache.Count == 0)
+        return "RenderResultCache { CacheKey = null, Result = null, CachedAt = 0001-01-01 00:00:00Z, ExpiresAt = 0001-01-01 00:00:00Z, LastAccessedAt = null, Size = 0 }";
+    var entry = _cache.First().Value;
+    return $"RenderResultCache {{ CacheKey = {entry.CacheKey}, Result = {entry.Result}, CachedAt = {entry.CachedAt}, ExpiresAt = {entry.ExpiresAt}, LastAccessedAt = {entry.LastAccessedAt}, Size = {entry.Size} }}";
+}
+
     public RenderResultCache(ILogger<RenderResultCache> logger, long maxCacheSizeBytes = 104_857_600)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
