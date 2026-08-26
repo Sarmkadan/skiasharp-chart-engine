@@ -169,4 +169,9 @@ public class DataStatistics
     public double StandardDeviation { get; set; }
     public double Range { get; set; }
     public DateTime CalculatedAt { get; set; }
+
+    public override string ToString()
+    {
+        return $"DataStatistics {{ Count = {Count}, Sum = {Sum}, Average = {Average}, Min = {Min}, Max = {Max}, Median = {Median} }}";
+    }
 }
