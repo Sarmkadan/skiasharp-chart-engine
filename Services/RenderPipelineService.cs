@@ -126,6 +126,8 @@ public class RenderPipelineService
         _stages.Clear();
         _logger.LogInformation("All pipeline stages cleared");
     }
+
+    public override string ToString() => $"RenderPipelineService {{ Success = {Success}, Message = {Message}, Chart = {Chart}, ChartId = {ChartId}, Error = {Error} }}";
 }
 
 /// <summary>
