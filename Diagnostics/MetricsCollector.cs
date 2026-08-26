@@ -179,6 +179,11 @@ public class MetricsContext
     public long MemoryUsedBytes { get; set; }
     public long ElapsedMs { get; set; }
     public int ThreadId { get; set; }
+
+    public override string ToString()
+    {
+        return $"MetricsCollector {{ OperationName = {OperationName}, StartTime = {StartTime}, EndTime = {EndTime}, Stopwatch = {Stopwatch}, StartMemory = {StartMemory}, EndMemory = {EndMemory} }}";
+    }
 }
 
 public class OperationMetrics
