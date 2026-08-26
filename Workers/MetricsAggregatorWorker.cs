@@ -143,6 +143,8 @@ public class MetricsAggregatorWorker
     // Get metrics count
     public int GetMetricsCount() => _metrics.Count;
 
+    public override string ToString() => $"MetricsAggregatorWorker {{ Name = {nameof(MetricsAggregatorWorker)}, Values = {{}}, Tags = {{}}, LastUpdated = {DateTime.MinValue}, Name = {nameof(MetricsAggregatorWorker)}, Count = 0 }}";
+
     private void _aggregateMetrics()
     {
         try
