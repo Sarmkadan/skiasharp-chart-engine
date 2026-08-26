@@ -205,6 +205,8 @@ public class DataTransformer
             return new List<RankedDataPoint>();
         }
     }
+
+    public override string ToString() => "DataTransformer";
 }
 
 /// <summary>
