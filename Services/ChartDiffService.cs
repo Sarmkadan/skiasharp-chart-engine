@@ -42,29 +42,19 @@ public class ChartDiffService
             // Compare basic properties
             if (oldChart.Title != newChart.Title)
             {
-                diff.Changes.Add(new Change
-                {
-                    Property = "Title",
-                    OldValue = oldChart.Title,
-                    NewValue = newChart.Title
-                });
+                AddChange(diff, "Title", oldChart.Title, newChart.Title);
             }
 
             if (oldChart.ChartType != newChart.ChartType)
             {
-                diff.Changes.Add(new Change
-                {
-                    Property = "ChartType",
-                    OldValue = oldChart.ChartType.ToString(),
-                    NewValue = newChart.ChartType.ToString()
-                });
+                AddChange(diff, "ChartType", oldChart.ChartType.ToString(), newChart.ChartType.ToString());
             }
 
             // Compare series
-            _compareSeries(oldChart.Series, newChart.Series, diff);
+            CompareSeries(oldChart.Series, newChart.Series, diff);
 
             // Compare configuration
-            _compareConfiguration(oldChart.ChartConfiguration, newChart.ChartConfiguration, diff);
+            CompareConfiguration(oldChart.ChartConfiguration, newChart.ChartConfiguration, diff);
 
             _logger.LogInformation("Chart diff computed: {ChartId}, Changes: {ChangeCount}", newChart.Id, diff.Changes.Count);
             return diff;
@@ -106,19 +96,14 @@ public class ChartDiffService
         }
     }
 
-    private void _compareSeries(List<ChartSeries> oldSeries, List<ChartSeries> newSeries, ChartDiff diff)
+    private void CompareSeries(List<ChartSeries> oldSeries, List<ChartSeries> newSeries, ChartDiff diff)
     {
         var oldCount = oldSeries?.Count ?? 0;
         var newCount = newSeries?.Count ?? 0;
 
         if (oldCount != newCount)
         {
-            diff.Changes.Add(new Change
-            {
-                Property = "Series.Count",
-                OldValue = oldCount.ToString(),
-                NewValue = newCount.ToString()
-            });
+            AddChange(diff, "Series.Count", oldCount.ToString(), newCount.ToString());
         }
 
         // Compare individual series
@@ -131,12 +116,7 @@ public class ChartDiffService
 
                 if (oldSerie.Name != newSerie.Name)
                 {
-                    diff.Changes.Add(new Change
-                    {
-                        Property = $"Series[{i}].Name",
-                        OldValue = oldSerie.Name,
-                        NewValue = newSerie.Name
-                    });
+                    AddChange(diff, $"Series[{i}].Name", oldSerie.Name, newSerie.Name);
                 }
 
                 var oldPointCount = oldSerie.DataPoints?.Count ?? 0;
@@ -144,52 +124,51 @@ public class ChartDiffService
 
                 if (oldPointCount != newPointCount)
                 {
-                    diff.Changes.Add(new Change
-                    {
-                        Property = $"Series[{i}].DataPoints.Count",
-                        OldValue = oldPointCount.ToString(),
-                        NewValue = newPointCount.ToString()
-                    });
+                    AddChange(
+                        diff,
+                        $"Series[{i}].DataPoints.Count",
+                        oldPointCount.ToString(),
+                        newPointCount.ToString());
                 }
             }
         }
     }
 
-    private void _compareConfiguration(ChartConfiguration oldConfig, ChartConfiguration newConfig, ChartDiff diff)
+    private void CompareConfiguration(ChartConfiguration oldConfig, ChartConfiguration newConfig, ChartDiff diff)
     {
+        void CompareAndAdd<T>(string property, T oldValue, T newValue)
+        {
+            if (!EqualityComparer<T>.Default.Equals(oldValue, newValue))
+            {
+                AddChange(diff, property, oldValue?.ToString(), newValue?.ToString());
+            }
+        }
+
         if (oldConfig == null && newConfig == null)
             return;
 
         if (oldConfig == null || newConfig == null)
         {
-            diff.Changes.Add(new Change
-            {
-                Property = "Configuration",
-                OldValue = oldConfig == null ? "(null)" : "(set)",
-                NewValue = newConfig == null ? "(null)" : "(set)"
-            });
+            AddChange(
+                diff,
+                "Configuration",
+                oldConfig == null ? "(null)" : "(set)",
+                newConfig == null ? "(null)" : "(set)");
             return;
         }
 
-        if (oldConfig.Width != newConfig.Width)
-        {
-            diff.Changes.Add(new Change
-            {
-                Property = "Configuration.Width",
-                OldValue = oldConfig.Width.ToString(),
-                NewValue = newConfig.Width.ToString()
-            });
-        }
+        CompareAndAdd("Configuration.Width", oldConfig.Width, newConfig.Width);
+        CompareAndAdd("Configuration.Height", oldConfig.Height, newConfig.Height);
+    }
 
-        if (oldConfig.Height != newConfig.Height)
+    private void AddChange(ChartDiff diff, string property, string? oldValue, string? newValue)
+    {
+        diff.Changes.Add(new Change
         {
-            diff.Changes.Add(new Change
-            {
-                Property = "Configuration.Height",
-                OldValue = oldConfig.Height.ToString(),
-                NewValue = newConfig.Height.ToString()
-            });
-        }
+            Property = property,
+            OldValue = oldValue,
+            NewValue = newValue
+        });
     }
 }
 
