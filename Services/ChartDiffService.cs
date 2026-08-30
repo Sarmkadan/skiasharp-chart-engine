@@ -27,11 +27,11 @@ public class ChartDiffService
     // Compute diff between two charts
     public ChartDiff ComputeDiff(Chart oldChart, Chart newChart)
     {
+        ArgumentNullException.ThrowIfNull(oldChart);
+        ArgumentNullException.ThrowIfNull(newChart);
+
         try
         {
-            if (oldChart == null || newChart == null)
-                return null;
-
             var diff = new ChartDiff
             {
                 ChartId = newChart.Id,
@@ -69,9 +69,11 @@ public class ChartDiffService
     // Generate diff report
     public string GenerateDiffReport(ChartDiff diff)
     {
+        ArgumentNullException.ThrowIfNull(diff);
+
         try
         {
-            if (diff == null || diff.Changes.Count == 0)
+            if (diff.Changes.Count == 0)
                 return "No changes detected.";
 
             var report = new System.Text.StringBuilder();
@@ -181,6 +183,12 @@ public class ChartDiff
     public DateTime ComputedAt { get; set; }
     public List<Change> Changes { get; set; }
 
+    public ChartDiff()
+    {
+        ChartId = string.Empty;
+        Changes = new List<Change>();
+    }
+
     public bool HasChanges => Changes.Count > 0;
 }
 
@@ -193,4 +201,11 @@ public class Change
     public string OldValue { get; set; }
     public string NewValue { get; set; }
     public DateTime ChangedAt { get; set; } = DateTime.UtcNow;
+
+    public Change()
+    {
+        Property = string.Empty;
+        OldValue = string.Empty;
+        NewValue = string.Empty;
+    }
 }
