@@ -41,11 +41,11 @@ public class RenderCacheService : IRenderCacheService
         if (_cache.TryGetValue(cacheKey, out var entry))
         {
             entry.AccessCount++;
-            _logger.LogDebug($"Cache hit for key: {cacheKey}");
+            _logger.LogDebug("Cache hit for key: {CacheKey}", cacheKey);
             return entry.ImageData;
         }
 
-        _logger.LogDebug($"Cache miss for key: {cacheKey}");
+        _logger.LogDebug("Cache miss for key: {CacheKey}", cacheKey);
         return null;
     }
 
@@ -64,7 +64,7 @@ public class RenderCacheService : IRenderCacheService
             AccessCount = 0
         };
 
-        _logger.LogInformation($"Cached render result: {cacheKey} ({imageData.Length} bytes)");
+        _logger.LogInformation("Cached render result: {CacheKey} ({ImageDataLength} bytes)", cacheKey, imageData.Length);
     }
 
     public void Remove(string cacheKey)
@@ -74,7 +74,7 @@ public class RenderCacheService : IRenderCacheService
 
         if (_cache.Remove(cacheKey))
         {
-            _logger.LogInformation($"Removed cache entry: {cacheKey}");
+            _logger.LogInformation("Removed cache entry: {CacheKey}", cacheKey);
         }
     }
 
@@ -110,6 +110,6 @@ public class RenderCacheService : IRenderCacheService
             .Key;
 
         _cache.Remove(leastUsedKey);
-        _logger.LogInformation($"Evicted LRU cache entry: {leastUsedKey}");
+        _logger.LogInformation("Evicted LRU cache entry: {CacheKey}", leastUsedKey);
     }
 }
