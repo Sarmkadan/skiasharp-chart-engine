@@ -18,6 +18,21 @@ namespace SkiaSharpChartEngine.Rendering;
 /// </summary>
 public class BarChartRenderer : IChartRenderer
 {
+    private const float ChartPadding = 40f;
+    private const float TitleSpacing = 8f;
+    private const float SubtitleSpacing = 6f;
+    private const float TitleTopOffset = 4f;
+    private const float SubtitleTopSpacing = 2f;
+    private const float BarSpacing = 2f;
+    private const float ValueLabelFontSize = 9f;
+    private const float ValueLabelCenterDivisor = 2f;
+    private const float ValueLabelTopOffset = 5f;
+    private const float AxisStrokeWidth = 1f;
+    private const float AxisLabelFontSize = 10f;
+    private const float AxisIntervalCount = 5f;
+    private const float AxisLabelHorizontalOffset = 35f;
+    private const float AxisLabelVerticalOffset = 3f;
+
     private readonly ILogger<BarChartRenderer> _logger;
     private readonly LegendRenderer _legendRenderer;
 
@@ -49,19 +64,18 @@ public class BarChartRenderer : IChartRenderer
             float titleHeight = 0;
             if (!string.IsNullOrEmpty(chart.Configuration.Title))
             {
-                titleHeight += ChartConstants.TitleFontSize + 8f;
+                titleHeight += ChartConstants.TitleFontSize + TitleSpacing;
             }
             if (!string.IsNullOrEmpty(chart.Configuration.Subtitle))
             {
-                titleHeight += ChartConstants.SubtitleFontSize + 6f;
+                titleHeight += ChartConstants.SubtitleFontSize + SubtitleSpacing;
             }
 
-            var padding = 40f;
             var chartBounds = new SKRect(
-                bounds.Left + padding,
-                bounds.Top + padding + titleHeight,
-                bounds.Right - padding,
-                bounds.Bottom - padding
+                bounds.Left + ChartPadding,
+                bounds.Top + ChartPadding + titleHeight,
+                bounds.Right - ChartPadding,
+                bounds.Bottom - ChartPadding
             );
 
             // Get value range
@@ -120,7 +134,7 @@ public class BarChartRenderer : IChartRenderer
 
         var centerX = bounds.MidX;
         var textColor = SKColor.Parse(chart.Configuration.TextColor);
-        var titleY = bounds.Top + 4f;
+        var titleY = bounds.Top + TitleTopOffset;
 
         // Render title
         if (!string.IsNullOrEmpty(chart.Configuration.Title))
@@ -140,7 +154,7 @@ public class BarChartRenderer : IChartRenderer
         // Render subtitle
         if (!string.IsNullOrEmpty(chart.Configuration.Subtitle))
         {
-            var subtitleY = titleY + ChartConstants.TitleFontSize + 2f;
+            var subtitleY = titleY + ChartConstants.TitleFontSize + SubtitleTopSpacing;
             using var subtitlePaint = new SKPaint
             {
                 Color = textColor,
@@ -193,18 +207,18 @@ public class BarChartRenderer : IChartRenderer
                     var barHeight = (float)(normalizedValue * bounds.Height);
 
                     var barY = bounds.Bottom - cumulativeHeight - barHeight;
-                    var barRect = new SKRect(barX, barY, barX + barWidth - 2, bounds.Bottom - cumulativeHeight);
+                    var barRect = new SKRect(barX, barY, barX + barWidth - BarSpacing, bounds.Bottom - cumulativeHeight);
 
                     barPaint.Color = _getColor(seriesIndex);
                     canvas.DrawRect(barRect, barPaint);
 
                     // Draw value label on top of each segment
-                    var labelPaint = new SKPaint { TextSize = 9, Color = SKColors.Black };
+                    var labelPaint = new SKPaint { TextSize = ValueLabelFontSize, Color = SKColors.Black };
                     var labelText = dataPoint.Value.ToString("F1");
                     var textWidth = labelPaint.MeasureText(labelText);
                     canvas.DrawText(labelText,
-                        barX + (barWidth - textWidth) / 2,
-                        barY - 5,
+                        barX + (barWidth - textWidth) / ValueLabelCenterDivisor,
+                        barY - ValueLabelTopOffset,
                         labelPaint);
 
                     cumulativeHeight += barHeight;
@@ -225,14 +239,14 @@ public class BarChartRenderer : IChartRenderer
                     var barY = bounds.Bottom - barHeight;
 
                     barPaint.Color = _getColor(seriesIndex);
-                    var barRect = new SKRect(barX, barY, barX + barWidth - 2, bounds.Bottom);
+                    var barRect = new SKRect(barX, barY, barX + barWidth - BarSpacing, bounds.Bottom);
                     canvas.DrawRect(barRect, barPaint);
 
                     // Draw value label
-                    var labelPaint = new SKPaint { TextSize = 9, Color = SKColors.Black };
+                    var labelPaint = new SKPaint { TextSize = ValueLabelFontSize, Color = SKColors.Black };
                     var labelText = dataPoint.Value.ToString("F1");
                     var textWidth = labelPaint.MeasureText(labelText);
-                    canvas.DrawText(labelText, barX + (barWidth - textWidth) / 2, barY - 5, labelPaint);
+                    canvas.DrawText(labelText, barX + (barWidth - textWidth) / ValueLabelCenterDivisor, barY - ValueLabelTopOffset, labelPaint);
                 }
             }
         }
@@ -243,7 +257,7 @@ public class BarChartRenderer : IChartRenderer
         var axisPaint = new SKPaint
         {
             Color = SKColors.Black,
-            StrokeWidth = 1,
+            StrokeWidth = AxisStrokeWidth,
             IsAntialias = true
         };
 
@@ -254,12 +268,12 @@ public class BarChartRenderer : IChartRenderer
         canvas.DrawLine(bounds.Left, bounds.Top, bounds.Left, bounds.Bottom, axisPaint);
 
         // Y axis labels
-        var textPaint = new SKPaint { TextSize = 10, Color = SKColors.Black };
-        for (int i = 0; i <= 5; i++)
+        var textPaint = new SKPaint { TextSize = AxisLabelFontSize, Color = SKColors.Black };
+        for (int i = 0; i <= AxisIntervalCount; i++)
         {
-            var value = minValue + (maxValue - minValue) * i / 5;
-            var y = bounds.Bottom - (float)(i / 5.0 * bounds.Height);
-            canvas.DrawText(value.ToString("F0"), bounds.Left - 35, y + 3, textPaint);
+            var value = minValue + (maxValue - minValue) * i / AxisIntervalCount;
+            var y = bounds.Bottom - (float)(i / (double)AxisIntervalCount * bounds.Height);
+            canvas.DrawText(value.ToString("F0"), bounds.Left - AxisLabelHorizontalOffset, y + AxisLabelVerticalOffset, textPaint);
         }
     }
 
