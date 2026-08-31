@@ -87,13 +87,16 @@ public class BarChartRenderer : IChartRenderer
             if (Stacked)
             {
                 // Compute stacked totals per category (point index)
-                var pointCount = chart.Series.First().DataPoints.Count;
+                var pointCount = chart.Series.Max(s => s.DataPoints.Count);
                 var stackedSums = new double[pointCount];
                 foreach (var series in chart.Series)
                 {
                     for (int i = 0; i < pointCount; i++)
                     {
-                        stackedSums[i] += series.DataPoints[i].Value;
+                        if (i < series.DataPoints.Count)
+                        {
+                            stackedSums[i] += series.DataPoints[i].Value;
+                        }
                     }
                 }
 
@@ -174,7 +177,7 @@ public class BarChartRenderer : IChartRenderer
 
         var barPaint = new SKPaint { IsAntialias = true };
         var series = chart.Series;
-        var pointCount = series.First().DataPoints.Count;
+        var pointCount = series.Max(s => s.DataPoints.Count);
 
         // Determine bar width based on mode
         float barWidth;
@@ -202,6 +205,11 @@ public class BarChartRenderer : IChartRenderer
 
                 for (int seriesIndex = 0; seriesIndex < series.Count; seriesIndex++)
                 {
+                    if (pointIndex >= series[seriesIndex].DataPoints.Count)
+                    {
+                        continue;
+                    }
+
                     var dataPoint = series[seriesIndex].DataPoints[pointIndex];
                     var normalizedValue = (dataPoint.Value - minValue) / valueRange;
                     var barHeight = (float)(normalizedValue * bounds.Height);
@@ -231,6 +239,11 @@ public class BarChartRenderer : IChartRenderer
 
                 for (int seriesIndex = 0; seriesIndex < series.Count; seriesIndex++)
                 {
+                    if (pointIndex >= series[seriesIndex].DataPoints.Count)
+                    {
+                        continue;
+                    }
+
                     var dataPoint = series[seriesIndex].DataPoints[pointIndex];
                     var normalizedValue = (dataPoint.Value - minValue) / valueRange;
 
