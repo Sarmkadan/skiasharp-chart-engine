@@ -65,6 +65,8 @@ public sealed class StreamingChartOptions
     /// instead of appending. Defaults to <c>false</c>.
     /// </summary>
     public bool ReplaceOnUpdate { get; set; } = false;
+
+    public override string ToString() => $"StreamingChartOptions {{ MaxBufferSize = {MaxBufferSize}, WindowSize = {WindowSize}, FlushIntervalMs = {FlushIntervalMs}, ReplaceOnUpdate = {ReplaceOnUpdate} }}";
 }
 
 /// <summary>
