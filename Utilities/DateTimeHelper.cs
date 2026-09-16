@@ -19,6 +19,11 @@ public static class DateTimeHelper
     /// </summary>
     public static string FormatForAxis(DateTime dateTime, DateTime minDate, DateTime maxDate)
     {
+        if (minDate > maxDate)
+        {
+            throw new ArgumentOutOfRangeException(nameof(minDate), "minDate cannot be greater than maxDate");
+        }
+
         var timeSpan = maxDate - minDate;
 
         return timeSpan.TotalDays switch
@@ -44,6 +49,11 @@ public static class DateTimeHelper
     /// </summary>
     public static long ToUnixTimestamp(DateTime dateTime)
     {
+        if (dateTime == DateTime.MinValue)
+        {
+            throw new ArgumentOutOfRangeException(nameof(dateTime), "dateTime cannot be DateTime.MinValue");
+        }
+
         return (long)(dateTime - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds;
     }
 
@@ -52,6 +62,11 @@ public static class DateTimeHelper
     /// </summary>
     public static int GetBusinessDaysBetween(DateTime startDate, DateTime endDate)
     {
+        if (startDate > endDate)
+        {
+            throw new ArgumentOutOfRangeException(nameof(startDate), "startDate cannot be greater than endDate");
+        }
+
         var totalDays = (int)(endDate - startDate).TotalDays;
         int businessDays = 0;
 
