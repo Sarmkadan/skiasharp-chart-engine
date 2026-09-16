@@ -36,9 +36,11 @@ public class ArgumentParser
     /// <returns>A dictionary containing parsed argument keys and values.</returns>
     public Dictionary<string, string> Parse(string[] args)
     {
+        ArgumentNullException.ThrowIfNull(args);
+
         var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        if (args == null || args.Length == 0)
+        if (args.Length == 0)
             return result;
 
         for (int i = 0; i < args.Length; i++)
@@ -89,6 +91,9 @@ public class ArgumentParser
     /// <returns>True if all required keys are present; otherwise, false.</returns>
     public bool ValidateRequired(Dictionary<string, string> args, params string[] requiredKeys)
     {
+        ArgumentNullException.ThrowIfNull(args);
+        ArgumentNullException.ThrowIfNull(requiredKeys);
+
         var missing = requiredKeys.Where(k => !args.ContainsKey(k)).ToList();
 
         if (missing.Any())
@@ -109,6 +114,10 @@ public class ArgumentParser
     /// <returns>The argument value if found, otherwise the default value.</returns>
     public string GetValue(Dictionary<string, string> args, string key, string defaultValue = "")
     {
+        ArgumentNullException.ThrowIfNull(args);
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(defaultValue);
+
         return args.TryGetValue(key, out var value) ? value : defaultValue;
     }
 
@@ -120,6 +129,9 @@ public class ArgumentParser
     /// <returns>A list of trimmed, non-empty strings, or an empty list if the key is not found.</returns>
     public List<string> ParseList(Dictionary<string, string> args, string key)
     {
+        ArgumentNullException.ThrowIfNull(args);
+        ArgumentNullException.ThrowIfNull(key);
+
         if (!args.TryGetValue(key, out var value))
             return new List<string>();
 
