@@ -16,6 +16,16 @@ public class BubbleChartRenderer : IChartRenderer
 {
     private readonly ILogger<BubbleChartRenderer> _logger;
     private const float MaxRadius = 20f; // maximum radius for the largest bubble
+    private const int EmptyItemCount = 0; // item count indicating that there is no data to render
+    private const float InitialTitleHeight = 0f; // title area height before title content is measured
+    private const float TitleSpacing = 8f; // vertical spacing reserved below the chart title
+    private const float SubtitleSpacing = 6f; // vertical spacing reserved below the chart subtitle
+    private const float ChartPadding = 40f; // padding between the chart bounds and plot area
+    private const double DefaultValueRange = 1d; // fallback range used when all values are equal
+    private const int InitialSeriesIndex = 0; // starting index used to select series colors
+    private const int MissingLabelHash = 0; // hash value used when a data point has no label
+    private const int LabelHashScale = 100; // scale used to normalize label hashes into X positions
+    private const byte BubbleFillAlpha = 128; // alpha value used for semi-transparent bubble fills
 
     public BubbleChartRenderer(ILogger<BubbleChartRenderer> logger)
     {
@@ -32,7 +42,7 @@ public class BubbleChartRenderer : IChartRenderer
     {
         try
         {
-            if (canvas == null || chart == null || chart.Series == null || chart.Series.Count == 0)
+            if (canvas == null || chart == null || chart.Series == null || chart.Series.Count == EmptyItemCount)
             {
                 _logger.LogWarning("Invalid parameters for bubble chart rendering");
                 return;
@@ -41,22 +51,21 @@ public class BubbleChartRenderer : IChartRenderer
             _logger.LogInformation("Rendering bubble chart: {ChartId}", chart.Id);
 
             // Calculate title and subtitle height to shrink the plot area
-            float titleHeight = 0;
+            float titleHeight = InitialTitleHeight;
             if (!string.IsNullOrEmpty(chart.Configuration.Title))
             {
-                titleHeight += ChartConstants.TitleFontSize + 8f;
+                titleHeight += ChartConstants.TitleFontSize + TitleSpacing;
             }
             if (!string.IsNullOrEmpty(chart.Configuration.Subtitle))
             {
-                titleHeight += ChartConstants.SubtitleFontSize + 6f;
+                titleHeight += ChartConstants.SubtitleFontSize + SubtitleSpacing;
             }
 
-            var padding = 40f;
             var chartBounds = new SKRect(
-                bounds.Left + padding,
-                bounds.Top + padding + titleHeight,
-                bounds.Right - padding,
-                bounds.Bottom - padding
+                bounds.Left + ChartPadding,
+                bounds.Top + ChartPadding + titleHeight,
+                bounds.Right - ChartPadding,
+                bounds.Bottom - ChartPadding
             );
 
             // Determine the overall value range across all series for Y axis
@@ -64,12 +73,12 @@ public class BubbleChartRenderer : IChartRenderer
                 .SelectMany(s => s.DataPoints.Select(dp => dp.Value))
                 .ToList();
 
-            if (allValues.Count == 0) return;
+            if (allValues.Count == EmptyItemCount) return;
 
             var minValue = allValues.Min();
             var maxValue = allValues.Max();
             var valueRange = maxValue - minValue;
-            if (valueRange == 0) valueRange = 1;
+            if (valueRange == EmptyItemCount) valueRange = DefaultValueRange;
 
             // Determine the maximum size value for radius scaling
             var maxSize = allValues.Max(); // using the same value set for simplicity
@@ -79,7 +88,7 @@ public class BubbleChartRenderer : IChartRenderer
 
             // Render each series
             var colors = _getSeriesColors(chart.Series.Count);
-            int seriesIndex = 0;
+            int seriesIndex = InitialSeriesIndex;
             foreach (var series in chart.Series)
             {
                 var color = colors[seriesIndex++];
@@ -89,7 +98,7 @@ public class BubbleChartRenderer : IChartRenderer
                     var yNorm = (dataPoint.Value - minValue) / valueRange;
 
                     // X position derived from label hash (simplified)
-                    var xNorm = (dataPoint.Label?.GetHashCode() ?? 0) % 100 / 100.0;
+                    var xNorm = (dataPoint.Label?.GetHashCode() ?? MissingLabelHash) % LabelHashScale / (double)LabelHashScale;
 
                     var x = chartBounds.Left + (float)(xNorm * chartBounds.Width);
                     var y = chartBounds.Bottom - (float)(yNorm * chartBounds.Height);
@@ -100,7 +109,7 @@ public class BubbleChartRenderer : IChartRenderer
                     // Paint for the bubble
                     using var paint = new SKPaint
                     {
-                        Color = color.WithAlpha(128), // semi‑transparent fill
+                        Color = color.WithAlpha(BubbleFillAlpha), // semi‑transparent fill
                         Style = SKPaintStyle.Fill,
                         IsAntialias = true
                     };
