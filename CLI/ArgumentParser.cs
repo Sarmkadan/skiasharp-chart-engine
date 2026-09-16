@@ -81,7 +81,12 @@ public class ArgumentParser
         return result;
     }
 
-    // Validate that required arguments are present
+    /// <summary>
+    /// Validates that all specified required argument keys are present in the parsed arguments.
+    /// </summary>
+    /// <param name="args">The dictionary of parsed arguments to check.</param>
+    /// <param name="requiredKeys">The keys that must be present.</param>
+    /// <returns>True if all required keys are present; otherwise, false.</returns>
     public bool ValidateRequired(Dictionary<string, string> args, params string[] requiredKeys)
     {
         var missing = requiredKeys.Where(k => !args.ContainsKey(k)).ToList();
@@ -95,13 +100,24 @@ public class ArgumentParser
         return true;
     }
 
-    // Get argument value with default fallback
+    /// <summary>
+    /// Retrieves the value for a specified argument key, returning a default value if the key is not found.
+    /// </summary>
+    /// <param name="args">The dictionary of parsed arguments.</param>
+    /// <param name="key">The argument key to look up.</param>
+    /// <param name="defaultValue">The default value to return if the key is not found.</param>
+    /// <returns>The argument value if found, otherwise the default value.</returns>
     public string GetValue(Dictionary<string, string> args, string key, string defaultValue = "")
     {
         return args.TryGetValue(key, out var value) ? value : defaultValue;
     }
 
-    // Parse multiple values separated by comma
+    /// <summary>
+    /// Parses a comma-separated list of values from a specified argument key.
+    /// </summary>
+    /// <param name="args">The dictionary of parsed arguments.</param>
+    /// <param name="key">The argument key containing the comma-separated values.</param>
+    /// <returns>A list of trimmed, non-empty strings, or an empty list if the key is not found.</returns>
     public List<string> ParseList(Dictionary<string, string> args, string key)
     {
         if (!args.TryGetValue(key, out var value))
