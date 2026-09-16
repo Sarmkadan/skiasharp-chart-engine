@@ -76,6 +76,7 @@ public static class SKColorExtensions
     public static bool TryParseHex(string hex, out SKColor color)
     {
         color = default;
+        if (string.IsNullOrEmpty(hex)) return false;
         if (string.IsNullOrWhiteSpace(hex)) return false;
 
         var s = hex.StartsWith("#") ? hex[1..] : hex;
