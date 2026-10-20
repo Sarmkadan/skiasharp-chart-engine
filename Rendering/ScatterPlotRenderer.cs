@@ -20,6 +20,27 @@ public class ScatterPlotRenderer : IChartRenderer
     private readonly ILogger<ScatterPlotRenderer> _logger;
     private const float PointSize = 5f;
 
+    /// <summary>Padding in pixels between chart bounds and the drawing area on each side.</summary>
+    private const float ChartPadding = 40f;
+
+    /// <summary>Stroke width in pixels for the X and Y axis lines.</summary>
+    private const float AxisStrokeWidth = 1f;
+
+    /// <summary>Font size in pixels for the Y-axis value labels.</summary>
+    private const float AxisLabelTextSize = 10f;
+
+    /// <summary>Number of evenly spaced divisions along the Y axis for value labels.</summary>
+    private const int YAxisDivisions = 5;
+
+    /// <summary>Horizontal offset in pixels from the Y axis to draw value labels (to the left).</summary>
+    private const float YAxisLabelLeftOffset = 35f;
+
+    /// <summary>Vertical offset in pixels applied to Y-axis labels for baseline alignment.</summary>
+    private const float YAxisLabelBaselineOffset = 3f;
+
+    /// <summary>Modulus applied to label hash codes to normalize X positions into a 0-1 range.</summary>
+    private const int LabelHashModulus = 100;
+
     public ScatterPlotRenderer(ILogger<ScatterPlotRenderer> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -38,9 +59,8 @@ public class ScatterPlotRenderer : IChartRenderer
 
             _logger.LogInformation("Rendering scatter plot: {ChartId}", chart.Id);
 
-            var padding = 40f;
-            var chartBounds = new SKRect(bounds.Left + padding, bounds.Top + padding,
-                bounds.Right - padding, bounds.Bottom - padding);
+            var chartBounds = new SKRect(bounds.Left + ChartPadding, bounds.Top + ChartPadding,
+                bounds.Right - ChartPadding, bounds.Bottom - ChartPadding);
 
             // Get value ranges
             var allValues = chart.Series.SelectMany(s => s.DataPoints.Select(dp => dp.Value)).ToList();
@@ -63,7 +83,7 @@ public class ScatterPlotRenderer : IChartRenderer
                     var normalized = (dataPoint.Value - minValue) / valueRange;
 
                     // For scatter plot, use label as x position (simplified)
-                    var xNorm = (dataPoint.Label?.GetHashCode() ?? 0) % 100 / 100.0;
+                    var xNorm = (dataPoint.Label?.GetHashCode() ?? 0) % LabelHashModulus / (double)LabelHashModulus;
                     var yNorm = normalized;
 
                     var x = chartBounds.Left + (float)(xNorm * chartBounds.Width);
@@ -91,7 +111,7 @@ public class ScatterPlotRenderer : IChartRenderer
         var axisPaint = new SKPaint
         {
             Color = SKColors.Black,
-            StrokeWidth = 1,
+            StrokeWidth = AxisStrokeWidth,
             IsAntialias = true
         };
 
@@ -102,12 +122,12 @@ public class ScatterPlotRenderer : IChartRenderer
         canvas.DrawLine(bounds.Left, bounds.Top, bounds.Left, bounds.Bottom, axisPaint);
 
         // Y axis labels
-        var textPaint = new SKPaint { TextSize = 10, Color = SKColors.Black };
-        for (int i = 0; i <= 5; i++)
+        var textPaint = new SKPaint { TextSize = AxisLabelTextSize, Color = SKColors.Black };
+        for (int i = 0; i <= YAxisDivisions; i++)
         {
-            var value = minValue + (maxValue - minValue) * i / 5;
-            var y = bounds.Bottom - (float)(i / 5.0 * bounds.Height);
-            canvas.DrawText(value.ToString("F0"), bounds.Left - 35, y + 3, textPaint);
+            var value = minValue + (maxValue - minValue) * i / YAxisDivisions;
+            var y = bounds.Bottom - (float)((double)i / YAxisDivisions * bounds.Height);
+            canvas.DrawText(value.ToString("F0"), bounds.Left - YAxisLabelLeftOffset, y + YAxisLabelBaselineOffset, textPaint);
         }
     }
 
