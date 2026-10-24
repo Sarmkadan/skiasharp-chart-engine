@@ -253,17 +253,16 @@ public class ChartModelsAndValidationTests
     // -------------------------------------------------------------------------
 
     /// <summary>
-    /// Tests that ChartValidator.ValidateChart returns invalid when given null input.
+    /// Tests that ChartValidator.ValidateChart throws ArgumentNullException when given null input.
     /// </summary>
     [Fact]
-    public void ChartValidator_ValidateChart_NullInput_IsNotValid()
+    public void ChartValidator_ValidateChart_NullInput_ThrowsArgumentNullException()
     {
         // Act
-        var result = ChartValidator.ValidateChart(null!);
+        Action act = () => ChartValidator.ValidateChart(null!);
 
         // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().ContainSingle(e => e.Contains("null"));
+        act.Should().Throw<ArgumentNullException>().WithParameterName("chart");
     }
 
     /// <summary>
@@ -317,17 +316,16 @@ public class ChartModelsAndValidationTests
     }
 
     /// <summary>
-    /// Tests that ChartValidator.ValidateDataPoint returns invalid when given a null DataPoint.
+    /// Tests that ChartValidator.ValidateDataPoint throws ArgumentNullException when given a null DataPoint.
     /// </summary>
     [Fact]
-    public void ChartValidator_ValidateDataPoint_NullPoint_IsNotValid()
+    public void ChartValidator_ValidateDataPoint_NullPoint_ThrowsArgumentNullException()
     {
         // Act
-        var result = ChartValidator.ValidateDataPoint(null!, 0);
+        Action act = () => ChartValidator.ValidateDataPoint(null!, 0);
 
         // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().ContainSingle();
+        act.Should().Throw<ArgumentNullException>().WithParameterName("point");
     }
 
     // -------------------------------------------------------------------------

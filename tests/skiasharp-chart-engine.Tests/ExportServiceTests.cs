@@ -428,22 +428,24 @@ public class ExportServiceTests
     // ---------------------------------------------------------------
 
     /// <summary>
-    /// Tests that <see cref="ExportService.GetSupportedFormats"/> returns all four supported formats.
+    /// Tests that <see cref="ExportService.GetSupportedFormats"/> returns all supported formats.
     /// </summary>
     [Fact]
-    public void GetSupportedFormats_ReturnsAllFourFormats()
+    public void GetSupportedFormats_ReturnsAllSupportedFormats()
     {
-        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(GetSupportedFormats_ReturnsAllFourFormats));
+        _testLoggerMock.Object.LogInformation("Starting test {TestName}", nameof(GetSupportedFormats_ReturnsAllSupportedFormats));
         // Act
         var formats = _service.GetSupportedFormats();
 
         // Assert
-        formats.Should().HaveCount(4);
+        formats.Should().HaveCount(6);
         formats.Should().Contain(ExportFormat.PNG);
         formats.Should().Contain(ExportFormat.SVG);
         formats.Should().Contain(ExportFormat.JPEG);
         formats.Should().Contain(ExportFormat.WEBP);
-        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(GetSupportedFormats_ReturnsAllFourFormats));
+        formats.Should().Contain(ExportFormat.CSV);
+        formats.Should().Contain(ExportFormat.TSV);
+        _testLoggerMock.Object.LogInformation("Finished test {TestName}", nameof(GetSupportedFormats_ReturnsAllSupportedFormats));
     }
 
     /// <summary>
