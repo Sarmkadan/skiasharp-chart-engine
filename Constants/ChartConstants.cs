@@ -123,6 +123,7 @@ public enum ChartRegion
     /// <summary>The coordinate is outside all named regions (e.g. chart padding).</summary>
     Outside = 5
 }
+/// <summary>
 /// <list type="bullet">
 ///   <item><term>Linear</term><description>Default. Color interpolates linearly between min and max.</description></item>
 ///   <item><term>Logarithmic</term><description>Applies log10 compression before interpolation. Useful when data has outliers or a wide dynamic range.</description></item>

@@ -3,8 +3,22 @@
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!--
+      Pre-existing findings suppressed so TreatWarningsAsErrors can be enabled without behaviour changes:
+      NU1510  - Microsoft.Extensions.* packages are redundant with the Microsoft.AspNetCore.App framework reference (removing them changes the dependency graph).
+      IDE0011 - ~900 missing-brace style findings across the codebase; a mass reformat is out of scope.
+      CS8600, CS8601, CS8602, CS8603, CS8604, CS8618, CS8625, CS8767 - nullable-reference findings (incl. test-only dereferences); fixing them means changing null handling and defaults, which could alter runtime behaviour.
+      CS0108  - Options classes intentionally shadow base-class properties; adding `new` is a design decision, not a trivial fix.
+      CS0472  - ValidationRuleBuilder null check on int? is dead code; removing it is a behaviour-adjacent cleanup.
+      CS1591  - ~1,500 public members without XML comments. Documentation backlog, not a build concern; CLAUDE.md still asks for XML docs on public APIs.
+      CS0419, CS1573, CS1574, CS1734 - ambiguous/unresolved cref and partial param-doc findings in XML comments; each needs per-site doc judgment.
+    -->
+    <NoWarn>$(NoWarn);NU1510;IDE0011;CS0108;CS0419;CS0472;CS1573;CS1574;CS1591;CS1734;CS8600;CS8601;CS8602;CS8603;CS8604;CS8618;CS8625;CS8767</NoWarn>
     <Authors>Vladyslav Zaiets</Authors>
+    <Copyright>Copyright © 2026 Vladyslav Zaiets</Copyright>
     <PackageProjectUrl>https://github.com/sarmkadan/skiasharp-chart-engine</PackageProjectUrl>
   </PropertyGroup>
 </Project>

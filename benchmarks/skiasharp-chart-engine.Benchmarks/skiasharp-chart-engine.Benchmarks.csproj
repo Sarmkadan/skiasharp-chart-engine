@@ -3,10 +3,10 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
+    <!-- CS0436: benchmark Program.cs shadows the Program type exposed by the main assembly (top-level Program.cs). Pre-existing; the local type is the one used. -->
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
     <AssemblyName>skiasharp-chart-engine.Benchmarks</AssemblyName>
     <RootNamespace>SkiaSharpChartEngine.Benchmarks</RootNamespace>
   </PropertyGroup>

@@ -186,7 +186,7 @@ public static class StringExtensions
 
     /// <summary>
     /// Capitalizes the first letter of a string.
-    /// </n>
+    /// </summary>
     /// <param name="input">The string to capitalize.</param>
     /// <returns>The string with the first character capitalized.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="input"/> is null.</exception>

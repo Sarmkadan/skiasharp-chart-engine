@@ -3,8 +3,6 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
     <RootNamespace>SkiaSharpChartEngine</RootNamespace>
     <AssemblyName>SkiaSharpChartEngine</AssemblyName>
     <AssemblyVersion>2.0.2.0</AssemblyVersion>
@@ -12,7 +10,6 @@
     <Version>1.0.0</Version>
     <Title>SkiaSharp Chart Engine</Title>
     <Description>High-performance chart rendering with SkiaSharp - line, bar, pie, heatmap, export to PNG/SVG</Description>
-    <Authors>Vladyslav Zaiets</Authors>
     <PackageId>Zaiets.skiasharp.chart.engine</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/sarmkadan/skiasharp-chart-engine</PackageProjectUrl>
