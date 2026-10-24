@@ -1,29 +1,29 @@
 ---
-name: Bug Report
-about: Report a bug to help improve skiasharp-chart-engine
-title: '[BUG] '
+name: Bug report
+about: Report a bug in skiasharp-chart-engine
+title: '[Bug]: '
 labels: bug
 assignees: ''
 ---
 
-## Description
-A clear and concise description of the bug.
+## Describe the bug
+A clear and concise description of what the bug is.
 
-## Steps to Reproduce
-1. Step one
-2. Step two
-3. Step three
+## To reproduce
+Minimal code sample that reproduces the problem:
 
-## Expected Behavior
-What you expected to happen.
+```csharp
+// Paste a minimal, self-contained code sample here
+```
 
-## Actual Behavior
-What actually happened.
+## Expected behavior
+A clear and concise description of what you expected to happen.
+
+## Screenshots of rendered chart
+If applicable, add screenshots or exported PNG/SVG files of the rendered chart to help explain the problem.
 
 ## Environment
-- OS: [e.g., Windows 11, Ubuntu 22.04]
-- .NET Version: [e.g., 8.0]
-- Package Version: [e.g., 1.0.0]
-
-## Additional Context
-Add any other context, logs, or screenshots.
+- OS: [e.g., Windows 11, Ubuntu 22.04, macOS 14]
+- .NET version: [e.g., 10.0.100]
+- SkiaSharp version: [e.g., 3.119.0]
+- Package version: [e.g., 1.0.0]
