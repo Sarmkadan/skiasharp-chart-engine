@@ -2,6 +2,10 @@
 
 A .NET chart rendering library (SkiaSharp-based) with an ASP.NET Core Web API host. Usable standalone via `ChartEngine.Create()` or as a service through `AddSkiaSharpChartEngine()`.
 
+## License
+
+This project is licensed under the [MIT License](LICENSE). Copyright (c) 2026 Vladyslav Zaiets.
+
 ## CollectionExtensionsJsonExtensions
 
 `CollectionExtensionsJsonExtensions` provides extension methods for serializing collections and dictionaries to JSON and deserializing JSON strings back to strongly-typed collections. The methods support both compact and indented JSON formatting, and include safe parsing variants that return null or boolean status instead of throwing exceptions.
