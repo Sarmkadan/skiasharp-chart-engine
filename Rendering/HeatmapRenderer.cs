@@ -22,7 +22,39 @@ namespace SkiaSharpChartEngine.Rendering;
 public class HeatmapRenderer : IChartRenderer
 {
     private readonly ILogger<HeatmapRenderer> _logger;
+    // Gap between adjacent cells and the outer grid edge (in pixels)
     private const float CellPadding = 2f;
+
+    // Vertical space reserved below the title when computing the plot area
+    private const float TitleBlockGap = 8f;
+
+    // Vertical space reserved below the subtitle when computing the plot area
+    private const float SubtitleBlockGap = 6f;
+
+    // Distance from the top of the bounds to the title baseline
+    private const float HeaderTopInset = 4f;
+
+    // Vertical distance between the title baseline and the subtitle baseline
+    private const float TitleSubtitleGap = 2f;
+
+    // Border width of each heatmap cell (in pixels)
+    private const float CellBorderWidth = 1f;
+
+    // Font size of the value label drawn inside each cell
+    private const float CellLabelTextSize = 10f;
+
+    // Offset that visually centres the value label vertically within its cell
+    private const float CellLabelBaselineOffset = 3f;
+
+    // Normalised value that maps to the neutral (white) midpoint of the colour scale.
+    // Also used for degenerate inputs where all values are equal.
+    private const double ColorScaleMidpoint = 0.5;
+
+    // Maximum value of an 8-bit colour channel
+    private const byte ColorChannelMax = 255;
+
+    // Scales a half-range [0, 0.5] (or [0.5, 1]) of the colour scale back to [0, 1]
+    private const double HalfRangeScale = 2.0;
 
     public HeatmapRenderer(ILogger<HeatmapRenderer> logger)
     {
@@ -46,11 +78,11 @@ public class HeatmapRenderer : IChartRenderer
             float titleHeight = 0;
             if (!string.IsNullOrEmpty(chart.Configuration.Title))
             {
-                titleHeight += ChartConstants.TitleFontSize + 8f;
+                titleHeight += ChartConstants.TitleFontSize + TitleBlockGap;
             }
             if (!string.IsNullOrEmpty(chart.Configuration.Subtitle))
             {
-                titleHeight += ChartConstants.SubtitleFontSize + 6f;
+                titleHeight += ChartConstants.SubtitleFontSize + SubtitleBlockGap;
             }
 
             // Adjust bounds to account for title/subtitle
@@ -102,18 +134,18 @@ public class HeatmapRenderer : IChartRenderer
                     // Draw border
                     paint.Style = SKPaintStyle.Stroke;
                     paint.Color = SKColors.Gray;
-                    paint.StrokeWidth = 1;
+                    paint.StrokeWidth = CellBorderWidth;
                     canvas.DrawRect(cellRect, paint);
 
                     // Draw text
                     paint.Style = SKPaintStyle.Fill;
-                    paint.TextSize = 10;
+                    paint.TextSize = CellLabelTextSize;
                     paint.Color = SKColors.Black;
 
                     var value = dataPoint.Value.ToString("F1");
                     var textWidth = paint.MeasureText(value);
                     var textX = cellX + (cellWidth - textWidth) / 2;
-                    var textY = cellY + cellHeight / 2 + 3;
+                    var textY = cellY + cellHeight / 2 + CellLabelBaselineOffset;
 
                     canvas.DrawText(value, textX, textY, paint);
 
@@ -136,7 +168,7 @@ public class HeatmapRenderer : IChartRenderer
 
         var centerX = bounds.MidX;
         var textColor = SKColor.Parse(chart.Configuration.TextColor);
-        var titleY = bounds.Top + 4f;
+        var titleY = bounds.Top + HeaderTopInset;
 
         // Render title
         if (!string.IsNullOrEmpty(chart.Configuration.Title))
@@ -156,7 +188,7 @@ public class HeatmapRenderer : IChartRenderer
         // Render subtitle
         if (!string.IsNullOrEmpty(chart.Configuration.Subtitle))
         {
-            var subtitleY = titleY + ChartConstants.TitleFontSize + 2f;
+            var subtitleY = titleY + ChartConstants.TitleFontSize + TitleSubtitleGap;
             using var subtitlePaint = new SKPaint
             {
                 Color = textColor,
@@ -195,7 +227,7 @@ public class HeatmapRenderer : IChartRenderer
         var min = values.Min();
         var max = values.Max();
         var range = max - min;
-        return values.Select(v => range > 0 ? (v - min) / range : 0.5).ToList();
+        return values.Select(v => range > 0 ? (v - min) / range : ColorScaleMidpoint).ToList();
     }
 
     private static List<double> _normalizeLogarithmic(List<double> values)
@@ -222,7 +254,7 @@ public class HeatmapRenderer : IChartRenderer
             // Map rank to [0, 1]; use 0.5 when there is only one element.
             result[indexed[rank].Index] = indexed.Count > 1
                 ? (double)rank / (indexed.Count - 1)
-                : 0.5;
+                : ColorScaleMidpoint;
         }
 
         return result.ToList();
@@ -236,22 +268,22 @@ public class HeatmapRenderer : IChartRenderer
 
     private SKColor _getHeatColor(double normalized)
     {
-        // Interpolate from blue (0) through white (0.5) to red (1)
-        if (normalized < 0.5)
+        // Interpolate from blue (0) through white (ColorScaleMidpoint) to red (1)
+        if (normalized < ColorScaleMidpoint)
         {
             // Blue to white
-            var t = normalized * 2; // 0 to 1
-            var r = (byte)(255 * t);
-            var g = (byte)(255 * t);
-            return new SKColor(r, g, 255);
+            var t = normalized * HalfRangeScale; // 0 to 1
+            var r = (byte)(ColorChannelMax * t);
+            var g = (byte)(ColorChannelMax * t);
+            return new SKColor(r, g, ColorChannelMax);
         }
         else
         {
             // White to red
-            var t = (normalized - 0.5) * 2; // 0 to 1
-            var g = (byte)(255 * (1 - t));
-            var b = (byte)(255 * (1 - t));
-            return new SKColor(255, g, b);
+            var t = (normalized - ColorScaleMidpoint) * HalfRangeScale; // 0 to 1
+            var g = (byte)(ColorChannelMax * (1 - t));
+            var b = (byte)(ColorChannelMax * (1 - t));
+            return new SKColor(ColorChannelMax, g, b);
         }
     }
 }
