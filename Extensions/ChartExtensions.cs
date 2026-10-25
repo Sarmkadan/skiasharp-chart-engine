@@ -176,4 +176,17 @@ public static class ChartExtensions
 
         return new ChartBuilder(chart.Type, chart.Id);
     }
+
+    /// <summary>
+    /// Returns only the series that are currently visible (<see cref="ChartSeries.IsVisible"/> is true).
+    /// </summary>
+    /// <param name="chart">The chart containing the series. Cannot be null.</param>
+    /// <returns>A read-only list of visible series in their original order. Empty if no series are visible.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="chart"/> is null.</exception>
+    public static IReadOnlyList<ChartSeries> GetVisibleSeries(this Chart chart)
+    {
+        ArgumentNullException.ThrowIfNull(chart);
+
+        return chart.Series.Where(series => series.IsVisible).ToList();
+    }
 }
