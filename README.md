@@ -9426,3 +9426,13 @@ Work through these checks in order:
 5. **Check the dimensions.** `ChartConfiguration` rejects widths and heights outside `ChartConstants.MinimumChartWidth` to `MaximumChartWidth` (and the matching height limits) when they are set, with `ArgumentOutOfRangeException`. Use `DefaultChartWidth` and `DefaultChartHeight`, or pass sizes inside those limits.
 
 If the chart is still blank after these checks, compare the series count and visibility in your chart with what you expected, and look for the warning in the log at the point where the render was requested.
+
+## Roadmap
+
+Planned directions that fit the current scope (chart renderers, export formats, streaming, and the Web API host):
+
+- **More chart types.** Add box plot and violin plot renderers that implement `IChartRenderer` in the same way as the existing `BarChartRenderer` and `ScatterPlotRenderer`, with matching export and interactivity support.
+- **Animated export.** Build on `AnimationFrameGenerator` to export animated transitions as GIF or APNG, alongside the current PNG, SVG, PDF, JPEG, and WEBP outputs.
+- **Incremental rendering for streamed data.** Let `ChartStreamingService` update only the changed region of a line or area chart when new points arrive, instead of re-rendering the whole chart.
+- **Accessible tooltips and keyboard navigation.** Extend `TooltipOverlay` and `ChartInteractionService` so that data points can be reached and read with the keyboard, not only with the pointer.
+- **Benchmarks for every renderer.** Extend the `benchmarks/` project so that each chart type has a render-time baseline, which makes performance regressions visible in CI.
