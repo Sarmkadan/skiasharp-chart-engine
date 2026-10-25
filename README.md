@@ -9337,3 +9337,45 @@ Formatting is governed by `.editorconfig` (4 spaces, Allman braces).
 Report bugs using the template in `.github/ISSUE_TEMPLATE/`. For security issues, follow [SECURITY.md](SECURITY.md) instead of opening a public issue.
 
 By contributing, you agree that your changes are licensed under the [MIT License](LICENSE).
+
+## FAQ
+
+### Which chart types are supported?
+
+The engine renders `LineChart`, `BarChart` (horizontal), `ColumnChart` (vertical), `PieChart`, `AreaChart`, `HeatmapChart` and `ScatterChart`. Pick the type when you create the chart, for example `new ChartBuilder(ChartType.LineChart)`. See [docs/getting-started.md](docs/getting-started.md) for a use case per type.
+
+### How do I export a chart to a file?
+
+Create an `ExportOptions` with the target `ExportFormat`. PNG, SVG and PDF are supported:
+
+```csharp
+var pngOptions = new ExportOptions("chart", ExportFormat.PNG);
+var pdfOptions = new ExportOptions("report-chart", ExportFormat.PDF);
+```
+
+For a heatmap, set `HeatmapColorScale` on the chart configuration to choose `Linear` (default), `Logarithmic` (wide value ranges) or `Quantile` (skewed distributions). The heatmap series must be a row-major flattened 2-D matrix.
+
+### How does caching work?
+
+`RenderResultCache` is an in-memory cache for rendered results. Entries expire after a time-to-live, which defaults to one hour, and you can pass a custom TTL per entry. When the cache approaches its maximum size, it evicts the least recently used entries. A background timer removes expired entries, and the cache tracks hits and misses.
+
+```csharp
+var cache = new RenderResultCache(logger, maxCacheSizeBytes: 100_000_000);
+cache.Cache("chart-sales-2024-line-1920x1080", renderResult);                    // default 1-hour TTL
+cache.Cache("chart-sales-2024-line-800x600", renderResult, TimeSpan.FromHours(24));
+var cached = cache.Get("chart-sales-2024-line-1920x1080");
+```
+
+### How do I add a custom theme?
+
+Register a `ChartTheme` with `ThemeManager`, then make it the active theme. The manager also lists the available themes and returns the built-in ones such as `dark`:
+
+```csharp
+var themeManager = new ThemeManager(logger);
+themeManager.RegisterTheme("corporate", customTheme);
+themeManager.SetCurrentTheme("corporate");
+```
+
+### Can I use the engine without ASP.NET Core?
+
+Yes. `ChartEngine.Create()` builds a standalone engine with its own dependency injection container, so you can render and export charts in a console app or a class library. To run it as a service, register it in an ASP.NET Core host with `AddSkiaSharpChartEngine()` instead. The repository includes a Web API host on port 5000 in Docker.
