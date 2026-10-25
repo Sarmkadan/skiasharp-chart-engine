@@ -25,6 +25,17 @@ public class RadarChartRenderer : IChartRenderer
     private const float AxisStrokeWidth = 1f;
     private const float OutlineStrokeWidth = 2f;
     private const float FillAlpha = 80; // 0‑255
+    private const float GridStrokeWidth = 0.5f; // stroke width of the concentric gridline polygons
+    private const int GridLevels = 4; // number of concentric gridline polygons (25 %, 50 %, 75 %, 100 %)
+    private const float StartAngleDegrees = -90f; // first axis points straight up (12 o'clock)
+    private const float FullCircleDegrees = 360f; // angular span divided evenly between categories
+    private const float RadiusDivisor = 3f; // chart radius = smaller bounds dimension / RadiusDivisor (leaves room for labels)
+    private const int MinimumCategories = 3; // a radar polygon needs at least three axes
+    private const float LabelTextSize = 11f; // font size of category labels
+    private const float TitleBlockPadding = 8f; // extra vertical space reserved below the title
+    private const float SubtitleBlockPadding = 6f; // extra vertical space reserved below the subtitle
+    private const float TitleTopMargin = 4f; // gap between the top of the bounds and the title baseline
+    private const float SubtitleLineGap = 2f; // gap between the title baseline and the subtitle baseline
 
     public RadarChartRenderer(ILogger<RadarChartRenderer> logger)
     {
@@ -53,11 +64,11 @@ public class RadarChartRenderer : IChartRenderer
             float titleHeight = 0;
             if (!string.IsNullOrEmpty(chart.Configuration.Title))
             {
-                titleHeight += ChartConstants.TitleFontSize + 8f;
+                titleHeight += ChartConstants.TitleFontSize + TitleBlockPadding;
             }
             if (!string.IsNullOrEmpty(chart.Configuration.Subtitle))
             {
-                titleHeight += ChartConstants.SubtitleFontSize + 6f;
+                titleHeight += ChartConstants.SubtitleFontSize + SubtitleBlockPadding;
             }
 
             // Adjust bounds to account for title/subtitle
@@ -71,16 +82,16 @@ public class RadarChartRenderer : IChartRenderer
             var dataPoints = series.DataPoints;
             int categoryCount = dataPoints.Count;
 
-            if (categoryCount < 3)
-                throw new ChartEngineException("Radar chart requires at least 3 categories.");
+            if (categoryCount < MinimumCategories)
+                throw new ChartEngineException($"Radar chart requires at least {MinimumCategories} categories.");
 
             // Determine centre and radius
             var centerX = radarBounds.MidX;
             var centerY = radarBounds.MidY;
-            var radius = Math.Min(radarBounds.Width, radarBounds.Height) / 3f;
+            var radius = Math.Min(radarBounds.Width, radarBounds.Height) / RadiusDivisor;
 
             // Pre‑compute angles for each axis
-            float angleStep = 360f / categoryCount;
+            float angleStep = FullCircleDegrees / categoryCount;
 
             // Render title and subtitle
             _renderTitleAndSubtitle(canvas, chart, bounds);
@@ -92,18 +103,18 @@ public class RadarChartRenderer : IChartRenderer
             {
                 Color = SKColors.LightGray,
                 Style = SKPaintStyle.Stroke,
-                StrokeWidth = 0.5f,
+                StrokeWidth = GridStrokeWidth,
                 IsAntialias = true
             };
 
-            for (int level = 1; level <= 4; level++)
+            for (int level = 1; level <= GridLevels; level++)
             {
-                float levelRadius = radius * level / 4f;
+                float levelRadius = radius * level / GridLevels;
                 using var path = new SKPath();
 
                 for (int i = 0; i < categoryCount; i++)
                 {
-                    float angleDeg = -90f + i * angleStep;
+                    float angleDeg = StartAngleDegrees + i * angleStep;
                     float rad = angleDeg * (float)Math.PI / 180f;
                     float x = centerX + (float)Math.Cos(rad) * levelRadius;
                     float y = centerY + (float)Math.Sin(rad) * levelRadius;
@@ -130,7 +141,7 @@ public class RadarChartRenderer : IChartRenderer
 
             for (int i = 0; i < categoryCount; i++)
             {
-                float angleDeg = -90f + i * angleStep;
+                float angleDeg = StartAngleDegrees + i * angleStep;
                 float rad = angleDeg * (float)Math.PI / 180f;
                 float x = centerX + (float)Math.Cos(rad) * radius;
                 float y = centerY + (float)Math.Sin(rad) * radius;
@@ -156,11 +167,11 @@ public class RadarChartRenderer : IChartRenderer
             };
 
             using var path2 = new SKPath();
-            float currentAngle = -90f;
+            float currentAngle = StartAngleDegrees;
 
             for (int i = 0; i < categoryCount; i++)
             {
-                float angleDeg = -90f + i * angleStep;
+                float angleDeg = StartAngleDegrees + i * angleStep;
                 float rad = angleDeg * (float)Math.PI / 180f;
                 float value = (float)dataPoints[i].Value;
                 float normalizedValue = Math.Min(1.0f, Math.Max(0.0f, value));
@@ -181,7 +192,7 @@ public class RadarChartRenderer : IChartRenderer
             // -----------------------------------------------------------------
             using var textPaint = new SKPaint
             {
-                TextSize = 11,
+                TextSize = LabelTextSize,
                 Color = SKColors.Black,
                 IsAntialias = true,
                 TextAlign = SKTextAlign.Center
@@ -189,7 +200,7 @@ public class RadarChartRenderer : IChartRenderer
 
             for (int i = 0; i < categoryCount; i++)
             {
-                float angleDeg = -90f + i * angleStep;
+                float angleDeg = StartAngleDegrees + i * angleStep;
                 float rad = angleDeg * (float)Math.PI / 180f;
                 float x = centerX + (float)Math.Cos(rad) * (radius + LabelDistance);
                 float y = centerY + (float)Math.Sin(rad) * (radius + LabelDistance);
@@ -213,7 +224,7 @@ public class RadarChartRenderer : IChartRenderer
 
         var centerX = bounds.MidX;
         var textColor = SKColor.Parse(chart.Configuration.TextColor);
-        var titleY = bounds.Top + 4f;
+        var titleY = bounds.Top + TitleTopMargin;
 
         // Render title
         if (!string.IsNullOrEmpty(chart.Configuration.Title))
@@ -233,7 +244,7 @@ public class RadarChartRenderer : IChartRenderer
         // Render subtitle
         if (!string.IsNullOrEmpty(chart.Configuration.Subtitle))
         {
-            var subtitleY = titleY + ChartConstants.TitleFontSize + 2f;
+            var subtitleY = titleY + ChartConstants.TitleFontSize + SubtitleLineGap;
             using var subtitlePaint = new SKPaint
             {
                 Color = textColor,
