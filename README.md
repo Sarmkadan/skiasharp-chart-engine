@@ -9267,3 +9267,73 @@ public class CachePolicyJsonExample
 ```
 ``````
 ```
+``````
+
+## Contributing
+
+Contributions are welcome. The full guide (coding conventions, commit and PR rules) lives in [CONTRIBUTING.md](CONTRIBUTING.md); this section covers the essentials.
+
+### Development setup
+
+- **.NET SDK 10**. `global.json` pins `10.0.100` with `rollForward: latestMinor`, so any 10.0.x SDK from that band works. Check with `dotnet --version`.
+- **git**
+- Optional: **Docker** for `make docker-build` / `make docker-run` (serves on port 5000).
+
+The repository root holds both a `.sln` and a `.csproj`, so a bare `dotnet build` fails with `MSB1011`. Name the project or solution explicitly:
+
+```bash
+git clone https://github.com/sarmkadan/skiasharp-chart-engine.git
+cd skiasharp-chart-engine
+
+dotnet restore skiasharp-chart-engine.csproj
+dotnet build skiasharp-chart-engine.csproj -c Release   # or: make build
+```
+
+To build everything (library, tests and benchmarks), use the solution file:
+
+```bash
+dotnet build skiasharp-chart-engine.sln -c Release
+```
+
+### Running tests
+
+The test project is `tests/skiasharp-chart-engine.Tests/` (xUnit, FluentAssertions 7, Moq). Run it with the explicit project path:
+
+```bash
+dotnet test tests/skiasharp-chart-engine.Tests/skiasharp-chart-engine.Tests.csproj -c Release
+```
+
+`make test` points at the main `.csproj`, so prefer the command above. CI runs the same restore, build and test steps on pull requests.
+
+### Running benchmarks
+
+Benchmarks live in `benchmarks/skiasharp-chart-engine.Benchmarks/` and use BenchmarkDotNet. Always run them in Release so the numbers are meaningful:
+
+```bash
+dotnet run -c Release --project benchmarks/skiasharp-chart-engine.Benchmarks/skiasharp-chart-engine.Benchmarks.csproj
+```
+
+### Formatting and static analysis
+
+```bash
+make format     # dotnet format
+make lint       # dotnet format --verify-no-changes
+make analyze    # build with TreatWarningsAsErrors=true
+make ci         # clean, restore, build, test, lint and analyze
+```
+
+Formatting is governed by `.editorconfig` (4 spaces, Allman braces).
+
+### Submitting changes
+
+1. Branch from an up-to-date `main`. Name branches `feature/<name>` or `fix/<name>`. External contributors should fork the repository first.
+2. Keep each pull request focused on one concern. Put unrelated refactors in separate pull requests.
+3. Add tests for new features and bug fixes, in `tests/skiasharp-chart-engine.Tests/` as `<Class>Tests.cs`.
+4. Make sure the build and test commands above succeed locally.
+5. Use conventional commit prefixes (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`), with an imperative summary line.
+6. Fill in the pull request template in `.github/PULL_REQUEST_TEMPLATE.md`.
+7. Update `docs/` and this README when public API behavior changes.
+
+Report bugs using the template in `.github/ISSUE_TEMPLATE/`. For security issues, follow [SECURITY.md](SECURITY.md) instead of opening a public issue.
+
+By contributing, you agree that your changes are licensed under the [MIT License](LICENSE).
