@@ -131,7 +131,9 @@ public class CliOptions
     public List<string> GetExportFormats()
     {
         if (string.IsNullOrEmpty(ExportFormats))
+        {
             return new List<string> { "png" };
+        }
 
         var formats = ExportFormats.Split(',')
             .Select(f => f.Trim().ToLowerInvariant())
@@ -166,7 +168,9 @@ public class CliOptionParser
         var options = new CliOptions();
 
         if (args == null || args.Length == 0)
+        {
             return options;
+        }
 
         for (int i = 0; i < args.Length; i++)
         {
@@ -176,32 +180,44 @@ public class CliOptionParser
             {
                 case "--input" or "-i":
                     if (i + 1 < args.Length)
+                    {
                         options.InputFile = args[++i];
+                    }
                     break;
 
                 case "--output" or "-o":
                     if (i + 1 < args.Length)
+                    {
                         options.OutputDirectory = args[++i];
+                    }
                     break;
 
                 case "--config" or "-c":
                     if (i + 1 < args.Length)
+                    {
                         options.ConfigFile = args[++i];
+                    }
                     break;
 
                 case "--format" or "-f":
                     if (i + 1 < args.Length)
+                    {
                         options.ExportFormats = args[++i];
+                    }
                     break;
 
                 case "--width" or "-w":
                     if (i + 1 < args.Length && int.TryParse(args[++i], out var width))
+                    {
                         options.Width = width;
+                    }
                     break;
 
                 case "--height" or "-h":
                     if (i + 1 < args.Length && int.TryParse(args[++i], out var height))
+                    {
                         options.Height = height;
+                    }
                     break;
 
                 case "--verbose" or "-v":
@@ -223,12 +239,16 @@ public class CliOptionParser
 
                 case "--cache":
                     if (i + 1 < args.Length && int.TryParse(args[++i], out var cacheSize))
+                    {
                         options.CacheMaxSizeMb = cacheSize;
+                    }
                     break;
 
                 case "--concurrency" or "-j":
                     if (i + 1 < args.Length && int.TryParse(args[++i], out var concurrency))
+                    {
                         options.ConcurrencyLevel = concurrency;
+                    }
                     break;
 
                 case "--monitor-performance":
@@ -249,7 +269,7 @@ public class CliOptionParser
         Console.WriteLine("Usage: chart-engine [options]");
         Console.WriteLine();
         Console.WriteLine("Options:");
-        Console.WriteLine("  --input, -i <file>           Input file (JSON or CSV)");
+        Console.WriteLine("  --input, -i <file>          Input file (JSON or CSV)");
         Console.WriteLine("  --output, -o <dir>          Output directory (default: ./output)");
         Console.WriteLine("  --config, -c <file>         Chart configuration file");
         Console.WriteLine("  --format, -f <formats>      Export formats (default: png)");
