@@ -33,6 +33,13 @@ public class PieChartRenderer : IChartRenderer
             throw new ArgumentOutOfRangeException(nameof(innerRadiusRatio), "Inner radius ratio must be between 0 and 0.9");
         }
 
+        // Validated outside the try block so the exception reaches the caller instead of being logged
+        var firstSeries = chart?.Series?.FirstOrDefault();
+        if (firstSeries?.DataPoints?.Any(dp => dp.Value < 0) == true)
+        {
+            throw new ArgumentException("Pie chart slice values must be non-negative", nameof(chart));
+        }
+
         try
         {
             if (canvas == null || chart == null || chart.Series == null || chart.Series.Count == 0)
@@ -72,6 +79,14 @@ public class PieChartRenderer : IChartRenderer
 
             // Render title and subtitle
             _renderTitleAndSubtitle(canvas, chart, bounds);
+
+            // All slices are zero: sweep angles would be NaN (0 / 0), so show a placeholder instead
+            if (total == 0)
+            {
+                _renderPlaceholder(canvas, chartBounds);
+                _logger.LogWarning("Pie chart {ChartId} has zero total; rendered placeholder", chart.Id);
+                return;
+            }
 
             // Calculate center and radius
             var centerX = chartBounds.MidX;
@@ -170,6 +185,19 @@ public class PieChartRenderer : IChartRenderer
 
             canvas.DrawText(chart.Configuration.Subtitle, centerX, subtitleY, subtitlePaint);
         }
+    }
+
+    private static void _renderPlaceholder(SKCanvas canvas, SKRect bounds)
+    {
+        using var paint = new SKPaint
+        {
+            Color = SKColors.Gray,
+            TextSize = ChartConstants.SubtitleFontSize,
+            IsAntialias = true,
+            TextAlign = SKTextAlign.Center
+        };
+
+        canvas.DrawText("No data", bounds.MidX, bounds.MidY, paint);
     }
 
     private SKColor _getColor(int index)
