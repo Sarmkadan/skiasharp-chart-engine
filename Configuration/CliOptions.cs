@@ -133,16 +133,18 @@ public class CliOptions
         if (string.IsNullOrEmpty(ExportFormats))
             return new List<string> { "png" };
 
-        return ExportFormats.Split(',')
+        var formats = ExportFormats.Split(',')
             .Select(f => f.Trim().ToLowerInvariant())
             .Where(f => !string.IsNullOrEmpty(f))
             .ToList();
+
+        return formats.Count > 0 ? formats : new List<string> { "png" };
     }
 
     /// <summary>
-    /// Gets the cache size in bytes
+    /// Gets the cache size in bytes (negative configured sizes are treated as 0)
     /// </summary>
-    public long GetCacheSizeBytes() => (long)CacheMaxSizeMb * 1024 * 1024;
+    public long GetCacheSizeBytes() => (long)Math.Max(0, CacheMaxSizeMb) * 1024 * 1024;
 
     /// <summary>
     /// Returns a concise, informative representation of the CLI options
