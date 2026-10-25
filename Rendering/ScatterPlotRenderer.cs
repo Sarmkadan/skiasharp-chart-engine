@@ -51,7 +51,7 @@ public class ScatterPlotRenderer : IChartRenderer
     {
         try
         {
-            if (canvas == null || chart == null || chart.Series == null || chart.Series.Count == 0)
+            if (canvas == null || chart == null)
             {
                 _logger.LogWarning("Invalid parameters for scatter plot rendering");
                 return;
@@ -62,23 +62,34 @@ public class ScatterPlotRenderer : IChartRenderer
             var chartBounds = new SKRect(bounds.Left + ChartPadding, bounds.Top + ChartPadding,
                 bounds.Right - ChartPadding, bounds.Bottom - ChartPadding);
 
-            // Get value ranges
-            var allValues = chart.Series.SelectMany(s => s.DataPoints.Select(dp => dp.Value)).ToList();
-            var minValue = allValues.Min();
-            var maxValue = allValues.Max();
+            var seriesList = chart.Series ?? new List<ChartSeries>();
+
+            // Get value ranges; with no points at all, fall back to a unit range so only axes are drawn
+            var allValues = seriesList
+                .Where(s => s.DataPoints != null)
+                .SelectMany(s => s.DataPoints.Select(dp => dp.Value))
+                .ToList();
+            var minValue = allValues.Count > 0 ? allValues.Min() : 0d;
+            var maxValue = allValues.Count > 0 ? allValues.Max() : 1d;
+
+            // A single value (zero span) would collapse the axis; widen it around the value
+            if (maxValue - minValue == 0)
+            {
+                minValue -= 1;
+                maxValue += 1;
+            }
             var valueRange = maxValue - minValue;
-            if (valueRange == 0) valueRange = 1;
 
             // Render points using batched SKPath for each series
             var paint = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Fill };
             int seriesIndex = 0;
 
-            foreach (var series in chart.Series)
+            foreach (var series in seriesList)
             {
                 paint.Color = _getColor(seriesIndex++);
                 using var seriesPath = new SKPath();
 
-                foreach (var dataPoint in series.DataPoints)
+                foreach (var dataPoint in series.DataPoints ?? new List<DataPoint>())
                 {
                     var normalized = (dataPoint.Value - minValue) / valueRange;
 
@@ -98,7 +109,7 @@ public class ScatterPlotRenderer : IChartRenderer
             // Render axes
             _renderAxes(canvas, chartBounds, minValue, maxValue);
 
-            _logger.LogDebug("Scatter plot rendered: {SeriesCount} series", chart.Series.Count);
+            _logger.LogDebug("Scatter plot rendered: {SeriesCount} series", seriesList.Count);
         }
         catch (Exception ex)
         {
