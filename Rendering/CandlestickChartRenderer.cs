@@ -20,6 +20,61 @@ public class CandlestickChartRenderer : IChartRenderer
 {
     private readonly ILogger<CandlestickChartRenderer> _logger;
 
+    // Empty margin between the canvas bounds and the plot area
+    private const float PlotPadding = 40f;
+
+    // Value range used when the series has no High/Low values
+    private const double DefaultMinValue = 0.0;
+    private const double DefaultMaxValue = 100.0;
+
+    // Fraction of the value range added above and below the data so candles don't touch the edges
+    private const double ValueRangePaddingRatio = 0.05;
+
+    // Padding in value units used when all highs and lows are equal (zero range)
+    private const double FlatRangePadding = 5.0;
+
+    // Vertical space reserved below the title and subtitle text
+    private const float TitleBlockPadding = 8f;
+    private const float SubtitleBlockPadding = 6f;
+
+    // Vertical offsets for the title and subtitle text
+    private const float TitleTopOffset = 4f;
+    private const float SubtitleGap = 2f;
+
+    // Candle slot width = plot width / (point count * CandleWidthDivisor)
+    private const float CandleWidthDivisor = 1.5f;
+
+    // Distance between candle slots as a multiple of the candle width, leaving room for wicks
+    private const float CandleSpacingFactor = 1.5f;
+
+    // Wick line width, drawn centered on the candle
+    private const float WickStrokeWidth = 2f;
+
+    // Thin outline drawn around the candle body
+    private const float BodyBorderStrokeWidth = 0.5f;
+
+    // Candle colors: bullish when close >= open, bearish otherwise
+    private static readonly SKColor BullishColor = SKColors.DarkGreen;
+    private static readonly SKColor BearishColor = SKColors.DarkRed;
+
+    // Color shared by the candle body outline and the axis lines
+    private static readonly SKColor OutlineColor = SKColors.Black;
+
+    // Axis line width
+    private const float AxisStrokeWidth = 1f;
+
+    // Y-axis label font size
+    private const float AxisLabelTextSize = 10f;
+
+    // Number of intervals on the Y axis; the axis shows AxisLabelIntervals + 1 labels
+    private const int AxisLabelIntervals = 5;
+
+    // Horizontal gap between a Y-axis label and the axis line
+    private const float AxisLabelGap = 5f;
+
+    // Vertical offset that centers label text on its tick mark
+    private const float AxisLabelBaselineOffset = 4f;
+
     public CandlestickChartRenderer(ILogger<CandlestickChartRenderer> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -47,14 +102,14 @@ public class CandlestickChartRenderer : IChartRenderer
             float titleHeight = 0;
             if (!string.IsNullOrEmpty(chart.Configuration.Title))
             {
-                titleHeight += ChartConstants.TitleFontSize + 8f;
+                titleHeight += ChartConstants.TitleFontSize + TitleBlockPadding;
             }
             if (!string.IsNullOrEmpty(chart.Configuration.Subtitle))
             {
-                titleHeight += ChartConstants.SubtitleFontSize + 6f;
+                titleHeight += ChartConstants.SubtitleFontSize + SubtitleBlockPadding;
             }
 
-            var padding = 40f;
+            var padding = PlotPadding;
             var chartBounds = new SKRect(
                 bounds.Left + padding,
                 bounds.Top + padding + titleHeight,
@@ -71,20 +126,20 @@ public class CandlestickChartRenderer : IChartRenderer
                 .Where(dp => dp.CustomProperties != null && dp.CustomProperties.ContainsKey("Low"))
                 .Select(dp => Convert.ToDouble(dp.CustomProperties["Low"]))).ToList();
 
-            var minValue = allLowValues.Any() ? allLowValues.Min() : 0.0;
-            var maxValue = allHighValues.Any() ? allHighValues.Max() : 100.0;
+            var minValue = allLowValues.Any() ? allLowValues.Min() : DefaultMinValue;
+            var maxValue = allHighValues.Any() ? allHighValues.Max() : DefaultMaxValue;
 
             // Add padding to the range for better visualization
             var range = maxValue - minValue;
             if (range > 0)
             {
-                minValue -= range * 0.05;
-                maxValue += range * 0.05;
+                minValue -= range * ValueRangePaddingRatio;
+                maxValue += range * ValueRangePaddingRatio;
             }
             else
             {
-                minValue -= 5;
-                maxValue += 5;
+                minValue -= FlatRangePadding;
+                maxValue += FlatRangePadding;
             }
 
             // Render title and subtitle
@@ -111,7 +166,7 @@ public class CandlestickChartRenderer : IChartRenderer
 
         var centerX = bounds.MidX;
         var textColor = SKColor.Parse(chart.Configuration.TextColor);
-        var titleY = bounds.Top + 4f;
+        var titleY = bounds.Top + TitleTopOffset;
 
         // Render title
         if (!string.IsNullOrEmpty(chart.Configuration.Title))
@@ -131,7 +186,7 @@ public class CandlestickChartRenderer : IChartRenderer
         // Render subtitle
         if (!string.IsNullOrEmpty(chart.Configuration.Subtitle))
         {
-            var subtitleY = titleY + ChartConstants.TitleFontSize + 2f;
+            var subtitleY = titleY + ChartConstants.TitleFontSize + SubtitleGap;
             using var subtitlePaint = new SKPaint
             {
                 Color = textColor,
@@ -153,9 +208,9 @@ public class CandlestickChartRenderer : IChartRenderer
         var pointCount = series.First().DataPoints.Count;
 
         // Calculate candlestick width and spacing
-        // Use 1.5x spacing between candles to allow for wicks
-        var candleWidth = bounds.Width / (pointCount * 1.5f);
-        var candleSpacing = candleWidth * 1.5f;
+        // Spacing between candles leaves room for wicks
+        var candleWidth = bounds.Width / (pointCount * CandleWidthDivisor);
+        var candleSpacing = candleWidth * CandleSpacingFactor;
 
         for (int pointIndex = 0; pointIndex < pointCount; pointIndex++)
         {
@@ -188,15 +243,15 @@ public class CandlestickChartRenderer : IChartRenderer
 
                 // Determine candle color (green if close >= open = bullish, red if close < open = bearish)
                 var isBullish = close >= open;
-                var bodyColor = isBullish ? SKColors.DarkGreen : SKColors.DarkRed;
-                var wickColor = isBullish ? SKColors.DarkGreen : SKColors.DarkRed;
+                var bodyColor = isBullish ? BullishColor : BearishColor;
+                var wickColor = isBullish ? BullishColor : BearishColor;
 
                 // Draw wick (vertical line from high to low)
                 // Wick is centered on the candle
                 using var wickPaint = new SKPaint
                 {
                     IsAntialias = true,
-                    StrokeWidth = 2f,
+                    StrokeWidth = WickStrokeWidth,
                     Color = wickColor,
                     Style = SKPaintStyle.Stroke
                 };
@@ -223,8 +278,8 @@ public class CandlestickChartRenderer : IChartRenderer
                 using var borderPaint = new SKPaint
                 {
                     IsAntialias = true,
-                    StrokeWidth = 0.5f,
-                    Color = SKColors.Black,
+                    StrokeWidth = BodyBorderStrokeWidth,
+                    Color = OutlineColor,
                     Style = SKPaintStyle.Stroke
                 };
                 canvas.DrawRect(bodyRect, borderPaint);
@@ -236,8 +291,8 @@ public class CandlestickChartRenderer : IChartRenderer
     {
         var axisPaint = new SKPaint
         {
-            Color = SKColors.Black,
-            StrokeWidth = 1,
+            Color = OutlineColor,
+            StrokeWidth = AxisStrokeWidth,
             IsAntialias = true
         };
 
@@ -250,20 +305,20 @@ public class CandlestickChartRenderer : IChartRenderer
         // Y axis labels (value markers)
         var textPaint = new SKPaint
         {
-            TextSize = 10,
-            Color = SKColors.Black,
+            TextSize = AxisLabelTextSize,
+            Color = OutlineColor,
             IsAntialias = true,
             Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Normal)
         };
 
-        // Draw 6 evenly spaced labels (0-5)
-        for (int i = 0; i <= 5; i++)
+        // Draw evenly spaced labels, one per interval boundary (AxisLabelIntervals + 1 in total)
+        for (int i = 0; i <= AxisLabelIntervals; i++)
         {
-            var value = minValue + (maxValue - minValue) * i / 5;
-            var y = bounds.Bottom - (float)(i / 5.0 * bounds.Height);
+            var value = minValue + (maxValue - minValue) * i / AxisLabelIntervals;
+            var y = bounds.Bottom - (float)(i / (double)AxisLabelIntervals * bounds.Height);
             var labelText = value.ToString("F0");
             var textWidth = textPaint.MeasureText(labelText);
-            canvas.DrawText(labelText, bounds.Left - textWidth - 5, y + 4, textPaint);
+            canvas.DrawText(labelText, bounds.Left - textWidth - AxisLabelGap, y + AxisLabelBaselineOffset, textPaint);
         }
     }
 }
