@@ -185,6 +185,15 @@ public static class DateTimeHelper
     {
         return date1.Date == date2.Date;
     }
+
+    /// <summary>
+    /// Formats a DateTime as an ISO 8601 string (round-trip "O" format, invariant culture)
+    /// Suitable for JSON payloads, exports and cache keys
+    /// </summary>
+    public static string ToIsoString(DateTime dateTime)
+    {
+        return dateTime.ToString("O", System.Globalization.CultureInfo.InvariantCulture);
+    }
 }
 
 /// <summary>
