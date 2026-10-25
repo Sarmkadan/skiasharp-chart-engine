@@ -18,10 +18,24 @@ namespace SkiaSharpChartEngine.Rendering;
 public class LegendRenderer
 {
     private readonly ILogger<LegendRenderer> _logger;
+    // Height of one legend row (swatch and text share this band)
     private const int LegendItemHeight = 20;
+    // Width of the color swatch drawn at the start of each row
     private const int LegendSwatchWidth = 20;
+    // Inner margin between the legend box edge and its contents, and offset from the chart edge
     private const int LegendPadding = 10;
+    // Horizontal gap between the swatch and the series name
     private const int LegendSpacing = 5;
+    // Corner radius of the legend background and border
+    private const float LegendCornerRadius = 4f;
+    // Alpha (0-255) of the semi-transparent white background
+    private const byte LegendBackgroundAlpha = 240;
+    // Alpha (0-255) of the gray border
+    private const byte LegendBorderAlpha = 180;
+    // Stroke width of the border in pixels
+    private const float LegendBorderWidth = 1f;
+    // Pixels the text baseline is raised above the bottom of its row
+    private const int LegendTextBaselineOffset = 3;
 
     public LegendRenderer(ILogger<LegendRenderer> logger)
     {
@@ -155,27 +169,26 @@ public class LegendRenderer
     {
         using var backgroundPaint = new SKPaint
         {
-            Color = SKColors.White.WithAlpha(240), // Semi-transparent white
+            Color = SKColors.White.WithAlpha(LegendBackgroundAlpha), // Semi-transparent white
             Style = SKPaintStyle.Fill,
             IsAntialias = true
         };
 
         // Draw rounded rectangle background
         using var path = new SKPath();
-        var radius = 4f;
-        path.AddRoundRect(bounds, radius, radius);
+        path.AddRoundRect(bounds, LegendCornerRadius, LegendCornerRadius);
         canvas.DrawPath(path, backgroundPaint);
 
         // Draw border
         using var borderPaint = new SKPaint
         {
-            Color = SKColors.Gray.WithAlpha(180),
+            Color = SKColors.Gray.WithAlpha(LegendBorderAlpha),
             Style = SKPaintStyle.Stroke,
-            StrokeWidth = 1,
+            StrokeWidth = LegendBorderWidth,
             IsAntialias = true
         };
 
-        canvas.DrawRoundRect(bounds, radius, radius, borderPaint);
+        canvas.DrawRoundRect(bounds, LegendCornerRadius, LegendCornerRadius, borderPaint);
     }
 
     private void DrawLegendItems(SKCanvas canvas, List<ChartSeries> series, SKRect bounds)
@@ -214,7 +227,7 @@ public class LegendRenderer
 
             // Draw series name
             var textX = bounds.Left + LegendPadding + LegendSwatchWidth + LegendSpacing;
-            var textY = itemY + LegendItemHeight - 3; // Align text vertically
+            var textY = itemY + LegendItemHeight - LegendTextBaselineOffset; // Align text vertically
             canvas.DrawText(seriesItem.Name, textX, textY, textPaint);
 
             itemY += LegendItemHeight;
