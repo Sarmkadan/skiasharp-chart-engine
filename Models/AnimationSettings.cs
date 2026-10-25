@@ -32,6 +32,9 @@ public class AnimationSettings
 
     public AnimationSettings(int durationMs, int frameRate = 60)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(durationMs);
+        ArgumentOutOfRangeException.ThrowIfLessThan(frameRate, 1);
+
         DurationMs = durationMs;
         FrameRate = frameRate;
     }
@@ -44,10 +47,10 @@ public class AnimationSettings
         if (FrameRate < 1)
             throw new InvalidOperationException("FrameRate must be at least 1");
 
-        if (StartOpacity < 0 || StartOpacity > 1)
+        if (double.IsNaN(StartOpacity) || StartOpacity < 0 || StartOpacity > 1)
             throw new InvalidOperationException("StartOpacity must be between 0 and 1");
 
-        if (EndOpacity < 0 || EndOpacity > 1)
+        if (double.IsNaN(EndOpacity) || EndOpacity < 0 || EndOpacity > 1)
             throw new InvalidOperationException("EndOpacity must be between 0 and 1");
     }
 
