@@ -25,6 +25,51 @@ public class GaugeChartRenderer : IChartRenderer
     private const float TickLength = 10f;
     private const float TickWidth = 1.5f;
 
+    // Value range used when the series does not define YAxisMin / YAxisMax
+    private const double DefaultMinValue = 0;
+    private const double DefaultMaxValue = 100;
+
+    // Ranges narrower than these thresholds switch the value label to more decimal places
+    private const double SmallRangeThreshold = 1;
+    private const double MediumRangeThreshold = 10;
+
+    // Vertical space reserved below the title and subtitle text
+    private const float TitleBlockPadding = 8f;
+    private const float SubtitleBlockPadding = 6f;
+
+    // Vertical offsets for the title and subtitle text
+    private const float TitleTopOffset = 4f;
+    private const float SubtitleGap = 2f;
+
+    // Distance from the bottom of the drawing bounds up to the gauge center
+    private const float CenterBottomPadding = 50f;
+
+    // Gauge radius = min(width, height) / RadiusDivisor, leaving room for the labels
+    private const float RadiusDivisor = 2.5f;
+
+    // Semicircle start and sweep in degrees (left to right across the top)
+    private const float ArcStartAngle = -180f;
+    private const float ArcSweepAngle = 180f;
+
+    // Upper bounds of the red, yellow and green zones as fractions of the full sweep
+    private const float RedZoneEnd = 0.33f;
+    private const float YellowZoneEnd = 0.66f;
+    private const float GreenZoneEnd = 1.0f;
+
+    // Stroke width of the gauge outline drawn over the zones
+    private const float ArcOutlineWidth = 3f;
+
+    // Needle tip circle radius as a multiple of NeedleWidth
+    private const float NeedleTipRadiusFactor = 1.5f;
+
+    // Value label baseline below the center, as a fraction of the gauge radius
+    private const float ValueLabelOffsetRatio = 0.3f;
+    private const float ValueLabelTextSize = 24f;
+
+    // Min/max label text and horizontal gap from the ends of the arc
+    private const float MinMaxLabelTextSize = 12f;
+    private const float MinMaxLabelGap = 10f;
+
     public GaugeChartRenderer(ILogger<GaugeChartRenderer> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -52,11 +97,11 @@ public class GaugeChartRenderer : IChartRenderer
             float titleHeight = 0;
             if (!string.IsNullOrEmpty(chart.Configuration.Title))
             {
-                titleHeight += ChartConstants.TitleFontSize + 8f;
+                titleHeight += ChartConstants.TitleFontSize + TitleBlockPadding;
             }
             if (!string.IsNullOrEmpty(chart.Configuration.Subtitle))
             {
-                titleHeight += ChartConstants.SubtitleFontSize + 6f;
+                titleHeight += ChartConstants.SubtitleFontSize + SubtitleBlockPadding;
             }
 
             // Adjust bounds to account for title/subtitle
@@ -71,8 +116,8 @@ public class GaugeChartRenderer : IChartRenderer
             double currentValue = dataPoint.Value;
 
             // Get min/max from series configuration or use defaults
-            double minValue = series.YAxisMin ?? 0;
-            double maxValue = series.YAxisMax ?? 100;
+            double minValue = series.YAxisMin ?? DefaultMinValue;
+            double maxValue = series.YAxisMax ?? DefaultMaxValue;
 
             if (minValue >= maxValue)
             {
@@ -86,8 +131,8 @@ public class GaugeChartRenderer : IChartRenderer
 
             // Calculate center and radius
             var centerX = gaugeBounds.MidX;
-            var centerY = gaugeBounds.Bottom - 50f; // Position gauge at bottom with some padding
-            var radius = Math.Min(gaugeBounds.Width, gaugeBounds.Height) / 2.5f;
+            var centerY = gaugeBounds.Bottom - CenterBottomPadding; // Position gauge at bottom with some padding
+            var radius = Math.Min(gaugeBounds.Width, gaugeBounds.Height) / RadiusDivisor;
 
             // Draw background
             using var bgPaint = new SKPaint { IsAntialias = true, Color = SKColors.White };
@@ -126,7 +171,7 @@ public class GaugeChartRenderer : IChartRenderer
 
         var centerX = bounds.MidX;
         var textColor = SKColor.Parse(chart.Configuration.TextColor);
-        var titleY = bounds.Top + 4f;
+        var titleY = bounds.Top + TitleTopOffset;
 
         // Render title
         if (!string.IsNullOrEmpty(chart.Configuration.Title))
@@ -146,7 +191,7 @@ public class GaugeChartRenderer : IChartRenderer
         // Render subtitle
         if (!string.IsNullOrEmpty(chart.Configuration.Subtitle))
         {
-            var subtitleY = titleY + ChartConstants.TitleFontSize + 2f;
+            var subtitleY = titleY + ChartConstants.TitleFontSize + SubtitleGap;
             using var subtitlePaint = new SKPaint
             {
                 Color = textColor,
@@ -163,24 +208,21 @@ public class GaugeChartRenderer : IChartRenderer
     {
         // Define zones: red (danger), yellow (warning), green (good)
         // Each zone spans 1/3 of the range
-        float zone1End = 0.33f; // Red zone: 0-33%
-        float zone2End = 0.66f; // Yellow zone: 33-66%
-        float zone3End = 1.0f; // Green zone: 66-100%
 
         // Zone 1: Red (0-33%)
         using var zone1Paint = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Stroke, StrokeWidth = ZoneBorderWidth };
         zone1Paint.Color = new SKColor(220, 80, 80, 180); // Semi-transparent red
-        _drawArcSegment(canvas, centerX, centerY, radius, -180f, -180f + zone1End * 180f, zone1Paint);
+        _drawArcSegment(canvas, centerX, centerY, radius, ArcStartAngle, ArcStartAngle + RedZoneEnd * ArcSweepAngle, zone1Paint);
 
         // Zone 2: Yellow (33-66%)
         using var zone2Paint = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Stroke, StrokeWidth = ZoneBorderWidth };
         zone2Paint.Color = new SKColor(255, 200, 80, 180); // Semi-transparent yellow
-        _drawArcSegment(canvas, centerX, centerY, radius, -180f + zone1End * 180f, -180f + zone2End * 180f, zone2Paint);
+        _drawArcSegment(canvas, centerX, centerY, radius, ArcStartAngle + RedZoneEnd * ArcSweepAngle, ArcStartAngle + YellowZoneEnd * ArcSweepAngle, zone2Paint);
 
         // Zone 3: Green (66-100%)
         using var zone3Paint = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Stroke, StrokeWidth = ZoneBorderWidth };
         zone3Paint.Color = new SKColor(100, 200, 100, 180); // Semi-transparent green
-        _drawArcSegment(canvas, centerX, centerY, radius, -180f + zone2End * 180f, -180f + zone3End * 180f, zone3Paint);
+        _drawArcSegment(canvas, centerX, centerY, radius, ArcStartAngle + YellowZoneEnd * ArcSweepAngle, ArcStartAngle + GreenZoneEnd * ArcSweepAngle, zone3Paint);
     }
 
     private void _drawGaugeArc(SKCanvas canvas, float centerX, float centerY, float radius, double minValue, double maxValue)
@@ -190,19 +232,19 @@ public class GaugeChartRenderer : IChartRenderer
         {
             IsAntialias = true,
             Style = SKPaintStyle.Stroke,
-            StrokeWidth = 3f,
+            StrokeWidth = ArcOutlineWidth,
             Color = SKColors.DimGray
         };
 
         // Draw semicircle from -180 to 0 degrees (left to right)
         var rect = new SKRect(centerX - radius, centerY - radius, centerX + radius, centerY + radius);
-        canvas.DrawArc(rect, -180f, 180f, false, arcPaint);
+        canvas.DrawArc(rect, ArcStartAngle, ArcSweepAngle, false, arcPaint);
     }
 
     private void _drawNeedle(SKCanvas canvas, float centerX, float centerY, float radius, float normalizedValue)
     {
         // Calculate needle angle (-180 to 0 degrees)
-        float needleAngle = -180f + normalizedValue * 180f;
+        float needleAngle = ArcStartAngle + normalizedValue * ArcSweepAngle;
         float needleRad = needleAngle * (float)Math.PI / 180;
 
         // Calculate needle tip position
@@ -222,18 +264,18 @@ public class GaugeChartRenderer : IChartRenderer
 
         // Draw needle tip (filled circle)
         using var tipPaint = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Fill, Color = SKColors.Red };
-        canvas.DrawCircle(needleTipX, needleTipY, NeedleWidth * 1.5f, tipPaint);
+        canvas.DrawCircle(needleTipX, needleTipY, NeedleWidth * NeedleTipRadiusFactor, tipPaint);
     }
 
     private void _drawValueLabel(SKCanvas canvas, float centerX, float centerY, float radius, double currentValue, double minValue, double maxValue)
     {
         // Format value based on range
-        string format = Math.Abs(maxValue - minValue) < 1 ? "F2" : (Math.Abs(maxValue - minValue) < 10 ? "F1" : "F0");
+        string format = Math.Abs(maxValue - minValue) < SmallRangeThreshold ? "F2" : (Math.Abs(maxValue - minValue) < MediumRangeThreshold ? "F1" : "F0");
         string valueText = currentValue.ToString(format);
 
         using var textPaint = new SKPaint
         {
-            TextSize = 24f,
+            TextSize = ValueLabelTextSize,
             Color = SKColors.Black,
             IsAntialias = true,
             Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
@@ -244,7 +286,7 @@ public class GaugeChartRenderer : IChartRenderer
 
         // Center the text
         float textX = centerX - textBounds.MidX;
-        float textY = centerY + radius * 0.3f;
+        float textY = centerY + radius * ValueLabelOffsetRatio;
 
         canvas.DrawText(valueText, textX, textY, textPaint);
     }
@@ -253,7 +295,7 @@ public class GaugeChartRenderer : IChartRenderer
     {
         using var labelPaint = new SKPaint
         {
-            TextSize = 12f,
+            TextSize = MinMaxLabelTextSize,
             Color = SKColors.DimGray,
             IsAntialias = true
         };
@@ -262,13 +304,13 @@ public class GaugeChartRenderer : IChartRenderer
         var minText = minValue.ToString("F0");
         var minBounds = new SKRect();
         labelPaint.MeasureText(minText, ref minBounds);
-        canvas.DrawText(minText, centerX - radius - 10f - minBounds.Width, centerY, labelPaint);
+        canvas.DrawText(minText, centerX - radius - MinMaxLabelGap - minBounds.Width, centerY, labelPaint);
 
         // Draw max value at right
         var maxText = maxValue.ToString("F0");
         var maxBounds = new SKRect();
         labelPaint.MeasureText(maxText, ref maxBounds);
-        canvas.DrawText(maxText, centerX + radius + 10f, centerY, labelPaint);
+        canvas.DrawText(maxText, centerX + radius + MinMaxLabelGap, centerY, labelPaint);
     }
 
     private void _drawArcSegment(SKCanvas canvas, float centerX, float centerY, float radius, float startAngle, float sweepAngle, SKPaint paint)
