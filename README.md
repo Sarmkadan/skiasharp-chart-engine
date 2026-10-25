@@ -9379,3 +9379,50 @@ themeManager.SetCurrentTheme("corporate");
 ### Can I use the engine without ASP.NET Core?
 
 Yes. `ChartEngine.Create()` builds a standalone engine with its own dependency injection container, so you can render and export charts in a console app or a class library. To run it as a service, register it in an ASP.NET Core host with `AddSkiaSharpChartEngine()` instead. The repository includes a Web API host on port 5000 in Docker.
+
+## Troubleshooting
+
+### `DllNotFoundException: Unable to load shared library 'libSkiaSharp'`
+
+The engine renders through SkiaSharp, which needs a native library for the current platform. The project references `SkiaSharp.NativeAssets.Linux` (see `skiasharp-chart-engine.csproj`), so a Linux x64 build restores it automatically. Typical causes:
+
+- **Restore was skipped, or the output was copied without its native files.** Run `dotnet restore` and rebuild. When deploying, use `dotnet publish` rather than copying only the main DLL.
+- **Unsupported platform.** Check the SkiaSharp platform matrix for your OS and CPU architecture (for example Linux ARM64 or Alpine/musl). If you need a different platform, reference the matching native-assets package in your host project.
+- **Missing system libraries in a slim container.** Install the packages SkiaSharp depends on for your base image. On Debian or Ubuntu, `libfontconfig1` is the usual one.
+
+If the image from `make docker-build` fails at startup, rebuild it without cached layers to rule out a stale restore.
+
+### Text is missing from charts, or fonts look wrong
+
+`GaugeChartRenderer` and `CandlestickChartRenderer` request the `Arial` typeface by name, and the legend and title code use the system default family. When a requested family is not installed, SkiaSharp falls back to another font. On a minimal Linux host or container with no fonts installed, text may not appear at all. Install a font package for your distribution (for example `fonts-dejavu-core` on Debian or Ubuntu) and render again.
+
+### Cache settings have no effect
+
+`AddSkiaSharpChartEngine()` reads only `ChartEngineOptions.CacheSize`, and passes it to `RenderCacheService` as the maximum number of cached images. The other cache members are not applied on this path:
+
+- `EnableCaching` and its alias `CacheEnabled`. Setting them to `false` does not disable the render cache.
+- `CacheExpirationTime` and its alias `CacheDurationSeconds`. `RenderCacheService` has no time-to-live, so an entry stays until it is evicted to make room for a newer one.
+
+If you need time-based expiry, use `RenderResultCache` with a TTL, as shown in the caching FAQ above. The render cache key includes the chart's series values and configuration, so changed data is rendered again rather than served from the cache.
+
+`ChartEngineOptions.Validate()` is not called during registration. Call it after you configure the options, so an invalid value such as `CacheSize < 1` fails at startup:
+
+```csharp
+services.AddSkiaSharpChartEngine(options =>
+{
+    options.CacheSize = 200;
+    options.Validate();
+});
+```
+
+### A chart renders as a blank image
+
+Work through these checks in order:
+
+1. **Check the logs.** Most renderers log `Invalid parameters for ... chart rendering` and return without drawing when the chart or its series list is missing. The result is a blank image with a warning in the log.
+2. **Check series visibility.** Series with `IsVisible = false` are skipped.
+3. **Check the data point count.** A line series with fewer than two points is not drawn.
+4. **Check that the chart has data.** `ChartEngine.RenderChartAsync` validates the chart first and throws `InvalidChartDataException` when it has no series or no data points. A blank image with no exception therefore usually means the series exist but are hidden or too short.
+5. **Check the dimensions.** `ChartConfiguration` rejects widths and heights outside `ChartConstants.MinimumChartWidth` to `MaximumChartWidth` (and the matching height limits) when they are set, with `ArgumentOutOfRangeException`. Use `DefaultChartWidth` and `DefaultChartHeight`, or pass sizes inside those limits.
+
+If the chart is still blank after these checks, compare the series count and visibility in your chart with what you expected, and look for the warning in the log at the point where the render was requested.
