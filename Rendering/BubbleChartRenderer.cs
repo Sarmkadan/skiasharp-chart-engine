@@ -9,7 +9,7 @@ namespace SkiaSharpChartEngine.Rendering;
 /// <summary>
 /// Specialized renderer for bubble charts.
 /// Each data point is rendered as a circle whose radius is derived from a size value
-/// using a square‑root scaling. The fill is semi‑transparent to allow overlapping
+/// using a square-root scaling. The fill is semi-transparent to allow overlapping
 /// bubbles to be visible.
 /// </summary>
 public class BubbleChartRenderer : IChartRenderer
@@ -73,12 +73,18 @@ public class BubbleChartRenderer : IChartRenderer
                 .SelectMany(s => s.DataPoints.Select(dp => dp.Value))
                 .ToList();
 
-            if (allValues.Count == EmptyItemCount) return;
+            if (allValues.Count == EmptyItemCount)
+            {
+                return;
+            }
 
             var minValue = allValues.Min();
             var maxValue = allValues.Max();
             var valueRange = maxValue - minValue;
-            if (valueRange == EmptyItemCount) valueRange = DefaultValueRange;
+            if (valueRange == EmptyItemCount)
+            {
+                valueRange = DefaultValueRange;
+            }
 
             // Determine the maximum size value for radius scaling
             var maxSize = allValues.Max(); // using the same value set for simplicity
@@ -109,7 +115,7 @@ public class BubbleChartRenderer : IChartRenderer
                     // Paint for the bubble
                     using var paint = new SKPaint
                     {
-                        Color = color.WithAlpha(BubbleFillAlpha), // semi‑transparent fill
+                        Color = color.WithAlpha(BubbleFillAlpha), // semi-transparent fill
                         Style = SKPaintStyle.Fill,
                         IsAntialias = true
                     };
@@ -132,7 +138,9 @@ public class BubbleChartRenderer : IChartRenderer
     private void _renderTitleAndSubtitle(SKCanvas canvas, Chart chart, SKRect bounds)
     {
         if (string.IsNullOrEmpty(chart.Configuration.Title) && string.IsNullOrEmpty(chart.Configuration.Subtitle))
+        {
             return;
+        }
 
         var centerX = bounds.MidX;
         var textColor = SKColor.Parse(chart.Configuration.TextColor);
@@ -185,7 +193,11 @@ public class BubbleChartRenderer : IChartRenderer
         canvas.DrawLine(bounds.Left, bounds.Top, bounds.Left, bounds.Bottom, axisPaint);
 
         // Y axis labels
-        using var textPaint = new SKPaint { TextSize = 10, Color = SKColors.Black };
+        using var textPaint = new SKPaint
+        {
+            TextSize = 10,
+            Color = SKColors.Black
+        };
         for (int i = 0; i <= 5; i++)
         {
             var value = minValue + (maxValue - minValue) * i / 5;
