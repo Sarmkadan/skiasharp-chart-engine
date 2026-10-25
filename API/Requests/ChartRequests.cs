@@ -80,6 +80,8 @@ public class UpdateChartRequest
     /// </summary>
     public List<ChartSeries>? Series { get; set; }
 
+    public override string ToString() => $"UpdateChartRequest {{ Title = {Title}, Configuration = {Configuration}, Series = {Series} }}";
+
     /// <summary>
     /// Validates the request - ensures at least one field is being updated
     /// </summary>
@@ -128,6 +130,8 @@ public class RenderChartRequest
     /// DPI for high-resolution output
     /// </summary>
     public float Dpi { get; set; } = 96f;
+
+    public override string ToString() => $"RenderChartRequest {{ ChartId = {ChartId}, Width = {Width}, Height = {Height}, Dpi = {Dpi} }}";
 
     /// <summary>
     /// Validates rendering parameters
@@ -179,6 +183,8 @@ public class BatchRenderRequest
     /// Common rendering settings for all charts
     /// </summary>
     public RenderChartRequest? RenderSettings { get; set; }
+
+    public override string ToString() => $"BatchRenderRequest {{ ChartIds = {ChartIds}, RenderSettings = {RenderSettings} }}";
 
     /// <summary>
     /// Validates batch request
