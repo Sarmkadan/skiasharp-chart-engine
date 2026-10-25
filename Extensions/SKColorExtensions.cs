@@ -53,6 +53,23 @@ public static class SKColorExtensions
     }
 
     /// <summary>
+    /// Blends the color with another color by linear interpolation.
+    /// </summary>
+    /// <param name="color">The base color.</param>
+    /// <param name="other">The color to blend towards.</param>
+    /// <param name="ratio">The blend ratio, clamped between 0 and 1. 0 returns <paramref name="color"/>, 1 returns <paramref name="other"/>.</param>
+    /// <returns>A new <see cref="SKColor"/> that lies between the two colors.</returns>
+    public static SKColor Blend(this SKColor color, SKColor other, float ratio)
+    {
+        var t = Math.Clamp(ratio, 0f, 1f);
+        return new SKColor(
+            (byte)(color.Red + (other.Red - color.Red) * t),
+            (byte)(color.Green + (other.Green - color.Green) * t),
+            (byte)(color.Blue + (other.Blue - color.Blue) * t),
+            (byte)(color.Alpha + (other.Alpha - color.Alpha) * t));
+    }
+
+    /// <summary>
     /// Converts the <see cref="SKColor"/> to its hex representation.
     /// </summary>
     /// <param name="color">The color to convert.</param>
