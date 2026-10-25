@@ -1,3 +1,15 @@
+// <summary>
+// Entry point for the SkiaSharpChartEngine ASP.NET Core Web API host.
+// Startup flow (top-level statements):
+// 1. Create the WebApplicationBuilder from args, which loads configuration and environment settings.
+// 2. Register the chart engine via AddSkiaSharpChartEngine. Caching is always enabled. Cache duration is read from
+//    Cache:DurationSeconds (default 300) and render concurrency from Performance:MaxConcurrentRenders (default 10).
+// 3. Register MVC controllers, endpoint API exploration and Swagger generation.
+// 4. Register HealthCheckService as a singleton for health monitoring.
+// 5. Build the application and configure the HTTP pipeline: Swagger UI only in the Development environment,
+//    then HTTPS redirection, authorization and controller route mapping.
+// 6. Run the host until it is shut down.
+// </summary>
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
