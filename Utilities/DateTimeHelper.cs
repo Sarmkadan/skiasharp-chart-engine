@@ -153,13 +153,19 @@ public static class DateTimeHelper
     public static string FormatTimespan(TimeSpan timespan)
     {
         if (timespan.TotalSeconds < 60)
+        {
             return $"{(int)timespan.TotalSeconds}s";
+        }
 
         if (timespan.TotalMinutes < 60)
+        {
             return $"{(int)timespan.TotalMinutes}m {timespan.Seconds}s";
+        }
 
         if (timespan.TotalHours < 24)
+        {
             return $"{(int)timespan.TotalHours}h {timespan.Minutes}m";
+        }
 
         return $"{(int)timespan.TotalDays}d {timespan.Hours}h";
     }
