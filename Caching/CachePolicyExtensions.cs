@@ -87,4 +87,27 @@ public static class CachePolicyExtensions
 
         return policy;
     }
+
+    /// <summary>
+    /// Determines whether a cache entry has expired based on the absolute expiration of this policy.
+    /// </summary>
+    /// <param name="policy">The cache policy that defines the expiration. Cannot be <see langword="null"/>.</param>
+    /// <param name="cachedAt">The time at which the cache entry was created.</param>
+    /// <param name="now">The current time to compare against.</param>
+    /// <returns>
+    /// <see langword="true"/> if <paramref name="now"/> is past <paramref name="cachedAt"/> plus the absolute expiration;
+    /// otherwise <see langword="false"/>. Policies without an absolute expiration never expire.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="policy"/> is <see langword="null"/>.</exception>
+    public static bool IsExpired(this CachePolicy policy, DateTime cachedAt, DateTime now)
+    {
+        ArgumentNullException.ThrowIfNull(policy);
+
+        if (!policy.AbsoluteExpirationRelativeToNow.HasValue)
+        {
+            return false;
+        }
+
+        return now > cachedAt.Add(policy.AbsoluteExpirationRelativeToNow.Value);
+    }
 }
